@@ -32,8 +32,12 @@ build/
 ### VS Code ###
 .vscode/
 
-## notes ##
-/src/main/resources/certs/notes.java
+## certs/keys ##
+private-key.pem
+public-key.pem
+
+### env ###
+.env.properties
 
 ### not yet done ###
 docker-compose.text

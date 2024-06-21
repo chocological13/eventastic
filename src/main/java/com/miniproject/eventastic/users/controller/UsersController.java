@@ -64,5 +64,6 @@ public class UsersController {
    *  - simulate registration
    * - simulate edit profile*/
 
+  // Region - USER PROFILE MANAGEMENT
 
 }
