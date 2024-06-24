@@ -46,6 +46,7 @@ public class AuthServiceImpl implements AuthService {
     var jwt = jwtEncoder.encode(JwtEncoderParameters.from(claimsSet)).getTokenValue();
 
     // save in redis
+    // ! todo: configure redis unable to connect
     authRedisRepository.saveJwtKey(authentication.getName(), jwt);
 
     // return
