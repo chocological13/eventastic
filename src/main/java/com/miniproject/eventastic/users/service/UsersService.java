@@ -1,10 +1,9 @@
 package com.miniproject.eventastic.users.service;
 
-import com.miniproject.eventastic.responses.Response;
 import com.miniproject.eventastic.users.entity.Users;
-import com.miniproject.eventastic.users.entity.dto.ProfileUpdateRequestDTO;
+import com.miniproject.eventastic.users.entity.dto.userManagement.ProfileUpdateRequestDTO;
+import com.miniproject.eventastic.users.entity.dto.register.RegisterRequestDto;
 import java.util.List;
-import org.springframework.http.ResponseEntity;
 
 public interface UsersService {
 
@@ -16,7 +15,7 @@ public interface UsersService {
 
   Users getById(Long id);
 
-  void save(Users users);
+  void register(Users newUser, RegisterRequestDto requestDto);
 
   void update(Long id, ProfileUpdateRequestDTO requestDto);
 

@@ -43,7 +43,7 @@ public class Users {
   @Column(name = "email", nullable = false, length = 50)
   private String email;
 
-  @Size(max = 20)
+  @Size(min = 8)
   @NotNull
   @Column(name = "password", nullable = false, length = 20)
   private String password;

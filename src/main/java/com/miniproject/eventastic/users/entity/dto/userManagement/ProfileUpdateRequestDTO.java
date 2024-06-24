@@ -1,4 +1,4 @@
-package com.miniproject.eventastic.users.entity.dto;
+package com.miniproject.eventastic.users.entity.dto.userManagement;
 
 import com.miniproject.eventastic.users.entity.Users;
 import java.time.LocalDate;
