@@ -34,8 +34,15 @@ public class UsersController {
       return Response.failedResponse("There are no users to display");
     }
   }
+  // * Register
+  @PostMapping("/register")
+  public ResponseEntity<Response<Users>> registerUser(@RequestBody RegisterRequestDto requestDto) {
+    Users newUser = new Users();
+    usersService.register(newUser, requestDto);
+    return Response.successfulResponse(HttpStatus.CREATED.value(), "Register successful!! :D", newUser);
+  }
 
-  // ! Get logged in user's profile
+  // * Get logged in user's profile
   @GetMapping("/me")
   public ResponseEntity<Response<UserProfileDto>> getUserProfile() {
     UserProfileDto userProfile = usersService.getProfile();
@@ -46,27 +53,12 @@ public class UsersController {
     }
   }
 
-  // End - End of profile showing
-
-  /* !TODO:
-    v - simulate registration
-   * - simulate edit profile*/
-
-  // * Register
-  @PostMapping("/register")
-  public ResponseEntity<Response<Users>> registerUser(@RequestBody RegisterRequestDto requestDto) {
-    Users newUser = new Users();
-    usersService.register(newUser, requestDto);
-    return Response.successfulResponse(HttpStatus.CREATED.value(), "Register successful!! :D", newUser);
-  }
-
-  // Region - USER PROFILE MANAGEMENT
   // * Edit Profile
-  @PostMapping("/{id}/update-profile")
-  public ResponseEntity<Response<Users>> updateUserProfile(@PathVariable Long id,
-      @RequestBody ProfileUpdateRequestDTO requestDTO) {
-    usersService.update(id, requestDTO);
-    return Response.successfulResponse(HttpStatus.OK.value(), "Profile update successful!! :D", usersService.getById(id));
+  @PostMapping("/me/update")
+  public ResponseEntity<Response<UserProfileDto>> updateUserProfile(@RequestBody ProfileUpdateRequestDTO requestDTO) {
+    usersService.update(requestDTO);
+    UserProfileDto userProfile = usersService.getProfile();
+    return Response.successfulResponse(HttpStatus.OK.value(), "Profile update successful!! :D", userProfile);
   }
 
 

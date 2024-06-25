@@ -25,7 +25,6 @@ public class AuthController {
 
   private final AuthService authService;
   private final UsersService usersService;
-  private final AuthRedisRepository authRedisRepository;
 
   // > DEV: check who is currently logged in this session
   @GetMapping("")

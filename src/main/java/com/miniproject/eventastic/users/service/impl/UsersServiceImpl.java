@@ -74,8 +74,10 @@ public class UsersServiceImpl implements UsersService {
   }
 
   @Override
-  public void update(Long id, ProfileUpdateRequestDTO requestDto) {
-    Optional<Users> usersOptional = usersRepository.findById(id);
+  public void update(ProfileUpdateRequestDTO requestDto) {
+    // get logged in user
+    String username = SecurityContextHolder.getContext().getAuthentication().getName();
+    Optional<Users> usersOptional = usersRepository.findByUsername(username);
     if (usersOptional.isPresent()) {
       Users existingUser = usersOptional.get();
       ProfileUpdateRequestDTO update = new ProfileUpdateRequestDTO();

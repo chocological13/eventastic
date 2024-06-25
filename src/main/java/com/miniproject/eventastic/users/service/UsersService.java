@@ -20,6 +20,6 @@ public interface UsersService {
 
   void register(Users newUser, RegisterRequestDto requestDto);
 
-  void update(Long id, ProfileUpdateRequestDTO requestDto);
+  void update(ProfileUpdateRequestDTO requestDto);
 
 }
