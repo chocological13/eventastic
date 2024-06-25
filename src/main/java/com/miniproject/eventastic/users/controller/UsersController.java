@@ -2,6 +2,7 @@ package com.miniproject.eventastic.users.controller;
 
 import com.miniproject.eventastic.responses.Response;
 import com.miniproject.eventastic.users.entity.Users;
+import com.miniproject.eventastic.users.entity.dto.profile.UserProfileDto;
 import com.miniproject.eventastic.users.entity.dto.register.RegisterRequestDto;
 import com.miniproject.eventastic.users.entity.dto.userManagement.ProfileUpdateRequestDTO;
 import com.miniproject.eventastic.users.service.UsersService;
@@ -14,7 +15,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -35,36 +35,15 @@ public class UsersController {
     }
   }
 
-  // helper to get users response
-  public ResponseEntity<Response<Users>> getUserCheckResponse(Users user, String identifier, String value) {
-    if (user == null) {
-      return Response.failedResponse("There is no user with " + identifier + " " + value);
+  // ! Get logged in user's profile
+  @GetMapping("/me")
+  public ResponseEntity<Response<UserProfileDto>> getUserProfile() {
+    UserProfileDto userProfile = usersService.getProfile();
+    if (userProfile != null) {
+      return Response.successfulResponse(HttpStatus.FOUND.value(), HttpStatus.FOUND.getReasonPhrase(), userProfile);
     } else {
-      return Response.successfulResponse(HttpStatus.FOUND.value(), HttpStatus.FOUND.getReasonPhrase(), user);
+      return Response.failedResponse("There is no user profile");
     }
-  }
-
-  // Region - Profile showing, according to either ID, e-mail, or username
-
-  // ! Get by ID
-  @GetMapping("?id=")
-  public ResponseEntity<Response<Users>> getUserById(@RequestParam("id") Long id) {
-    Users user = usersService.getById(id);
-    return getUserCheckResponse(user, "id", " " + id);
-  }
-
-  // ! Get by Email
-  @GetMapping("?email=")
-  public ResponseEntity<Response<Users>> getUserByEmail(@RequestParam("email") String email) {
-    Users user = usersService.getByEmail(email);
-    return getUserCheckResponse(user, "email", " " + email);
-  }
-
-  // Get by Username
-  @GetMapping("?username=")
-  public ResponseEntity<Response<Users>> getUserByUsername(@RequestParam("username") String username) {
-    Users user = usersService.getByUsername(username);
-    return getUserCheckResponse(user, "username", " " + username);
   }
 
   // End - End of profile showing

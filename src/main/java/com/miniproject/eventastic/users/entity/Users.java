@@ -16,7 +16,7 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.time.Instant;
-import java.time.LocalDate;
+import java.util.Date;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -86,7 +86,7 @@ public class Users {
   private String bio;
 
   @Column(name = "birthday")
-  private LocalDate birthday;
+  private Date birthday;
 
   @PrePersist
   protected void onCreate() {

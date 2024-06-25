@@ -1,6 +1,7 @@
 package com.miniproject.eventastic.users.service.impl;
 
 import com.miniproject.eventastic.users.entity.Users;
+import com.miniproject.eventastic.users.entity.dto.profile.UserProfileDto;
 import com.miniproject.eventastic.users.entity.dto.userManagement.ProfileUpdateRequestDTO;
 import com.miniproject.eventastic.users.entity.dto.register.RegisterRequestDto;
 import com.miniproject.eventastic.users.repository.UsersRepository;
@@ -9,6 +10,9 @@ import java.util.List;
 import java.util.Optional;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -19,10 +23,28 @@ public class UsersServiceImpl implements UsersService {
 
   private final UsersRepository usersRepository;
   private final PasswordEncoder passwordEncoder;
+  private final AuthenticationManager authenticationManager;
 
   @Override
   public List<Users> getAllUsers() {
     return usersRepository.findAll();
+  }
+
+  @Override
+  public UserProfileDto getProfile() {
+    // * get logged in user
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    String username = auth.getName();
+
+    // * check
+    Optional<Users> user = usersRepository.findByUsername(username);
+    if (user.isPresent()) {
+      Users loggedUser = user.get();
+      UserProfileDto userProfileDto = new UserProfileDto();
+      return userProfileDto.toDto(loggedUser);
+    } else {
+      return null;
+    }
   }
 
   @Override

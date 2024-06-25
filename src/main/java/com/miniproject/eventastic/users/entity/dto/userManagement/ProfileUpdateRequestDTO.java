@@ -2,6 +2,7 @@ package com.miniproject.eventastic.users.entity.dto.userManagement;
 
 import com.miniproject.eventastic.users.entity.Users;
 import java.time.LocalDate;
+import java.util.Date;
 import java.util.Optional;
 import lombok.Data;
 
@@ -12,7 +13,7 @@ public class ProfileUpdateRequestDTO {
   private String lastName;
   private String avatar;
   private String bio;
-  private LocalDate birthday;
+  private Date birthday;
 
   public Users profileUpdateRequestDTOtoUsers(Users user, ProfileUpdateRequestDTO requestDto) {
     Optional.ofNullable(requestDto.getFirstName()).ifPresent(user::setFirstName);
