@@ -86,9 +86,10 @@ public class SecurityConfig {
           auth.requestMatchers("/api/**").permitAll();
 
           // ! TODO: add roles related authorizations
+//          auth.requestMatchers("/api/v1/users/?id=");
 
           // ! TODO: uncomment this when all the security set up is ready
-          auth.anyRequest().authenticated();
+//          auth.anyRequest().authenticated();
         })
         // * session management
         .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

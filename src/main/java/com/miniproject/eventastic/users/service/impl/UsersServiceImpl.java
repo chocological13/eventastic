@@ -1,7 +1,5 @@
 package com.miniproject.eventastic.users.service.impl;
 
-import static com.miniproject.eventastic.users.entity.dto.userManagement.ProfileUpdateRequestDTO.profileUpdateRequestDTOtoUsers;
-
 import com.miniproject.eventastic.users.entity.Users;
 import com.miniproject.eventastic.users.entity.dto.userManagement.ProfileUpdateRequestDTO;
 import com.miniproject.eventastic.users.entity.dto.register.RegisterRequestDto;
@@ -58,7 +56,9 @@ public class UsersServiceImpl implements UsersService {
     Optional<Users> usersOptional = usersRepository.findById(id);
     if (usersOptional.isPresent()) {
       Users existingUser = usersOptional.get();
-      profileUpdateRequestDTOtoUsers(existingUser, requestDto);
+      ProfileUpdateRequestDTO update = new ProfileUpdateRequestDTO();
+      update.profileUpdateRequestDTOtoUsers(existingUser, requestDto);
+      usersRepository.save(existingUser);
     }
   }
 

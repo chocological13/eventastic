@@ -17,13 +17,17 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.time.Instant;
 import java.time.LocalDate;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
 @Getter
 @Setter
 @Entity
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "users")
 public class Users {
 
@@ -45,7 +49,7 @@ public class Users {
 
   @Size(min = 8)
   @NotNull
-  @Column(name = "password", nullable = false, length = 20)
+  @Column(name = "password", nullable = false)
   private String password;
 
   @OneToOne(fetch = FetchType.LAZY)
