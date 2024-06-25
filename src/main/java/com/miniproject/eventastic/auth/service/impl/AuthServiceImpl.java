@@ -1,13 +1,24 @@
 package com.miniproject.eventastic.auth.service.impl;
 
+import com.miniproject.eventastic.auth.entity.UserAuth;
+import com.miniproject.eventastic.auth.entity.dto.login.LoginRequestDto;
+import com.miniproject.eventastic.auth.entity.dto.login.LoginResponseDto;
 import com.miniproject.eventastic.auth.repository.AuthRedisRepository;
 import com.miniproject.eventastic.auth.service.AuthService;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
@@ -15,8 +26,10 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthServiceImpl implements AuthService {
 
+  private final AuthenticationManager authenticationManager;
   private final AuthRedisRepository authRedisRepository;
   private final JwtEncoder jwtEncoder;
 
@@ -52,4 +65,56 @@ public class AuthServiceImpl implements AuthService {
     // return
     return jwt;
   }
+
+  @Override
+  public ResponseEntity<?> login(LoginRequestDto loginRequestDto) {
+    // * 1: authenticate user
+    Authentication authentication = authenticationManager
+        .authenticate(new UsernamePasswordAuthenticationToken(loginRequestDto.getUsername(), loginRequestDto.getPassword()));
+    log.info("Authenticated user: {}", authentication);
+
+    // * 2: store it in the security context
+    SecurityContextHolder.getContext().setAuthentication(authentication);
+    var ctx = SecurityContextHolder.getContext();
+    ctx.setAuthentication(authentication);
+
+    // * 3: get user's information
+    UserAuth userDetails = (UserAuth) ctx.getAuthentication().getPrincipal();
+    log.info("Principal: {}", userDetails);
+
+    // ! 4: generate token
+    String token = generateToken(authentication);
+
+    // * 5: generate response
+    LoginResponseDto response = new LoginResponseDto();
+    response.setMessage("Welcome back, " + userDetails.getUsername() + "!");
+    response.setToken(token);
+
+    // * 6: create (response)cookie
+    ResponseCookie cookie = ResponseCookie.from("JSESSIONID", token)
+        .path("/")
+        .httpOnly(true)
+        .maxAge(3600)
+        .build();
+    HttpHeaders headers = new HttpHeaders();
+    headers.add("Set-Cookie", cookie.toString());
+
+    // * 7: return the token
+    return ResponseEntity.ok().headers(headers).body(response);
+  }
+
+  @Override
+  public void logout() {
+    // * Get logged in user
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    String username = authentication.getName();
+    String token = authRedisRepository.getJwtKey(username);
+
+    if (token != null) {
+      // * Invalidate token
+      authRedisRepository.blacklistJwtKey(username);
+    }
+  }
+
+
 }

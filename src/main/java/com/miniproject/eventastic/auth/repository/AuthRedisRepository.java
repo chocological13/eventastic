@@ -39,7 +39,7 @@ public class AuthRedisRepository {
   public boolean isValid (String username, String jwtKey) {
     String storedKey = ops.get(STRING_KEY_PREFIX + username);
     String blacklisted = ops.get(STRING_KEY_PREFIX + username + BLACKLIST_KEY_PREFIX);
-    return storedKey != null && blacklisted != null && storedKey.equals(jwtKey);
+    return storedKey != null && blacklisted == null && storedKey.equals(jwtKey);
   }
 
 }
