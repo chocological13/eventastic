@@ -1,16 +1,22 @@
 package com.miniproject.eventastic.auth.service.impl;
 
 import com.miniproject.eventastic.auth.entity.UserAuth;
+import com.miniproject.eventastic.auth.entity.dto.forgorPassword.ForgotPasswordRequestDto;
+import com.miniproject.eventastic.auth.entity.dto.forgorPassword.ForgotPasswordResponseDto;
 import com.miniproject.eventastic.auth.entity.dto.login.LoginRequestDto;
 import com.miniproject.eventastic.auth.entity.dto.login.LoginResponseDto;
+import com.miniproject.eventastic.auth.helpers.UrlBuilder;
 import com.miniproject.eventastic.auth.repository.AuthRedisRepository;
 import com.miniproject.eventastic.auth.service.AuthService;
+import com.miniproject.eventastic.users.entity.Users;
+import com.miniproject.eventastic.users.repository.UsersRepository;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +38,8 @@ public class AuthServiceImpl implements AuthService {
   private final AuthenticationManager authenticationManager;
   private final AuthRedisRepository authRedisRepository;
   private final JwtEncoder jwtEncoder;
+  private final UsersRepository usersRepository;
+  private final UrlBuilder urlBuilder;
 
 
   @Override
@@ -113,6 +121,34 @@ public class AuthServiceImpl implements AuthService {
     if (token != null) {
       // * Invalidate token
       authRedisRepository.blacklistJwtKey(username);
+    }
+  }
+
+  @Override
+  public ForgotPasswordResponseDto forgotPassword(ForgotPasswordRequestDto forgotPasswordRequestDto) {
+    Optional<Users> userOptional = usersRepository.findByEmail(forgotPasswordRequestDto.getEmail());
+    if (userOptional.isEmpty()) {
+      return null;
+    } else {
+      Users user = userOptional.get();
+
+      // generate random token to validate later (send to user's email)
+      String username = user.getUsername();
+      String token = UUID.randomUUID().toString();
+
+      // save token to redis
+      authRedisRepository.saveJwtKey(username, token);
+
+      String resetTokenUrl = urlBuilder.getResetTokenUrl(token);
+
+      // set response
+      ForgotPasswordResponseDto response = new ForgotPasswordResponseDto();
+      response.setMessage("Find the link below");
+      response.setResetTokenUrl(resetTokenUrl);
+
+      // ! TODO: Send reset URL to email
+
+      return response;
     }
   }
 

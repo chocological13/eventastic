@@ -1,14 +1,16 @@
 package com.miniproject.eventastic.auth.controller;
 
+import com.miniproject.eventastic.auth.entity.dto.forgorPassword.ForgotPasswordRequestDto;
+import com.miniproject.eventastic.auth.entity.dto.forgorPassword.ForgotPasswordResponseDto;
 import com.miniproject.eventastic.auth.entity.dto.login.LoginRequestDto;
-import com.miniproject.eventastic.auth.repository.AuthRedisRepository;
 import com.miniproject.eventastic.auth.service.AuthService;
+import com.miniproject.eventastic.responses.Response;
 import com.miniproject.eventastic.users.entity.Users;
 import com.miniproject.eventastic.users.service.UsersService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -47,6 +49,18 @@ public class AuthController {
     authService.logout();
     return ResponseEntity.ok().body(
         "Logout request for user: " + SecurityContextHolder.getContext().getAuthentication().getName() + " successful");
+  }
+
+  // > forgot password(
+  @PostMapping("/forgot-password")
+  public ResponseEntity<Response<ForgotPasswordResponseDto>> forgotPassword(@RequestBody ForgotPasswordRequestDto req) {
+    ForgotPasswordResponseDto responseDto = authService.forgotPassword(req);
+    if (responseDto != null) {
+      return Response.successfulResponse(HttpStatus.ACCEPTED.value(),
+          "Reset password request for user with email " + req.getEmail() + " received!", responseDto);
+    } else {
+      return Response.successfulResponse(HttpStatus.BAD_REQUEST.value(), null);
+    }
   }
 
 }
