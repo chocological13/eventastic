@@ -35,6 +35,11 @@ public class AuthRedisRepository {
     return ops.get(STRING_KEY_PREFIX + username);
   }
 
+  // get username from jwt key
+  public String getUsername (String jwtKey) {
+    return ops.get(STRING_KEY_PREFIX + jwtKey);
+  }
+
   // check if it's valid
   public boolean isValid (String username, String jwtKey) {
     String storedKey = ops.get(STRING_KEY_PREFIX + username);

@@ -1,6 +1,7 @@
 package com.miniproject.eventastic.auth.service.impl;
 
 import com.miniproject.eventastic.auth.entity.UserAuth;
+import com.miniproject.eventastic.auth.entity.dto.resetPassword.ResetPasswordRequestDto;
 import com.miniproject.eventastic.auth.entity.dto.forgorPassword.ForgotPasswordRequestDto;
 import com.miniproject.eventastic.auth.entity.dto.forgorPassword.ForgotPasswordResponseDto;
 import com.miniproject.eventastic.auth.entity.dto.login.LoginRequestDto;
@@ -121,34 +122,6 @@ public class AuthServiceImpl implements AuthService {
     if (token != null) {
       // * Invalidate token
       authRedisRepository.blacklistJwtKey(username);
-    }
-  }
-
-  @Override
-  public ForgotPasswordResponseDto forgotPassword(ForgotPasswordRequestDto forgotPasswordRequestDto) {
-    Optional<Users> userOptional = usersRepository.findByEmail(forgotPasswordRequestDto.getEmail());
-    if (userOptional.isEmpty()) {
-      return null;
-    } else {
-      Users user = userOptional.get();
-
-      // generate random token to validate later (send to user's email)
-      String username = user.getUsername();
-      String token = UUID.randomUUID().toString();
-
-      // save token to redis
-      authRedisRepository.saveJwtKey(username, token);
-
-      String resetTokenUrl = urlBuilder.getResetTokenUrl(token);
-
-      // set response
-      ForgotPasswordResponseDto response = new ForgotPasswordResponseDto();
-      response.setMessage("Find the link below");
-      response.setResetTokenUrl(resetTokenUrl);
-
-      // ! TODO: Send reset URL to email
-
-      return response;
     }
   }
 

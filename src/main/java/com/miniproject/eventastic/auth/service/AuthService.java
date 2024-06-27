@@ -1,5 +1,6 @@
 package com.miniproject.eventastic.auth.service;
 
+import com.miniproject.eventastic.auth.entity.dto.resetPassword.ResetPasswordRequestDto;
 import com.miniproject.eventastic.auth.entity.dto.forgorPassword.ForgotPasswordRequestDto;
 import com.miniproject.eventastic.auth.entity.dto.forgorPassword.ForgotPasswordResponseDto;
 import com.miniproject.eventastic.auth.entity.dto.login.LoginRequestDto;
@@ -13,7 +14,5 @@ public interface AuthService {
  ResponseEntity<?> login(LoginRequestDto loginRequestDto);
 
  void logout();
-
- ForgotPasswordResponseDto forgotPassword(ForgotPasswordRequestDto forgotPasswordRequestDto);
 
 }

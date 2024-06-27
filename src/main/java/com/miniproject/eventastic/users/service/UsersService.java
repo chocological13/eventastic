@@ -20,6 +20,8 @@ public interface UsersService {
 
   void register(Users newUser, RegisterRequestDto requestDto);
 
+  void resetPassword(Users user, String newPassword);
+
   void update(ProfileUpdateRequestDTO requestDto);
 
 }

@@ -5,10 +5,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class UrlBuilder {
 
-  private String baseUrl = "http://localhost:8080";
+  private final String baseUrl = "http://localhost:8080";
 
   public String getResetTokenUrl (String token) {
-    String forgotPasswordUrl = "/forgot-password";
+    String forgotPasswordUrl = "/auth/reset-password";
     return baseUrl + forgotPasswordUrl + "?token=" + token;
   }
 }

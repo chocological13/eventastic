@@ -74,6 +74,12 @@ public class UsersServiceImpl implements UsersService {
   }
 
   @Override
+  public void resetPassword(Users user, String newPassword) {
+    user.setPassword(passwordEncoder.encode(newPassword));
+    usersRepository.save(user);
+  }
+
+  @Override
   public void update(ProfileUpdateRequestDTO requestDto) {
     // get logged in user
     String username = SecurityContextHolder.getContext().getAuthentication().getName();
