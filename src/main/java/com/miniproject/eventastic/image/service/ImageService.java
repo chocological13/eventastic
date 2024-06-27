@@ -1,11 +1,9 @@
 package com.miniproject.eventastic.image.service;
 
-import com.miniproject.eventastic.image.entity.Image;
-import com.miniproject.eventastic.image.entity.dto.ImageUploadDto;
-import com.miniproject.eventastic.responses.Response;
-import org.springframework.http.ResponseEntity;
+import com.miniproject.eventastic.image.entity.dto.ImageUploadRequestDto;
+import com.miniproject.eventastic.image.entity.dto.ImageUploadResponseDto;
 
 public interface ImageService {
 
-  ResponseEntity<Response<Object>> uploadImage(ImageUploadDto imageUploadDto);
+  ImageUploadResponseDto uploadImage(ImageUploadRequestDto imageUploadRequestDto);
 }
