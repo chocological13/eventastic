@@ -61,12 +61,12 @@
       <scope>runtime</scope>
       <optional>true</optional>
     </dependency>
-<!--    <dependency>-->
-<!--      <groupId>org.springframework.boot</groupId>-->
-<!--      <artifactId>spring-boot-docker-compose</artifactId>-->
-<!--      <scope>runtime</scope>-->
-<!--      <optional>true</optional>-->
-<!--    </dependency>-->
+    <!--    <dependency>-->
+    <!--      <groupId>org.springframework.boot</groupId>-->
+    <!--      <artifactId>spring-boot-docker-compose</artifactId>-->
+    <!--      <scope>runtime</scope>-->
+    <!--      <optional>true</optional>-->
+    <!--    </dependency>-->
     <dependency>
       <groupId>io.jsonwebtoken</groupId>
       <artifactId>jjwt-api</artifactId>
@@ -97,6 +97,22 @@
       <groupId>org.springframework.security</groupId>
       <artifactId>spring-security-test</artifactId>
       <scope>test</scope>
+    </dependency>
+    <!--    cloudinary image upload dependency-->
+    <dependency>
+      <groupId>com.cloudinary</groupId>
+      <artifactId>cloudinary-http44</artifactId>
+      <version>1.38.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.cloudinary</groupId>
+      <artifactId>cloudinary-taglib</artifactId>
+      <version>1.38.0</version>
+    </dependency>
+    <dependency>
+      <groupId>io.github.cdimascio</groupId>
+      <artifactId>dotenv-java</artifactId>
+      <version>3.0.1</version>
     </dependency>
   </dependencies>
 
