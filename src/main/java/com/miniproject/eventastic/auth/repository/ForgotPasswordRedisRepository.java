@@ -42,7 +42,7 @@ public class ForgotPasswordRedisRepository {
   }
 
   public void blacklistResetToken(String randomToken) {
-    ops.set(RESET_TOKEN_PREFIX + getUsername(randomToken) + BLACKLIST_KEY_PREFIX, "true", 1, TimeUnit.HOURS);
+    ops.set(RESET_TOKEN_PREFIX + getUsername(randomToken) + BLACKLIST_KEY_PREFIX, "true", 6, TimeUnit.HOURS);
   }
 
   public boolean isValidResetToken(String randomToken, String resetToken) {
