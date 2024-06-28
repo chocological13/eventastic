@@ -70,8 +70,8 @@ public class Response<T> {
     return successfulResponse(statusCode, "Process has executed successfully", data);
   }
 
-  public static <T> ResponseEntity<Response<T>> successfulResponse(int statusCode, String statusMessage) {
-    return successfulResponse(statusCode, statusMessage, null);
+  public static <T> ResponseEntity<Response<T>> successfulResponse(String statusMessage) {
+    return successfulResponse(statusMessage, null);
   }
 
   public static <T> ResponseEntity<Response<T>> successfulResponse(T data) {
