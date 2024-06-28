@@ -67,21 +67,18 @@ public class AuthController {
       return Response.successfulResponse(HttpStatus.ACCEPTED.value(),
           "Reset password request for user with email " + req.getEmail() + " received!", responseDto);
     } else {
-      return Response.successfulResponse(HttpStatus.BAD_REQUEST.value(), null);
+      return Response.successfulResponse(null);
     }
   }
 
   // ! TODO: THIS!!!!!!
   // > reset password
   @PutMapping("/reset-password")
-  public ResponseEntity<Response<Object>> resetPassword(@RequestParam String token,
+  public ResponseEntity<Response<Void>> resetPassword(@RequestParam String token,
       @RequestBody ResetPasswordRequestDto req) throws Exception {
-    Boolean result = forgotPasswordService.resetPassword(token, req);
-    if (!result) {
-      return Response.failedResponse("Failed to reset password");
-    } else {
-      return Response.successfulResponse("Password reset successful! ^^");
-    }
+    forgotPasswordService.resetPassword(token, req);
+      return Response.successfulResponse("Password reset successful! You can log back in with the new password now! "
+          + "^^");
   }
 
 }

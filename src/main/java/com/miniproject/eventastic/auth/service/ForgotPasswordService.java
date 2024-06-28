@@ -4,7 +4,6 @@ import com.miniproject.eventastic.auth.entity.dto.forgorPassword.ForgotPasswordR
 import com.miniproject.eventastic.auth.entity.dto.forgorPassword.ForgotPasswordResponseDto;
 import com.miniproject.eventastic.auth.entity.dto.resetPassword.ResetPasswordRequestDto;
 import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.KeyLengthException;
 import java.security.NoSuchAlgorithmException;
 
 public interface ForgotPasswordService {
@@ -12,7 +11,7 @@ public interface ForgotPasswordService {
   ForgotPasswordResponseDto forgotPassword(ForgotPasswordRequestDto forgotPasswordRequestDto)
       throws NoSuchAlgorithmException, JOSEException;
 
-  String generateResetToken(String username) throws NoSuchAlgorithmException, JOSEException;
+  String generateResetToken(String username);
 
-  Boolean resetPassword(String resetPasswordUrl, ResetPasswordRequestDto requestDto) throws Exception;
+  void resetPassword(String urlToken, ResetPasswordRequestDto requestDto) throws Exception;
 }
