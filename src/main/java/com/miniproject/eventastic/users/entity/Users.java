@@ -1,6 +1,6 @@
 package com.miniproject.eventastic.users.entity;
 
-import com.miniproject.eventastic.referralCode.entity.ReferralCode;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -8,11 +8,13 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.time.Instant;
@@ -37,24 +39,17 @@ public class Users {
   @Column(name = "id", nullable = false)
   private Long id;
 
-  @Size(max = 20)
   @NotNull
   @Column(name = "username", nullable = false, length = 20)
   private String username;
 
-  @Size(max = 50)
   @NotNull
   @Column(name = "email", nullable = false, length = 50)
   private String email;
 
-  @Size(min = 8)
   @NotNull
   @Column(name = "password", nullable = false)
   private String password;
-
-  @OneToOne(fetch = FetchType.LAZY)
-  @JoinColumn(unique = true, name = "ref_code_used_id")
-  private ReferralCode referralCode;
 
   @ColumnDefault("false")
   @Column(name = "is_organizer")
@@ -87,6 +82,15 @@ public class Users {
 
   @Column(name = "birthday")
   private Date birthday;
+
+  @Size(max = 7)
+  @Column(name = "ref_code_used", length = 7)
+  private String refCodeUsed;
+
+  @Size(max = 7)
+  @Column(name = "owned_ref_code", length = 7)
+  private String ownedRefCode;
+
 
   @PrePersist
   protected void onCreate() {

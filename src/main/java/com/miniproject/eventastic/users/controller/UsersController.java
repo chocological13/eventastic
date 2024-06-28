@@ -4,10 +4,12 @@ import com.miniproject.eventastic.responses.Response;
 import com.miniproject.eventastic.users.entity.Users;
 import com.miniproject.eventastic.users.entity.dto.profile.UserProfileDto;
 import com.miniproject.eventastic.users.entity.dto.register.RegisterRequestDto;
+import com.miniproject.eventastic.users.entity.dto.register.RegisterResponseDto;
 import com.miniproject.eventastic.users.entity.dto.userManagement.ProfileUpdateRequestDTO;
 import com.miniproject.eventastic.users.service.UsersService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 @RequestMapping("/api/v1/users")
 public class UsersController {
 
@@ -34,12 +37,16 @@ public class UsersController {
       return Response.failedResponse("There are no users to display");
     }
   }
+
   // * Register
   @PostMapping("/register")
-  public ResponseEntity<Response<Users>> registerUser(@RequestBody RegisterRequestDto requestDto) {
+  public ResponseEntity<Response<RegisterResponseDto>> registerUser(@RequestBody RegisterRequestDto requestDto) {
     Users newUser = new Users();
-    usersService.register(newUser, requestDto);
-    return Response.successfulResponse(HttpStatus.CREATED.value(), "Register successful!! :D", newUser);
+    log.info("Registered user: {}", newUser);
+    RegisterResponseDto response = usersService.register(newUser, requestDto);
+    return Response.successfulResponse(HttpStatus.CREATED.value(),
+        "Register successful!!",
+        response);
   }
 
   // * Get logged in user's profile

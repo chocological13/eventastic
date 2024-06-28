@@ -1,15 +1,23 @@
 package com.miniproject.eventastic.users.service.impl;
 
+import com.miniproject.eventastic.referralCodeUsage.entity.ReferralCodeUsage;
+import com.miniproject.eventastic.referralCodeUsage.entity.composite.ReferralCodeUsageId;
+import com.miniproject.eventastic.referralCodeUsage.service.ReferralCodeUsageService;
 import com.miniproject.eventastic.users.entity.Users;
 import com.miniproject.eventastic.users.entity.dto.profile.UserProfileDto;
+import com.miniproject.eventastic.users.entity.dto.register.RegisterResponseDto;
 import com.miniproject.eventastic.users.entity.dto.userManagement.ProfileUpdateRequestDTO;
 import com.miniproject.eventastic.users.entity.dto.register.RegisterRequestDto;
 import com.miniproject.eventastic.users.repository.UsersRepository;
 import com.miniproject.eventastic.users.service.UsersService;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -19,11 +27,13 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 @Data
+@Slf4j
 public class UsersServiceImpl implements UsersService {
 
   private final UsersRepository usersRepository;
   private final PasswordEncoder passwordEncoder;
   private final AuthenticationManager authenticationManager;
+  private final ReferralCodeUsageService referralCodeUsageService;
 
   @Override
   public List<Users> getAllUsers() {
@@ -65,31 +75,70 @@ public class UsersServiceImpl implements UsersService {
     return usersOptional.orElse(null);
   }
 
+  @SneakyThrows
   @Override
-  public void register(Users newUser, RegisterRequestDto requestDto) {
+  public RegisterResponseDto register(Users newUser, RegisterRequestDto requestDto) {
+    // init
+    RegisterResponseDto response = new RegisterResponseDto();
     RegisterRequestDto reqToUser = new RegisterRequestDto();
+
+    // map to entity
     reqToUser.toEntity(newUser, requestDto);
     newUser.setPassword(passwordEncoder.encode(requestDto.getPassword()));
     usersRepository.save(newUser);
-  }
 
-  @Override
-  public void resetPassword(Users user, String newPassword) {
-    user.setPassword(passwordEncoder.encode(newPassword));
-    usersRepository.save(user);
-  }
+    //* create ref code
+    String ownedReferralCode = UUID.randomUUID().toString().substring(0, 7);
+    newUser.setOwnedRefCode(ownedReferralCode);
 
-  @Override
-  public void update(ProfileUpdateRequestDTO requestDto) {
-    // get logged in user
-    String username = SecurityContextHolder.getContext().getAuthentication().getName();
-    Optional<Users> usersOptional = usersRepository.findByUsername(username);
-    if (usersOptional.isPresent()) {
-      Users existingUser = usersOptional.get();
-      ProfileUpdateRequestDTO update = new ProfileUpdateRequestDTO();
-      update.profileUpdateRequestDTOtoUsers(existingUser, requestDto);
-      usersRepository.save(existingUser);
+    //* check if user entered other user's ref code
+    String refCodeUsed = requestDto.getRefCodeUsed();
+
+    //* look for owner of code
+    Optional<Users> ownerOptional = usersRepository.findByOwnedRefCode(refCodeUsed);
+    log.info("RefCodeUsed: {}, Owner: {}", refCodeUsed, ownerOptional.orElse(null));
+    if (ownerOptional.isPresent()) {
+      Users owner = ownerOptional.get();
+
+      // ! TODO: add business logic for giving voucher to new user and points to owner of code here
+
+      // > Log the usage of referral code
+      ReferralCodeUsage usage = new ReferralCodeUsage(
+          new ReferralCodeUsageId(newUser.getId(), owner.getId()),
+          newUser,
+          owner,
+          Instant.now()
+      );
+      referralCodeUsageService.save(usage);
+      response.setRefCodeUsed("Referral code from user " + owner.getUsername() + " was used!");
+    } else {
+      response.setRefCodeUsed("No referral code was used");
     }
-  }
+      String fullName = newUser.getFirstName() + " " + newUser.getLastName();
+      response.setWelcomeMessage("Welcome to Eventastic, " + fullName);
+      response.setUsername(newUser.getUsername());
+      response.setEmail(newUser.getEmail());
+      response.setFullName(fullName);
+      return response;
+    }
 
-}
+    @Override
+    public void resetPassword (Users user, String newPassword){
+      user.setPassword(passwordEncoder.encode(newPassword));
+      usersRepository.save(user);
+    }
+
+    @Override
+    public void update (ProfileUpdateRequestDTO requestDto){
+      // get logged in user
+      String username = SecurityContextHolder.getContext().getAuthentication().getName();
+      Optional<Users> usersOptional = usersRepository.findByUsername(username);
+      if (usersOptional.isPresent()) {
+        Users existingUser = usersOptional.get();
+        ProfileUpdateRequestDTO update = new ProfileUpdateRequestDTO();
+        update.profileUpdateRequestDTOtoUsers(existingUser, requestDto);
+        usersRepository.save(existingUser);
+      }
+    }
+
+  }
