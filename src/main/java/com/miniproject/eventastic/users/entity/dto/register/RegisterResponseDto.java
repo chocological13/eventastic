@@ -15,5 +15,6 @@ public class RegisterResponseDto {
   private String username;
   private String email;
   private String fullName;
+  private String ownedRefCode;
   private String refCodeUsed;
 }

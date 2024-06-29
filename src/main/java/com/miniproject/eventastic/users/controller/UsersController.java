@@ -1,5 +1,7 @@
 package com.miniproject.eventastic.users.controller;
 
+import com.miniproject.eventastic.referralCodeUsage.entity.dto.ReferralCodeUsageOwnerDto;
+import com.miniproject.eventastic.referralCodeUsage.entity.dto.ReferralCodeUsageSummaryDto;
 import com.miniproject.eventastic.responses.Response;
 import com.miniproject.eventastic.users.entity.Users;
 import com.miniproject.eventastic.users.entity.dto.profile.UserProfileDto;
@@ -13,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -68,5 +69,9 @@ public class UsersController {
     return Response.successfulResponse(HttpStatus.OK.value(), "Profile update successful!! :D", userProfile);
   }
 
-
+  // > Ref Code related
+  @GetMapping("/referral/usage")
+  public ReferralCodeUsageSummaryDto referralCodeUsageSummary() {
+    return usersService.getCodeUsageSummary();
+  }
 }
