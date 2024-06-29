@@ -2,7 +2,8 @@ package com.miniproject.eventastic.users.service.impl;
 
 import com.miniproject.eventastic.referralCodeUsage.entity.ReferralCodeUsage;
 import com.miniproject.eventastic.referralCodeUsage.entity.composite.ReferralCodeUsageId;
-import com.miniproject.eventastic.referralCodeUsage.service.ReferralCodeUsageService;
+import com.miniproject.eventastic.referralCodeUsage.entity.dto.ReferralCodeUsageSummaryDto;
+import com.miniproject.eventastic.referralCodeUsage.repository.ReferralCodeUsageRepository;
 import com.miniproject.eventastic.users.entity.Users;
 import com.miniproject.eventastic.users.entity.dto.profile.UserProfileDto;
 import com.miniproject.eventastic.users.entity.dto.register.RegisterResponseDto;
@@ -33,7 +34,7 @@ public class UsersServiceImpl implements UsersService {
   private final UsersRepository usersRepository;
   private final PasswordEncoder passwordEncoder;
   private final AuthenticationManager authenticationManager;
-  private final ReferralCodeUsageService referralCodeUsageService;
+  private final ReferralCodeUsageRepository referralCodeUsageRepository;
 
   @Override
   public List<Users> getAllUsers() {
@@ -90,6 +91,7 @@ public class UsersServiceImpl implements UsersService {
     //* create ref code
     String ownedReferralCode = UUID.randomUUID().toString().substring(0, 7);
     newUser.setOwnedRefCode(ownedReferralCode);
+    response.setOwnedRefCode(ownedReferralCode);
 
     //* check if user entered other user's ref code
     String refCodeUsed = requestDto.getRefCodeUsed();
@@ -109,36 +111,58 @@ public class UsersServiceImpl implements UsersService {
           owner,
           Instant.now()
       );
-      referralCodeUsageService.save(usage);
+      saveRefCode(usage);
       response.setRefCodeUsed("Referral code from user " + owner.getUsername() + " was used!");
     } else {
       response.setRefCodeUsed("No referral code was used");
     }
-      String fullName = newUser.getFirstName() + " " + newUser.getLastName();
-      response.setWelcomeMessage("Welcome to Eventastic, " + fullName);
-      response.setUsername(newUser.getUsername());
-      response.setEmail(newUser.getEmail());
-      response.setFullName(fullName);
-      return response;
-    }
-
-    @Override
-    public void resetPassword (Users user, String newPassword){
-      user.setPassword(passwordEncoder.encode(newPassword));
-      usersRepository.save(user);
-    }
-
-    @Override
-    public void update (ProfileUpdateRequestDTO requestDto){
-      // get logged in user
-      String username = SecurityContextHolder.getContext().getAuthentication().getName();
-      Optional<Users> usersOptional = usersRepository.findByUsername(username);
-      if (usersOptional.isPresent()) {
-        Users existingUser = usersOptional.get();
-        ProfileUpdateRequestDTO update = new ProfileUpdateRequestDTO();
-        update.profileUpdateRequestDTOtoUsers(existingUser, requestDto);
-        usersRepository.save(existingUser);
-      }
-    }
-
+    String fullName = newUser.getFirstName() + " " + newUser.getLastName();
+    response.setWelcomeMessage("Welcome to Eventastic, " + fullName);
+    response.setUsername(newUser.getUsername());
+    response.setEmail(newUser.getEmail());
+    response.setFullName(fullName);
+    return response;
   }
+
+  @Override
+  public void resetPassword(Users user, String newPassword) {
+    user.setPassword(passwordEncoder.encode(newPassword));
+    usersRepository.save(user);
+  }
+
+  @Override
+  public void update(ProfileUpdateRequestDTO requestDto) {
+    // get logged in user
+    String username = SecurityContextHolder.getContext().getAuthentication().getName();
+    Optional<Users> usersOptional = usersRepository.findByUsername(username);
+    if (usersOptional.isPresent()) {
+      Users existingUser = usersOptional.get();
+      ProfileUpdateRequestDTO update = new ProfileUpdateRequestDTO();
+      update.profileUpdateRequestDTOtoUsers(existingUser, requestDto);
+      usersRepository.save(existingUser);
+    }
+  }
+
+
+  // refcode related
+  @Override
+  public void saveRefCode(ReferralCodeUsage usage) {
+    referralCodeUsageRepository.save(usage);
+  }
+
+  @Override
+  public ReferralCodeUsageSummaryDto getCodeUsageSummary() {
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    String username = auth.getName();
+
+    // get user
+    Users codeOwner = getByUsername(username);
+    log.info("CodeOwner: {}", codeOwner);
+
+    ReferralCodeUsageSummaryDto response = new ReferralCodeUsageSummaryDto();
+    response.setReferralCodeUsageOwnerDto(referralCodeUsageRepository.findUsageSummaryByCodeOwner(codeOwner));
+    response.setReferralCodeUsageByDto(referralCodeUsageRepository.findUsersByCodeOwner(codeOwner));
+    return response;
+  }
+
+}

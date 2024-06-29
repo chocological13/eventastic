@@ -1,5 +1,7 @@
 package com.miniproject.eventastic.users.service;
 
+import com.miniproject.eventastic.referralCodeUsage.entity.ReferralCodeUsage;
+import com.miniproject.eventastic.referralCodeUsage.entity.dto.ReferralCodeUsageSummaryDto;
 import com.miniproject.eventastic.users.entity.Users;
 import com.miniproject.eventastic.users.entity.dto.profile.UserProfileDto;
 import com.miniproject.eventastic.users.entity.dto.register.RegisterResponseDto;
@@ -24,5 +26,10 @@ public interface UsersService {
   void resetPassword(Users user, String newPassword);
 
   void update(ProfileUpdateRequestDTO requestDto);
+
+  // ref code related
+  void saveRefCode(ReferralCodeUsage usage);
+
+  ReferralCodeUsageSummaryDto getCodeUsageSummary();
 
 }
