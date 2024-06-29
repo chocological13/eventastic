@@ -1,10 +1,10 @@
 package com.miniproject.eventastic.event.entity;
 
-import com.miniproject.eventastic.toHandle.District;
 import com.miniproject.eventastic.toHandle.Review;
 import com.miniproject.eventastic.ticketType.entity.TicketType;
 import com.miniproject.eventastic.toHandle.Trx;
 import com.miniproject.eventastic.users.entity.Users;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -28,6 +28,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
 
 @Getter
 @Setter
@@ -59,9 +60,8 @@ public class Event {
   private String description;
 
   @NotNull
-  @ManyToOne(fetch = FetchType.LAZY, optional = false)
-  @JoinColumn(name = "location_id", nullable = false)
-  private District location;
+  @Column(name = "location", nullable = false, length = Integer.MAX_VALUE)
+  private String location;
 
   @Enumerated(EnumType.STRING)
   @Column(name = "event_category", nullable = false)
@@ -83,32 +83,29 @@ public class Event {
   @Column(name = "end_time", nullable = false)
   private LocalTime endTime;
 
-  @NotNull
-  @Column(name = "seat_limit", nullable = false)
+  @Column(name = "seat_limit")
   private Integer seatLimit;
 
-  @NotNull
-  @Column(name = "available_seat", nullable = false)
+  @Column(name = "available_seat")
   private Integer availableSeat;
+
+  @NotNull
+  @ColumnDefault("false")
+  @Column(name = "is_free", nullable = false)
+  private Boolean isFree = false;
 
   @OneToMany(mappedBy = "event")
   private Set<Review> reviews = new LinkedHashSet<>();
 
-  @OneToMany(mappedBy = "event")
+  @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
   private Set<TicketType> ticketTypes = new LinkedHashSet<>();
 
   @OneToMany(mappedBy = "event")
   private Set<Trx> trxes = new LinkedHashSet<>();
 
-/*
- TODO [Reverse Engineering] create field to map the 'event_category' column
- Available actions: Define target Java type | Uncomment as is | Remove column mapping
-    @Column(name = "event_category", columnDefinition = "event_category not null")
-    private Object eventCategory;
-*/
-
   // enum
   public enum EventCategory {
+    ONLINE,
     CONCERT,
     CONFERENCE,
     WORKSHOP,

@@ -12,6 +12,10 @@ import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PostRemove;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreRemove;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
@@ -20,12 +24,16 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "ticket_type", schema = "public", indexes = {
     @Index(name = "idx_ticket_type_event_id", columnList = "event_id")
@@ -63,7 +71,24 @@ public class TicketType {
   @Column(name = "created_at")
   private Instant createdAt;
 
+  @ColumnDefault("CURRENT_TIMESTAMP")
+  @Column(name = "updated_at")
+  private Instant updatedAt;
+
+  @Column(name = "deleted_at")
+  private Instant deletedAt;
+
   @OneToMany(mappedBy = "ticketType")
   private Set<Ticket> tickets = new LinkedHashSet<>();
 
+  @PrePersist
+  protected void onCreate() {
+    createdAt = Instant.now();
+    updatedAt = Instant.now();
+  }
+
+  @PreUpdate
+  protected void onUpdate() {
+    updatedAt = Instant.now();
+  }
 }
