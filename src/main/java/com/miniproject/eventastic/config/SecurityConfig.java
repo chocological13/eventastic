@@ -7,10 +7,12 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -26,7 +28,11 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 
 @Configuration
 @EnableWebSecurity
@@ -72,6 +78,27 @@ public class SecurityConfig {
     return NimbusJwtDecoder.withPublicKey(rsaKeyConfigProperties.publicKey()).build();
   }
 
+  // * access denied handler
+  @Bean
+  public AccessDeniedHandler accessDeniedHandler() {
+    return (request, response, accessDeniedException) -> {
+      // Customize the response for 403 Forbidden
+      response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+      response.getWriter().write("Access denied!");
+    };
+  }
+
+  @Bean
+  public AuthenticationEntryPoint authenticationEntryPoint() {
+    return new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED);
+  }
+
+  @Bean
+  public SimpleUrlAuthenticationFailureHandler authenticationFailureHandler() {
+    return new SimpleUrlAuthenticationFailureHandler("/login?error");
+  }
+
+
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     return http
@@ -80,16 +107,21 @@ public class SecurityConfig {
         .cors(AbstractHttpConfigurer::disable)
         // * endpoints authorization
         .authorizeHttpRequests(auth -> {
+
           auth.requestMatchers("/error/**").permitAll();
-          auth.requestMatchers("/api/v1/auth/**").permitAll();
+          auth.requestMatchers("/api/v1/auth/login/**").permitAll();
+          auth.requestMatchers("/api/v1/users/register/**").permitAll();
           // ! TODO: dev purposes, delete when not used
-          auth.requestMatchers("/api/**").permitAll();
+//          auth.requestMatchers("/api/**").permitAll();
 
           // ! TODO: add roles related authorizations
-//          auth.requestMatchers("/api/v1/users/?id=");
+          // * create event
+          auth.requestMatchers("/api/v1/events/create/**").hasRole("ORGANIZER");
 
           // ! TODO: uncomment this when all the security set up is ready
 //          auth.anyRequest().authenticated();
+          // > for dev
+          auth.requestMatchers("/**").hasRole("SUPERCAT");
         })
         // * session management
         .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

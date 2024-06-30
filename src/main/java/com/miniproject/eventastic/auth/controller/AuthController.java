@@ -37,10 +37,11 @@ public class AuthController {
 
   // > DEV: check who is currently logged in this session
   @GetMapping("")
-  public Users getLoggedInUser() {
+  public String getLoggedInUser() {
     Authentication auth = SecurityContextHolder.getContext().getAuthentication();
     String username = auth.getName();
-    return usersService.getByUsername(username);
+    String role = auth.getAuthorities().iterator().next().getAuthority();
+    return "Logged in user: " + username + " with role: " + role;
   }
 
   // > login

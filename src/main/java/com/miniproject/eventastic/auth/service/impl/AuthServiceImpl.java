@@ -33,8 +33,6 @@ public class AuthServiceImpl implements AuthService {
   private final AuthenticationManager authenticationManager;
   private final AuthRedisRepository authRedisRepository;
   private final JwtEncoder jwtEncoder;
-  private final UsersRepository usersRepository;
-  private final UrlBuilder urlBuilder;
 
 
   @Override

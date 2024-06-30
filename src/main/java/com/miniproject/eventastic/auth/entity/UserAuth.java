@@ -5,22 +5,27 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 @RequiredArgsConstructor
-public class UserAuth implements UserDetails {
+public class UserAuth extends Users implements UserDetails {
 
   private final Users user;
 
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
     List<GrantedAuthority> authorities = new ArrayList<>();
-    authorities.add(() -> "ROLE_USER");
-    if (user.getIsOrganizer()) {
+    if (user.getUsername().equals("strwbry")) {
+      authorities.add(() -> "ROLE_SUPERCAT");
+    } else if (user.getIsOrganizer()) {
       authorities.add(() -> "ROLE_ORGANIZER");
+    } else {
+      authorities.add(() -> "ROLE_USER");
     }
     return authorities;
   }

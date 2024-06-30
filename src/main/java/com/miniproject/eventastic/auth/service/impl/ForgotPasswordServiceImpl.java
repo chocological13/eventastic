@@ -109,19 +109,3 @@ public class ForgotPasswordServiceImpl implements ForgotPasswordService {
   }
 }
 
-//  @Override
-//  public void resetPassword(String username, String token, ResetPasswordRequestDto requestDto) {
-//    // check for validity of token
-//    boolean isValid = authRedisRepository.isValid(username, token);
-//    if (!isValid) {
-//      // check if request body is valid (password match)
-//      if (requestDto.getNewPassword() == requestDto.getConfirmPassword()) {
-//        Optional<Users> userOptional = usersRepository.findByUsername(username);
-//        if (userOptional.isPresent()) {
-//          Users user = userOptional.get();
-//          user.setPassword(requestDto.getNewPassword());
-//        }
-//      }
-//    }
-//  }
-
