@@ -13,9 +13,12 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -68,39 +71,51 @@ public class AuthServiceImpl implements AuthService {
 
   @Override
   public ResponseEntity<?> login(LoginRequestDto loginRequestDto) {
-    // * 1: authenticate user
-    Authentication authentication = authenticationManager
-        .authenticate(new UsernamePasswordAuthenticationToken(loginRequestDto.getUsername(), loginRequestDto.getPassword()));
-    log.info("Authenticated user: {}", authentication);
+    try {
+      // * 1: authenticate user
+      Authentication authentication = authenticationManager
+          .authenticate(
+              new UsernamePasswordAuthenticationToken(loginRequestDto.getUsername(), loginRequestDto.getPassword()));
+      log.info("Authenticated user: {}", authentication);
 
-    // * 2: store it in the security context
-    SecurityContextHolder.getContext().setAuthentication(authentication);
-    var ctx = SecurityContextHolder.getContext();
-    ctx.setAuthentication(authentication);
+      // * 2: store it in the security context
+      SecurityContextHolder.getContext().setAuthentication(authentication);
+      var ctx = SecurityContextHolder.getContext();
+      ctx.setAuthentication(authentication);
 
-    // * 3: get user's information
-    UserAuth userDetails = (UserAuth) ctx.getAuthentication().getPrincipal();
-    log.info("Principal: {}", userDetails);
+      // * 3: get user's information
+      UserAuth userDetails = (UserAuth) ctx.getAuthentication().getPrincipal();
+      log.info("Principal: {}", userDetails);
 
-    // ! 4: generate token
-    String token = generateToken(authentication);
+      // ! 4: generate token
+      String token = generateToken(authentication);
 
-    // * 5: generate response
-    LoginResponseDto response = new LoginResponseDto();
-    response.setMessage("Welcome back, " + userDetails.getUsername() + "!");
-    response.setToken(token);
+      // * 5: generate response
+      LoginResponseDto response = new LoginResponseDto();
+      response.setMessage("Welcome back, " + userDetails.getUsername() + "!");
+      response.setToken(token);
 
-    // * 6: create (response)cookie
-    ResponseCookie cookie = ResponseCookie.from("JSESSIONID", token)
-        .path("/")
-        .httpOnly(true)
-        .maxAge(3600)
-        .build();
-    HttpHeaders headers = new HttpHeaders();
-    headers.add("Set-Cookie", cookie.toString());
+      // * 6: create (response)cookie
+      ResponseCookie cookie = ResponseCookie.from("JSESSIONID", token)
+          .path("/")
+          .httpOnly(true)
+          .maxAge(3600)
+          .build();
+      HttpHeaders headers = new HttpHeaders();
+      headers.add("Set-Cookie", cookie.toString());
 
-    // * 7: return the token
-    return ResponseEntity.ok().headers(headers).body(response);
+      // * 7: return the token
+      return ResponseEntity.ok().headers(headers).body(response);
+    } catch (BadCredentialsException ex) {
+      // Handle bad credentials
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed. Invalid username or password.");
+    } catch (LockedException ex) {
+      // Handle locked account
+      return ResponseEntity.status(HttpStatus.LOCKED).body("Account is locked.");
+    } catch (Exception ex) {
+      // Handle other exceptions
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An internal error occurred.");
+    }
   }
 
   @Override

@@ -1,5 +1,6 @@
 package com.miniproject.eventastic.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.miniproject.eventastic.auth.service.impl.UserDetailsServiceImpl;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
@@ -31,6 +32,7 @@ import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 
@@ -79,23 +81,39 @@ public class SecurityConfig {
   }
 
   // * access denied handler
+  // 403
   @Bean
   public AccessDeniedHandler accessDeniedHandler() {
     return (request, response, accessDeniedException) -> {
-      // Customize the response for 403 Forbidden
+      response.setContentType("application/json;charset=UTF-8");
       response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-      response.getWriter().write("Access denied!");
+      ObjectMapper objectMapper = new ObjectMapper();
+      String errorMessage = "Access denied. You don't have enough permissions to access this resource.";
+      response.getWriter().write(objectMapper.writeValueAsString(errorMessage));
+    };
+  }
+
+  // 401
+  @Bean
+  public AuthenticationEntryPoint authenticationEntryPoint() {
+    return (request, response, authException) -> {
+      response.setContentType("application/json;charset=UTF-8");
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      ObjectMapper objectMapper = new ObjectMapper();
+      String errorMessage = "Unauthorized access. Please log in to access this resource.";
+      response.getWriter().write(objectMapper.writeValueAsString(errorMessage));
     };
   }
 
   @Bean
-  public AuthenticationEntryPoint authenticationEntryPoint() {
-    return new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED);
-  }
-
-  @Bean
-  public SimpleUrlAuthenticationFailureHandler authenticationFailureHandler() {
-    return new SimpleUrlAuthenticationFailureHandler("/login?error");
+  public AuthenticationFailureHandler authenticationFailureHandler() {
+    return (request, response, authException) -> {
+      response.setContentType("application/json;charset=UTF-8");
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      ObjectMapper objectMapper = new ObjectMapper();
+      String errorMessage = "Authentication failed. Invalid username or password.";
+      response.getWriter().write(objectMapper.writeValueAsString(errorMessage));
+    };
   }
 
 
@@ -118,10 +136,15 @@ public class SecurityConfig {
           // * create event
           auth.requestMatchers("/api/v1/events/create/**").hasRole("ORGANIZER");
 
-          // ! TODO: uncomment this when all the security set up is ready
-//          auth.anyRequest().authenticated();
           // > for dev
           auth.requestMatchers("/**").hasRole("SUPERCAT");
+
+          auth.anyRequest().authenticated();
+        })
+        // * exception handling
+        .exceptionHandling(e -> {
+          e.accessDeniedHandler(accessDeniedHandler());
+          e.authenticationEntryPoint(authenticationEntryPoint());
         })
         // * session management
         .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
