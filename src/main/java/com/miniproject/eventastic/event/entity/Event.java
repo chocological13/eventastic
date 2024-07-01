@@ -90,9 +90,8 @@ public class Event {
   private Integer availableSeat;
 
   @NotNull
-  @ColumnDefault("false")
-  @Column(name = "is_free", nullable = false)
-  private Boolean isFree = false;
+  @Column(name = "is_free", nullable = false, columnDefinition = "false")
+  private Boolean isFree;
 
   @OneToMany(mappedBy = "event")
   private Set<Review> reviews = new LinkedHashSet<>();

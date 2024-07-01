@@ -45,7 +45,7 @@ public class EventResponseDto {
   private Event.EventCategory eventCategory;
 
   @NotNull
-  private boolean isFree;
+  private Boolean isFree;
 
   private int seatLimit;
   private int availableSeat;

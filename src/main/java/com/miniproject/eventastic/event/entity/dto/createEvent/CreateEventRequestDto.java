@@ -40,9 +40,9 @@ public class CreateEventRequestDto {
   @NotNull
   private LocalTime endTime;
 
-  private boolean isFree;
-
   @NotNull
+  private Boolean isFree;
+
   private Set<TicketTypeRequestDto> ticketTypeRequestDtos;
 
   public Event dtoToEvent(CreateEventRequestDto eventRequestDto) {
