@@ -12,4 +12,6 @@ public interface EventService {
       String direction);
 
   Page<EventResponseDto> getUpcomingEvents(int page, int size);
+
+  EventResponseDto getSpecificEvent(Long eventId);
 }

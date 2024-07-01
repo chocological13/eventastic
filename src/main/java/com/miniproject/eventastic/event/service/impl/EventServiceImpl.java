@@ -15,6 +15,7 @@ import com.miniproject.eventastic.users.service.UsersService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -135,6 +136,12 @@ public class EventServiceImpl implements EventService {
 
     Page<Event> eventsPage = eventRepository.findAll(specification, pageable);
     return eventsPage.map(EventResponseDto::toEventResponseDto);
+  }
+
+  @Override
+  public EventResponseDto getSpecificEvent(Long eventId) {
+    Optional<Event> optionalEvent = eventRepository.findById(eventId);
+    return optionalEvent.map(EventResponseDto::toEventResponseDto).orElse(null);
   }
 
 }

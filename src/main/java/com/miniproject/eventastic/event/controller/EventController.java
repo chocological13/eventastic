@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,6 +28,15 @@ public class EventController {
   public ResponseEntity<Response<EventResponseDto>> createEvent(@RequestBody CreateEventRequestDto requestDto) {
     EventResponseDto responseDto = eventService.createEvent(requestDto);
     return Response.successfulResponse(HttpStatus.OK.value(), "Event successfully created!", responseDto);
+  }
+
+  @GetMapping("/{eventId}")
+  public ResponseEntity<Response<EventResponseDto>> getEvent(@PathVariable Long eventId) {
+    EventResponseDto response = eventService.getSpecificEvent(eventId);
+    if (response == null) {
+      return Response.failedResponse(HttpStatus.NOT_FOUND.value(), "Event not found!", null);
+    }
+    return Response.successfulResponse(HttpStatus.OK.value(), "Event successfully retrieved!", response);
   }
 
   // search, sort, pagination

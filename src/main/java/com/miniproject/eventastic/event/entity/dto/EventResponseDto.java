@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 public class EventResponseDto {
 
   @NotNull
-  private String organizerName;
+  private String organizer;
 
   @NotEmpty
   private String title;
@@ -53,25 +53,10 @@ public class EventResponseDto {
   @NotEmpty
   private Set<TicketTypeDto> ticketTypes;
 
-//  public EventResponseDto toTicketTypeEntity(Event event, Set<TicketTypeDto> ticketTypesDto) {
-//    EventResponseDto eventResponseDto = new EventResponseDto();
-//    eventResponseDto.setOrganizerName(event.getOrganizer().getUsername());
-//    eventResponseDto.setTitle(event.getTitle());
-//    eventResponseDto.setDescription(event.getDescription());
-//    eventResponseDto.setLocation(event.getLocation());
-//    eventResponseDto.setVenue(event.getVenue());
-//    eventResponseDto.setEventDate(event.getEventDate());
-//    eventResponseDto.setStartTime(event.getStartTime());
-//    eventResponseDto.setEndTime(event.getEndTime());
-//    eventResponseDto.setEventCategory(event.getEventCategory());
-//    eventResponseDto.setFree(event.getIsFree());
-//    eventResponseDto.setTicketTypes(ticketTypesDto);
-//    return eventResponseDto;
-//  }
 
   public EventResponseDto(Event event) {
     // Populate fields from the Event entity
-    this.organizerName = event.getOrganizer().getUsername();
+    this.organizer = event.getOrganizer().getUsername();
     this.title = event.getTitle();
     this.description = event.getDescription();
     this.eventCategory = event.getEventCategory();
