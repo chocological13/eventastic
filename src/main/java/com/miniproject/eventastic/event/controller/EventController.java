@@ -4,8 +4,6 @@ import com.miniproject.eventastic.event.entity.dto.EventResponseDto;
 import com.miniproject.eventastic.event.entity.dto.createEvent.CreateEventRequestDto;
 import com.miniproject.eventastic.event.service.EventService;
 import com.miniproject.eventastic.responses.Response;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -42,16 +40,16 @@ public class EventController {
       @RequestParam(required = false) String order,
       @RequestParam(required = false) String direction
   ) {
-    Page<EventResponseDto> eventsPage = eventService.getEvents(page, size, title, category, location, order, direction);
+    Page<EventResponseDto> eventPage = eventService.getEvents(page, size, title, category, location, order, direction);
+    return Response.responseMapper(HttpStatus.FOUND.value(), "Displaying events..", eventPage);
+  }
 
-    // build response
-    Map<String, Object> response = new HashMap<>();
-    response.put("currentPage", eventsPage.getNumber());
-    response.put("totalPages", eventsPage.getTotalPages());
-    response.put("totalElements", eventsPage.getTotalElements());
-    response.put("events", eventsPage.getContent());
-    System.out.println(eventsPage);
-
-    return Response.successfulResponse(HttpStatus.OK.value(), "Event list successfully created!", response);
+  @GetMapping("/upcoming")
+  public ResponseEntity<Response<Map<String, Object>>> getUpcomingEvents(
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "10") int size
+  ) {
+    Page<EventResponseDto> eventPage = eventService.getUpcomingEvents(page, size);
+    return Response.responseMapper(HttpStatus.OK.value(), "Listing upcoming events...", eventPage);
   }
 }

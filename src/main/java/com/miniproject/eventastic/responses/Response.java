@@ -1,7 +1,11 @@
 package com.miniproject.eventastic.responses;
 
+import com.miniproject.eventastic.event.entity.dto.EventResponseDto;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.Data;
 import lombok.ToString;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -76,6 +80,22 @@ public class Response<T> {
 
   public static <T> ResponseEntity<Response<T>> successfulResponse(T data) {
     return successfulResponse(HttpStatus.OK.value(), "Process has executed successfully", data);
+  }
+
+  // Region - Events Page
+
+  public static ResponseEntity<Response<Map<String, Object>>> responseMapper(int statusCode, String message,
+      Page<EventResponseDto> eventPage) {
+    if (eventPage != null) {
+      Map<String, Object> response = new HashMap<String, Object>();
+      response.put("currentPage", eventPage.getNumber() + 1);
+      response.put("totalPages", eventPage.getTotalPages());
+      response.put("totalElements", eventPage.getTotalElements());
+      response.put("events", eventPage.getContent());
+      return Response.successfulResponse(statusCode, message, response);
+    } else {
+      return Response.failedResponse("No events found!");
+    }
   }
 
 }

@@ -13,6 +13,7 @@ import com.miniproject.eventastic.ticketType.repository.TicketTypeRepository;
 import com.miniproject.eventastic.users.entity.Users;
 import com.miniproject.eventastic.users.service.UsersService;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -132,6 +133,16 @@ public class EventServiceImpl implements EventService {
     return eventsPage.map(EventResponseDto::toEventResponseDto);
   }
 
+  @Override
+  public Page<EventResponseDto> getUpcomingEvents(int page, int size) {
+    Pageable pageable = PageRequest.of(page, size, Sort.by("eventDate").ascending());
+
+    Specification<Event> specification = EventSpecifications.isUpcoming();
+
+    Page<Event> eventsPage = eventRepository.findAll(specification, pageable);
+    return eventsPage.map(EventResponseDto::toEventResponseDto);
+  }
+
 }
 
 class EventSpecifications {
@@ -152,5 +163,14 @@ class EventSpecifications {
   public static Specification<Event> hasLocation(String location) {
     return ((root, query, criteriaBuilder) ->
         criteriaBuilder.like(criteriaBuilder.lower(root.get("location")), "%" + location.toLowerCase() + "%"));
+  }
+
+  // Upcoming event filter
+  public static Specification<Event> isUpcoming() {
+    return ((root, query, criteriaBuilder) -> {
+      LocalDate today = LocalDate.now();
+      return criteriaBuilder.greaterThan(root.get("eventDate"), today);
+    }
+    );
   }
 }
