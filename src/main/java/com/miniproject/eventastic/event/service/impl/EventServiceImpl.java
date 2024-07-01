@@ -98,13 +98,6 @@ public class EventServiceImpl implements EventService {
     return toEventResponseDto(createdEvent);
   }
 
-  public Set<EventResponseDto> getAllEventsResponseDto(Set<Event> events) {
-    Set<EventResponseDto> responseDtos = new HashSet<>();
-    return events.stream()
-        .map(EventResponseDto::toEventResponseDto)
-        .collect(Collectors.toSet());
-  }
-
   @Override
   public Page<EventResponseDto> getEvents(int page, int size, String title, String category, String location,
       String order, String direction) {

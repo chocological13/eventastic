@@ -87,7 +87,7 @@ public class Response<T> {
   public static ResponseEntity<Response<Map<String, Object>>> responseMapper(int statusCode, String message,
       Page<EventResponseDto> eventPage) {
     if (eventPage != null) {
-      Map<String, Object> response = new HashMap<String, Object>();
+      Map<String, Object> response = new HashMap<>();
       response.put("currentPage", eventPage.getNumber() + 1);
       response.put("totalPages", eventPage.getTotalPages());
       response.put("totalElements", eventPage.getTotalElements());
