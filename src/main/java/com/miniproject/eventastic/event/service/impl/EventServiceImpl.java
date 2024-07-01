@@ -138,19 +138,19 @@ class EventSpecifications {
 
   // Method to filter by title
   public static Specification<Event> hasTitle(String title) {
-    return (root, query, criteriaBulder) ->
-        criteriaBulder.like(root.get("title"), "%" + title + "%");
+    return (root, query, criteriaBuilder) ->
+        criteriaBuilder.like(criteriaBuilder.lower(root.get("title")), "%" + title.toLowerCase() + "%");
   }
 
   // Method to filter by category
   public static Specification<Event> hasCategory(String category) {
     return ((root, query, criteriaBuilder) ->
-        criteriaBuilder.equal(root.get("category"), category));
+        criteriaBuilder.equal(criteriaBuilder.lower(root.get("category")), category.toLowerCase()));
   }
 
   // Method to filter by locations
   public static Specification<Event> hasLocation(String location) {
     return ((root, query, criteriaBuilder) ->
-        criteriaBuilder.like(root.get("location"), "%" + location + "%"));
+        criteriaBuilder.like(criteriaBuilder.lower(root.get("location")), "%" + location.toLowerCase() + "%"));
   }
 }
