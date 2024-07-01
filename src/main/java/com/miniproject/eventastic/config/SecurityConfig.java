@@ -127,16 +127,16 @@ public class SecurityConfig {
           auth.requestMatchers("/api/v1/auth/login/**").permitAll();
           auth.requestMatchers("/api/v1/users/register/**").permitAll();
           // ! TODO: dev purposes, delete when not used
-          auth.requestMatchers("/api/**").permitAll();
+//          auth.requestMatchers("/api/**").permitAll();
 
           // ! TODO: add roles related authorizations
-          // * create event
-//          auth.requestMatchers("/api/v1/events/create/**").hasRole("ORGANIZER");
+          // * event management - only organizer
+          auth.requestMatchers("/api/v1/events/create/**").hasAuthority("SCOPE_ROLE_ORGANIZER");
 
           // > for dev
-//          auth.requestMatchers("/**").hasRole("SUPERCAT");
+          auth.requestMatchers("/**").hasAuthority("SCOPE_ROLE_SUPERCAT");
 
-//          auth.anyRequest().authenticated();
+          auth.anyRequest().authenticated();
         })
         // * exception handling
         .exceptionHandling(e -> {
