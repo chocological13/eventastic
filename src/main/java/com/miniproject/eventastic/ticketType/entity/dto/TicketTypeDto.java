@@ -31,7 +31,11 @@ public class TicketTypeDto {
     this.seatLimit = ticketType.getSeatLimit();
   }
 
-  public TicketType toDto(TicketTypeDto ticketTypeDto) {
+  public TicketTypeDto toDto(TicketType ticketType) {
+    return new TicketTypeDto(ticketType);
+  }
+
+  public TicketType toTicketTypeEntity(TicketTypeDto ticketTypeDto) {
     TicketType ticketType = new TicketType();
     ticketType.setName(ticketTypeDto.getName());
     ticketType.setDescription(ticketTypeDto.getDescription());

@@ -1,7 +1,6 @@
 package com.miniproject.eventastic.event.entity.dto;
 
 import com.miniproject.eventastic.event.entity.Event;
-import com.miniproject.eventastic.ticketType.entity.TicketType;
 import com.miniproject.eventastic.ticketType.entity.dto.TicketTypeDto;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -54,7 +53,7 @@ public class EventResponseDto {
   @NotEmpty
   private Set<TicketTypeDto> ticketTypes;
 
-//  public EventResponseDto toDto(Event event, Set<TicketTypeDto> ticketTypesDto) {
+//  public EventResponseDto toTicketTypeEntity(Event event, Set<TicketTypeDto> ticketTypesDto) {
 //    EventResponseDto eventResponseDto = new EventResponseDto();
 //    eventResponseDto.setOrganizerName(event.getOrganizer().getUsername());
 //    eventResponseDto.setTitle(event.getTitle());
@@ -89,7 +88,7 @@ public class EventResponseDto {
         .collect(Collectors.toSet());
   }
 
-  public EventResponseDto toDto(Event event) {
+  public static EventResponseDto toEventResponseDto(Event event) {
     return new EventResponseDto(event);
   }
 

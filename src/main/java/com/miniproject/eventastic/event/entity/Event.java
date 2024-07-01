@@ -97,7 +97,7 @@ public class Event {
   @OneToMany(mappedBy = "event")
   private Set<Review> reviews = new LinkedHashSet<>();
 
-  @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
   private Set<TicketType> ticketTypes = new LinkedHashSet<>();
 
   @OneToMany(mappedBy = "event")

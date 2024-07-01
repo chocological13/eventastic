@@ -1,5 +1,7 @@
 package com.miniproject.eventastic.event.service.impl;
 
+import static com.miniproject.eventastic.event.entity.dto.EventResponseDto.toEventResponseDto;
+
 import com.miniproject.eventastic.event.entity.Event;
 import com.miniproject.eventastic.event.entity.dto.EventResponseDto;
 import com.miniproject.eventastic.event.entity.dto.createEvent.CreateEventRequestDto;
@@ -13,6 +15,7 @@ import com.miniproject.eventastic.users.service.UsersService;
 import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -56,7 +59,7 @@ public class EventServiceImpl implements EventService {
     if (!createdEvent.getIsFree()) {
       // map ticket type
       for (TicketTypeDto ticketTypeDto : ticketTypeDtos) {
-        TicketType ticketType = ticketTypeDto.toDto(ticketTypeDto);
+        TicketType ticketType = ticketTypeDto.toTicketTypeEntity(ticketTypeDto);
         ticketType.setEvent(createdEvent); // Associate with the created Event
 
         ticketTypes.add(ticketType);
@@ -84,10 +87,21 @@ public class EventServiceImpl implements EventService {
     createdEvent.setAvailableSeat(totalSeatLimit);
 
     // update save
+    // * Clearing and Adding to the Collection:
+    // This ensures that Hibernate correctly manages the state of the collection and avoids orphaned entities.
+    createdEvent.getTicketTypes().clear();
+    createdEvent.getTicketTypes().addAll(ticketTypes);
     eventRepository.save(createdEvent);
 
     EventResponseDto responseDto = new EventResponseDto();
-    return responseDto.toDto(createdEvent);
+    return toEventResponseDto(createdEvent);
+  }
+
+  public Set<EventResponseDto> getAllEventsResponseDto(Set<Event> events) {
+    Set<EventResponseDto> responseDtos = new HashSet<>();
+    return events.stream()
+        .map(EventResponseDto::toEventResponseDto)
+        .collect(Collectors.toSet());
   }
 
   @Override
@@ -114,9 +128,8 @@ public class EventServiceImpl implements EventService {
       specification = specification.and(EventSpecifications.hasLocation(location));
     }
 
-    EventResponseDto dto = new EventResponseDto();
     Page<Event> eventsPage = eventRepository.findAll(specification, pageable);
-    return eventsPage.map(dto::toDto);
+    return eventsPage.map(EventResponseDto::toEventResponseDto);
   }
 
 }
