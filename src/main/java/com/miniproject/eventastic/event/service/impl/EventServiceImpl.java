@@ -8,7 +8,7 @@ import com.miniproject.eventastic.event.entity.dto.createEvent.CreateEventReques
 import com.miniproject.eventastic.event.repository.EventRepository;
 import com.miniproject.eventastic.event.service.EventService;
 import com.miniproject.eventastic.ticketType.entity.TicketType;
-import com.miniproject.eventastic.ticketType.entity.dto.TicketTypeDto;
+import com.miniproject.eventastic.ticketType.entity.dto.TicketTypeRequestDto;
 import com.miniproject.eventastic.ticketType.repository.TicketTypeRepository;
 import com.miniproject.eventastic.users.entity.Users;
 import com.miniproject.eventastic.users.service.UsersService;
@@ -16,7 +16,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -54,14 +53,15 @@ public class EventServiceImpl implements EventService {
     eventRepository.save(createdEvent);
 
     // init ticket type
-    Set<TicketTypeDto> ticketTypeDtos = requestDto.getTicketTypes();
+    Set<TicketTypeRequestDto> ticketTypeRequestDtos = requestDto.getTicketTypeRequestDtos();
     Set<TicketType> ticketTypes = new HashSet<>();
 
     if (!createdEvent.getIsFree()) {
       // map ticket type
-      for (TicketTypeDto ticketTypeDto : ticketTypeDtos) {
-        TicketType ticketType = ticketTypeDto.toTicketTypeEntity(ticketTypeDto);
+      for (TicketTypeRequestDto ticketTypeRequestDto : ticketTypeRequestDtos) {
+        TicketType ticketType = TicketTypeRequestDto.requestToTicketTypeEntity(ticketTypeRequestDto);
         ticketType.setEvent(createdEvent); // Associate with the created Event
+        ticketType.setAvailableSeat(ticketTypeRequestDto.getSeatLimit());
 
         ticketTypes.add(ticketType);
         ticketTypeRepository.save(ticketType);
@@ -70,12 +70,13 @@ public class EventServiceImpl implements EventService {
 
       // default ticket type if isFree is true
       TicketType freeTicketType = new TicketType();
-      TicketTypeDto firstInSet = ticketTypeDtos.iterator().next();
+      TicketTypeRequestDto firstInSet = ticketTypeRequestDtos.iterator().next();
 
       freeTicketType.setName("Free Admission");
       freeTicketType.setDescription("Free entry ticket");
       freeTicketType.setPrice(BigDecimal.ZERO);
       freeTicketType.setSeatLimit(firstInSet.getSeatLimit());
+      freeTicketType.setAvailableSeat(firstInSet.getSeatLimit());
       freeTicketType.setEvent(createdEvent);
 
       ticketTypes.add(freeTicketType);

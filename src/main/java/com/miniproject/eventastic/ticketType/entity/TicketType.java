@@ -79,6 +79,9 @@ public class TicketType {
   @OneToMany(mappedBy = "ticketType")
   private Set<Ticket> tickets = new LinkedHashSet<>();
 
+  @Column(name = "available_seat")
+  private Integer availableSeat;
+
   @PrePersist
   protected void onCreate() {
     createdAt = Instant.now();
