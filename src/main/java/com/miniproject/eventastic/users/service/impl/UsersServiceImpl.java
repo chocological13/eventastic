@@ -9,6 +9,7 @@ import com.miniproject.eventastic.users.entity.dto.profile.UserProfileDto;
 import com.miniproject.eventastic.users.entity.dto.register.RegisterResponseDto;
 import com.miniproject.eventastic.users.entity.dto.userManagement.ProfileUpdateRequestDTO;
 import com.miniproject.eventastic.users.entity.dto.register.RegisterRequestDto;
+import com.miniproject.eventastic.users.event.UserRegistrationEvent;
 import com.miniproject.eventastic.users.repository.UsersRepository;
 import com.miniproject.eventastic.users.service.UsersService;
 import java.time.Instant;
@@ -19,6 +20,7 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -35,6 +37,7 @@ public class UsersServiceImpl implements UsersService {
   private final PasswordEncoder passwordEncoder;
   private final AuthenticationManager authenticationManager;
   private final ReferralCodeUsageRepository referralCodeUsageRepository;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Override
   public List<Users> getAllUsers() {
@@ -87,6 +90,9 @@ public class UsersServiceImpl implements UsersService {
     reqToUser.toEntity(newUser, requestDto);
     newUser.setPassword(passwordEncoder.encode(requestDto.getPassword()));
     usersRepository.save(newUser);
+    eventPublisher.publishEvent(new UserRegistrationEvent(this, newUser));
+
+
 
     //* create ref code
     String ownedReferralCode = UUID.randomUUID().toString().substring(0, 7);
@@ -121,6 +127,7 @@ public class UsersServiceImpl implements UsersService {
     response.setUsername(newUser.getUsername());
     response.setEmail(newUser.getEmail());
     response.setFullName(fullName);
+    response.setPointsWallet(newUser.getPointsWallet());
     return response;
   }
 

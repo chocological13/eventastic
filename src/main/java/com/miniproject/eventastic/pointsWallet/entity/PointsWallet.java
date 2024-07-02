@@ -1,5 +1,7 @@
-package com.miniproject.eventastic.toHandle;
+package com.miniproject.eventastic.pointsWallet.entity;
 
+import com.miniproject.eventastic.pointsTrx.entity.PointsTrx;
+import com.miniproject.eventastic.toHandle.Trx;
 import com.miniproject.eventastic.users.entity.Users;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -11,6 +13,9 @@ import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
@@ -37,13 +42,12 @@ public class PointsWallet {
   @Column(name = "id", nullable = false)
   private Long id;
 
-  @NotNull
-  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @OneToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "user_id", nullable = false)
   private Users user;
 
   @Column(name = "points")
-  private BigDecimal points;
+  private BigDecimal points = BigDecimal.ZERO;
 
   @ColumnDefault("CURRENT_TIMESTAMP")
   @Column(name = "awarded_at")
@@ -63,5 +67,16 @@ public class PointsWallet {
 
   @OneToMany(mappedBy = "points")
   private Set<Trx> trxes = new LinkedHashSet<>();
+
+  @PrePersist
+  protected void onCreate() {
+    updatedAt = Instant.now();
+  }
+
+  @PreUpdate
+  protected void onUpdate() {
+    awardedAt = Instant.now();
+    expiresAt = awardedAt.plusNanos(90);
+  }
 
 }

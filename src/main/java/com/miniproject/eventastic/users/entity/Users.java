@@ -1,5 +1,6 @@
 package com.miniproject.eventastic.users.entity;
 
+import com.miniproject.eventastic.pointsWallet.entity.PointsWallet;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -90,6 +91,9 @@ public class Users {
   @Size(max = 7)
   @Column(name = "owned_ref_code", length = 7)
   private String ownedRefCode;
+
+  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  private PointsWallet pointsWallet;
 
 
   @PrePersist

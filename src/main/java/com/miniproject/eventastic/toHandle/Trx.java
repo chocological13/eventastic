@@ -1,7 +1,9 @@
 package com.miniproject.eventastic.toHandle;
 
 import com.miniproject.eventastic.event.entity.Event;
+import com.miniproject.eventastic.pointsWallet.entity.PointsWallet;
 import com.miniproject.eventastic.users.entity.Users;
+import com.miniproject.eventastic.voucher.entity.Voucher;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

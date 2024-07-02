@@ -1,5 +1,7 @@
-package com.miniproject.eventastic.toHandle;
+package com.miniproject.eventastic.pointsTrx.entity;
 
+import com.miniproject.eventastic.pointsWallet.entity.PointsWallet;
+import com.miniproject.eventastic.toHandle.Trx;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

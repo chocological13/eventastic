@@ -1,5 +1,6 @@
-package com.miniproject.eventastic.toHandle;
+package com.miniproject.eventastic.voucher.entity;
 
+import com.miniproject.eventastic.toHandle.Trx;
 import com.miniproject.eventastic.users.entity.Users;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

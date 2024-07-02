@@ -1,5 +1,6 @@
 package com.miniproject.eventastic.users.entity.dto.register;
 
+import com.miniproject.eventastic.pointsWallet.entity.PointsWallet;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,4 +18,5 @@ public class RegisterResponseDto {
   private String fullName;
   private String ownedRefCode;
   private String refCodeUsed;
+  private PointsWallet pointsWallet;
 }
