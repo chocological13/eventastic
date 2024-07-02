@@ -3,6 +3,7 @@ package com.miniproject.eventastic.event.controller;
 import com.miniproject.eventastic.event.entity.dto.EventResponseDto;
 import com.miniproject.eventastic.event.entity.dto.createEvent.CreateEventRequestDto;
 import com.miniproject.eventastic.event.service.EventService;
+import com.miniproject.eventastic.event.service.impl.EventServiceImpl;
 import com.miniproject.eventastic.exceptions.EventExistsException;
 import com.miniproject.eventastic.responses.Response;
 import jakarta.validation.Valid;
@@ -26,17 +27,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/events")
 public class EventController {
 
-  private final EventService eventService;
+  private final EventServiceImpl eventService;
 
   @PostMapping("/create")
   public ResponseEntity<Response<EventResponseDto>> createEvent(@Valid @RequestBody CreateEventRequestDto requestDto) {
-//    // Add security check for user permissions
-//    if (!securityService.isUserAuthorized(requestDto.getOrganizer())) {
-//      return Response.failedResponse(HttpStatus.UNAUTHORIZED.value(), "User does not have permission to create events", null);
-//    }
-    
     try {
-      log.info("Attempting to create event: {} by organizer: {} on date: {}", requestDto.getTitle(), requestDto.getOrganizer(), requestDto.getEventDate());
+      log.info("Attempting to create event: {} on date: {}", requestDto.getTitle(), requestDto.getEventDate());
 
       EventResponseDto responseDto = eventService.createEvent(requestDto);
       log.info("Event created successfully: {} by organizer: {} on date: {}", responseDto.getTitle(), responseDto.getOrganizer(), responseDto.getEventDate());

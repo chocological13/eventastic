@@ -43,9 +43,6 @@ public class EventServiceImpl implements EventService {
 
   @Override
   public EventResponseDto createEvent(CreateEventRequestDto requestDto) {
-    CreateEventRequestDto e = new CreateEventRequestDto();
-    Event createdEvent = e.dtoToEvent(requestDto);
-
     // check if there's a duplicate
     if (isDuplicateEvent(requestDto)) {
       throw new EventExistsException("Event already exists. Please create another one.");
@@ -54,10 +51,11 @@ public class EventServiceImpl implements EventService {
     // extract user
     Authentication auth = SecurityContextHolder.getContext().getAuthentication();
     String organizerName = auth.getName();
-    Users organizer = usersService.getByUsername(organizerName);
-    createdEvent.setOrganizer(organizer);
+    Optional<Users> organizerOptional = Optional.ofNullable(usersService.getByUsername(organizerName));
 
     // save event here, so we can set it to the ticket types
+    Event createdEvent = requestDto.dtoToEvent(requestDto);
+    organizerOptional.ifPresent(createdEvent::setOrganizer);
     eventRepository.save(createdEvent);
 
     // init ticket type
@@ -103,7 +101,6 @@ public class EventServiceImpl implements EventService {
     createdEvent.getTicketTypes().addAll(ticketTypes);
     eventRepository.save(createdEvent);
 
-    EventResponseDto responseDto = new EventResponseDto();
     return toEventResponseDto(createdEvent);
   }
 

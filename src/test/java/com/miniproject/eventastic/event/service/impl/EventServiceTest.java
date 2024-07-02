@@ -47,6 +47,8 @@ public class EventServiceTest {
     eventService = new EventServiceImpl(eventRepository, ticketTypeRepository, usersService);
   }
 
+  // Region - Tests for isDuplicateEvent
+
   @Test
   public void testIsDuplicateEvent_identicalEventExists() {
     CreateEventRequestDto requestDto = new CreateEventRequestDto();
@@ -109,5 +111,7 @@ public class EventServiceTest {
 
     assertFalse(isDuplicate, "Partial match should not be marked as duplicate");
   }
+
+  // End
 
 }
