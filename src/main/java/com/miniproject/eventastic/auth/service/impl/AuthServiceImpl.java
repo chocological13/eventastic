@@ -6,9 +6,11 @@ import com.miniproject.eventastic.auth.entity.dto.login.LoginResponseDto;
 import com.miniproject.eventastic.auth.helpers.UrlBuilder;
 import com.miniproject.eventastic.auth.repository.AuthRedisRepository;
 import com.miniproject.eventastic.auth.service.AuthService;
+import com.miniproject.eventastic.users.entity.Users;
 import com.miniproject.eventastic.users.repository.UsersRepository;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +38,7 @@ public class AuthServiceImpl implements AuthService {
   private final AuthenticationManager authenticationManager;
   private final AuthRedisRepository authRedisRepository;
   private final JwtEncoder jwtEncoder;
+  private final UsersRepository usersRepository;
 
 
   @Override

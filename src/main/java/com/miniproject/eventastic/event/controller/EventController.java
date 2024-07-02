@@ -2,9 +2,11 @@ package com.miniproject.eventastic.event.controller;
 
 import com.miniproject.eventastic.event.entity.dto.EventResponseDto;
 import com.miniproject.eventastic.event.entity.dto.createEvent.CreateEventRequestDto;
+import com.miniproject.eventastic.event.entity.dto.updateEvent.UpdateEventRequestDto;
 import com.miniproject.eventastic.event.service.EventService;
 import com.miniproject.eventastic.event.service.impl.EventServiceImpl;
 import com.miniproject.eventastic.exceptions.EventExistsException;
+import com.miniproject.eventastic.exceptions.EventNotFoundException;
 import com.miniproject.eventastic.responses.Response;
 import jakarta.validation.Valid;
 import java.util.Map;
@@ -16,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -74,5 +77,16 @@ public class EventController {
   ) {
     Page<EventResponseDto> eventPage = eventService.getUpcomingEvents(page, size);
     return Response.responseMapper(HttpStatus.OK.value(), "Listing upcoming events...", eventPage);
+  }
+
+  @PutMapping("/{eventId}/update")
+  public ResponseEntity<Response<EventResponseDto>> updateEvent(@PathVariable Long eventId, @Valid @RequestBody UpdateEventRequestDto requestDto) {
+    try {
+      log.info("Attempting to update event: {}", eventId);
+      EventResponseDto responseDto = eventService.updateEvent(eventId, requestDto);
+      return Response.successfulResponse(HttpStatus.OK.value(), "Event successfully updated!", responseDto);
+    } catch (EventNotFoundException e) {
+      return Response.failedResponse(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
+    }
   }
 }

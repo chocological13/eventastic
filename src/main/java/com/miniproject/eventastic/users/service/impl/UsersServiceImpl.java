@@ -165,4 +165,11 @@ public class UsersServiceImpl implements UsersService {
     return response;
   }
 
+  @Override
+  public Users getCurrentUser() {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    String username = authentication.getName();
+    return usersRepository.findByUsername(username).orElse(null);
+  }
+
 }

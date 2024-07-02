@@ -5,9 +5,11 @@ import static com.miniproject.eventastic.event.entity.dto.EventResponseDto.toEve
 import com.miniproject.eventastic.event.entity.Event;
 import com.miniproject.eventastic.event.entity.dto.EventResponseDto;
 import com.miniproject.eventastic.event.entity.dto.createEvent.CreateEventRequestDto;
+import com.miniproject.eventastic.event.entity.dto.updateEvent.UpdateEventRequestDto;
 import com.miniproject.eventastic.event.repository.EventRepository;
 import com.miniproject.eventastic.event.service.EventService;
 import com.miniproject.eventastic.exceptions.EventExistsException;
+import com.miniproject.eventastic.exceptions.EventNotFoundException;
 import com.miniproject.eventastic.ticketType.entity.TicketType;
 import com.miniproject.eventastic.ticketType.entity.dto.TicketTypeRequestDto;
 import com.miniproject.eventastic.ticketType.repository.TicketTypeRepository;
@@ -27,6 +29,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -163,34 +166,27 @@ public class EventServiceImpl implements EventService {
     }
   }
 
-}
+  @Override
+  public EventResponseDto updateEvent(Long eventId, UpdateEventRequestDto requestDto) {
+    // get logged in user
+    Users loggedUser = usersService.getCurrentUser();
 
-class EventSpecifications {
-
-  // Method to filter by title
-  public static Specification<Event> hasTitle(String title) {
-    return (root, query, criteriaBuilder) ->
-        criteriaBuilder.like(criteriaBuilder.lower(root.get("title")), "%" + title.toLowerCase() + "%");
-  }
-
-  // Method to filter by category
-  public static Specification<Event> hasCategory(String category) {
-    return ((root, query, criteriaBuilder) ->
-        criteriaBuilder.equal(criteriaBuilder.lower(root.get("category")), category.toLowerCase()));
-  }
-
-  // Method to filter by locations
-  public static Specification<Event> hasLocation(String location) {
-    return ((root, query, criteriaBuilder) ->
-        criteriaBuilder.like(criteriaBuilder.lower(root.get("location")), "%" + location.toLowerCase() + "%"));
-  }
-
-  // Upcoming event filter
-  public static Specification<Event> isUpcoming() {
-    return ((root, query, criteriaBuilder) -> {
-      LocalDate today = LocalDate.now();
-      return criteriaBuilder.greaterThan(root.get("eventDate"), today);
+    // verify event organizer with logged-in user
+    Optional<Event> optionalEvent = eventRepository.findById(eventId);
+    if (optionalEvent.isEmpty()) {
+      throw new EventNotFoundException("Event not found");
     }
-    );
+    if (loggedUser != optionalEvent.get().getOrganizer()) {
+      throw new AccessDeniedException("You do not have permission to update this event");
+    }
+
+    // update event
+    UpdateEventRequestDto dto = new UpdateEventRequestDto();
+    Event updatedEvent = dto.dtoToEvent(optionalEvent.get(), requestDto);
+
+    // save event
+    eventRepository.save(updatedEvent);
+    return EventResponseDto.toEventResponseDto(updatedEvent);
   }
+
 }

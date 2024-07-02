@@ -32,4 +32,6 @@ public interface UsersService {
 
   ReferralCodeUsageSummaryDto getCodeUsageSummary();
 
+  Users getCurrentUser();
+
 }
