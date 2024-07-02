@@ -19,6 +19,7 @@ import com.miniproject.eventastic.exceptions.EventNotFoundException;
 import com.miniproject.eventastic.ticketType.repository.TicketTypeRepository;
 import com.miniproject.eventastic.users.entity.Users;
 import com.miniproject.eventastic.users.service.UsersService;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Optional;
@@ -29,6 +30,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.userdetails.User;
 
 @SpringBootTest
 public class EventServiceTest {
@@ -259,5 +261,39 @@ public class EventServiceTest {
     when(eventRepository.findById(1L)).thenReturn(Optional.empty());
 
     assertThrows(EventNotFoundException.class, () -> eventService.updateEvent(1L, updateEventRequestDto));
+  }
+
+  @Test
+  public void testDeleteEvent_success() {
+    Event eventToDelete = new Event();
+    eventToDelete.setId(1L);
+    eventToDelete.setOrganizer(eventOrganizer);
+
+    when(eventRepository.findById(1L)).thenReturn(Optional.of(eventToDelete));
+    when(usersService.getCurrentUser()).thenReturn(eventOrganizer);
+
+    eventService.deleteEvent(1L);
+
+    assertEquals(Instant.now(), eventToDelete.getDeletedAt());
+  }
+
+  @Test
+  public void testDeleteEvent_notOrganizer() {
+    Users otherUser = new Users();
+    Event eventToDelete = new Event();
+    eventToDelete.setId(1L);
+    eventToDelete.setOrganizer(otherUser);
+
+    when(eventRepository.findById(1L)).thenReturn(Optional.of(eventToDelete));
+    when(usersService.getCurrentUser()).thenReturn(eventOrganizer);
+
+    assertThrows(AccessDeniedException.class, () -> eventService.deleteEvent(1L));
+  }
+
+  @Test
+  public void testDeleteEvent_eventNotFound() {
+    when(eventRepository.findById(1L)).thenReturn(Optional.empty());
+
+    assertThrows(EventNotFoundException.class, () -> eventService.deleteEvent(1L));
   }
 }

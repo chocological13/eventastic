@@ -5,6 +5,7 @@ import com.miniproject.eventastic.ticketType.entity.dto.TicketTypeDto;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -50,6 +51,9 @@ public class EventResponseDto {
   private int seatLimit;
   private int availableSeat;
 
+  private LocalDateTime createdAt;
+  private LocalDateTime updatedAt;
+
   @NotEmpty
   private Set<TicketTypeDto> ticketTypes;
 
@@ -68,6 +72,8 @@ public class EventResponseDto {
     this.isFree = event.getIsFree();
     this.seatLimit = event.getSeatLimit();
     this.availableSeat = event.getAvailableSeat();
+    this.createdAt = LocalDateTime.from(event.getCreatedAt());
+    this.updatedAt = LocalDateTime.from(event.getUpdatedAt());
     this.ticketTypes = event.getTicketTypes().stream()
         .map(TicketTypeDto::new)
         .collect(Collectors.toSet());

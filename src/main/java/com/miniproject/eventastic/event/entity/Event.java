@@ -17,9 +17,12 @@ import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.LinkedHashSet;
@@ -93,6 +96,17 @@ public class Event {
   @Column(name = "is_free", nullable = false, columnDefinition = "false")
   private Boolean isFree;
 
+  @ColumnDefault("CURRENT_TIMESTAMP")
+  @Column(name = "created_at")
+  private Instant createdAt;
+
+  @ColumnDefault("CURRENT_TIMESTAMP")
+  @Column(name = "updated_at")
+  private Instant updatedAt;
+
+  @Column(name = "deleted_at")
+  private Instant deletedAt;
+
   @OneToMany(mappedBy = "event")
   private Set<Review> reviews = new LinkedHashSet<>();
 
@@ -115,5 +129,16 @@ public class Event {
     BUSINESS_MEETING,
     SEMINAR,
     OTHER
+  }
+
+  @PrePersist
+  protected void onCreate() {
+    createdAt = Instant.now();
+    updatedAt = Instant.now();
+  }
+
+  @PreUpdate
+  protected void onUpdate() {
+    updatedAt = Instant.now();
   }
 }

@@ -21,4 +21,7 @@ public interface EventService {
   Boolean isDuplicateEvent(CreateEventRequestDto checkDuplicate);
 
   EventResponseDto updateEvent(Long eventId, UpdateEventRequestDto requestDto);
+
+  // soft delete
+  void deleteEvent(Long eventId);
 }

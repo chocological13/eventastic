@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -85,6 +86,17 @@ public class EventController {
       log.info("Attempting to update event: {}", eventId);
       EventResponseDto responseDto = eventService.updateEvent(eventId, requestDto);
       return Response.successfulResponse(HttpStatus.OK.value(), "Event successfully updated!", responseDto);
+    } catch (EventNotFoundException e) {
+      return Response.failedResponse(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
+    }
+  }
+
+  @DeleteMapping("/{eventId}")
+  public ResponseEntity<Response<EventResponseDto>> deleteEvent(@PathVariable Long eventId) {
+    try {
+      log.info("Attempting to delete event: {}", eventId);
+      eventService.deleteEvent(eventId);
+      return Response.successfulResponse(HttpStatus.OK.value(), "Event successfully deleted!", null);
     } catch (EventNotFoundException e) {
       return Response.failedResponse(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
     }

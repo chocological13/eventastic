@@ -16,6 +16,7 @@ import com.miniproject.eventastic.ticketType.repository.TicketTypeRepository;
 import com.miniproject.eventastic.users.entity.Users;
 import com.miniproject.eventastic.users.service.UsersService;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.HashSet;
@@ -187,6 +188,24 @@ public class EventServiceImpl implements EventService {
     // save event
     eventRepository.save(updatedEvent);
     return EventResponseDto.toEventResponseDto(updatedEvent);
+  }
+
+  @Override
+  public void deleteEvent(Long eventId) {
+    // get logged in user
+    Users loggedUser = usersService.getCurrentUser();
+
+    // verify event organizer with logged-in user
+    Optional<Event> optionalEvent = eventRepository.findById(eventId);
+    if (optionalEvent.isEmpty()) {
+      throw new EventNotFoundException("Event not found");
+    }
+    if (loggedUser != optionalEvent.get().getOrganizer()) {
+      throw new AccessDeniedException("You do not have permission to update this event");
+    }
+
+    Event eventToDelete = optionalEvent.get();
+    eventToDelete.setDeletedAt(Instant.now());
   }
 
 }
