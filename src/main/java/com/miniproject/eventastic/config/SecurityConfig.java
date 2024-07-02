@@ -2,6 +2,9 @@ package com.miniproject.eventastic.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.miniproject.eventastic.auth.service.impl.UserDetailsServiceImpl;
+import com.miniproject.eventastic.exceptions.CustomAccessDeniedHandler;
+import com.miniproject.eventastic.exceptions.CustomAuthenticationEntryPoint;
+import com.miniproject.eventastic.exceptions.CustomAuthenticationFailureHandler;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
@@ -78,43 +81,6 @@ public class SecurityConfig {
     return NimbusJwtDecoder.withPublicKey(rsaKeyConfigProperties.publicKey()).build();
   }
 
-  // * access denied handler
-  // 403
-  @Bean
-  public AccessDeniedHandler accessDeniedHandler() {
-    return (request, response, accessDeniedException) -> {
-      response.setContentType("application/json;charset=UTF-8");
-      response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-      ObjectMapper objectMapper = new ObjectMapper();
-      String errorMessage = "Access denied. You don't have enough permissions to access this resource.";
-      response.getWriter().write(objectMapper.writeValueAsString(errorMessage));
-    };
-  }
-
-  // 401
-  @Bean
-  public AuthenticationEntryPoint authenticationEntryPoint() {
-    return (request, response, authException) -> {
-      response.setContentType("application/json;charset=UTF-8");
-      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-      ObjectMapper objectMapper = new ObjectMapper();
-      String errorMessage = "Unauthorized access. Please log in to access this resource.";
-      response.getWriter().write(objectMapper.writeValueAsString(errorMessage));
-    };
-  }
-
-  @Bean
-  public AuthenticationFailureHandler authenticationFailureHandler() {
-    return (request, response, authException) -> {
-      response.setContentType("application/json;charset=UTF-8");
-      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-      ObjectMapper objectMapper = new ObjectMapper();
-      String errorMessage = "Authentication failed. Invalid username or password.";
-      response.getWriter().write(objectMapper.writeValueAsString(errorMessage));
-    };
-  }
-
-
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     return http
@@ -141,12 +107,12 @@ public class SecurityConfig {
         })
         // * exception handling
         .exceptionHandling(e -> {
-          e.accessDeniedHandler(accessDeniedHandler());
-          e.authenticationEntryPoint(authenticationEntryPoint());
+          e.accessDeniedHandler(new CustomAccessDeniedHandler()); // 403
+          e.authenticationEntryPoint(new CustomAuthenticationEntryPoint()); //401
         })
         // * session management
         .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        // * oauth2 resource server to validate jwt
+        // * oauth2 resource server to validate jwt and extract cookie
         .oauth2ResourceServer((oauth2) -> {
           oauth2.jwt((jwt) -> jwt.decoder(jwtDecoder()));
           oauth2.bearerTokenResolver((request) -> {
@@ -165,6 +131,8 @@ public class SecurityConfig {
         .userDetailsService(userDetailsService)
         // * basic http authentication
         .httpBasic(Customizer.withDefaults())
+        .formLogin(auth -> auth.failureHandler(new CustomAuthenticationFailureHandler()))//401
+        .formLogin(Customizer.withDefaults())
         .build();
   }
 
