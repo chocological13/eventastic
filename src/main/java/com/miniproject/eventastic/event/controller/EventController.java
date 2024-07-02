@@ -3,9 +3,12 @@ package com.miniproject.eventastic.event.controller;
 import com.miniproject.eventastic.event.entity.dto.EventResponseDto;
 import com.miniproject.eventastic.event.entity.dto.createEvent.CreateEventRequestDto;
 import com.miniproject.eventastic.event.service.EventService;
+import com.miniproject.eventastic.exceptions.EventExistsException;
 import com.miniproject.eventastic.responses.Response;
+import jakarta.validation.Valid;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,15 +22,29 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 @RequestMapping("/api/v1/events")
 public class EventController {
 
   private final EventService eventService;
 
   @PostMapping("/create")
-  public ResponseEntity<Response<EventResponseDto>> createEvent(@RequestBody CreateEventRequestDto requestDto) {
-    EventResponseDto responseDto = eventService.createEvent(requestDto);
-    return Response.successfulResponse(HttpStatus.OK.value(), "Event successfully created!", responseDto);
+  public ResponseEntity<Response<EventResponseDto>> createEvent(@Valid @RequestBody CreateEventRequestDto requestDto) {
+//    // Add security check for user permissions
+//    if (!securityService.isUserAuthorized(requestDto.getOrganizer())) {
+//      return Response.failedResponse(HttpStatus.UNAUTHORIZED.value(), "User does not have permission to create events", null);
+//    }
+    
+    try {
+      log.info("Attempting to create event: {} by organizer: {} on date: {}", requestDto.getTitle(), requestDto.getOrganizer(), requestDto.getEventDate());
+
+      EventResponseDto responseDto = eventService.createEvent(requestDto);
+      log.info("Event created successfully: {} by organizer: {} on date: {}", responseDto.getTitle(), responseDto.getOrganizer(), responseDto.getEventDate());
+      return Response.successfulResponse(HttpStatus.CREATED.value(), "Event successfully created!", responseDto);
+
+    } catch (EventExistsException e) {
+      return Response.failedResponse(HttpStatus.CONFLICT.value(), e.getMessage(), null);
+    }
   }
 
   @GetMapping("/{eventId}")

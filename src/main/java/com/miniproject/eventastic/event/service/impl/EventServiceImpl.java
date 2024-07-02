@@ -7,6 +7,7 @@ import com.miniproject.eventastic.event.entity.dto.EventResponseDto;
 import com.miniproject.eventastic.event.entity.dto.createEvent.CreateEventRequestDto;
 import com.miniproject.eventastic.event.repository.EventRepository;
 import com.miniproject.eventastic.event.service.EventService;
+import com.miniproject.eventastic.exceptions.EventExistsException;
 import com.miniproject.eventastic.ticketType.entity.TicketType;
 import com.miniproject.eventastic.ticketType.entity.dto.TicketTypeRequestDto;
 import com.miniproject.eventastic.ticketType.repository.TicketTypeRepository;
@@ -14,6 +15,7 @@ import com.miniproject.eventastic.users.entity.Users;
 import com.miniproject.eventastic.users.service.UsersService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -43,6 +45,11 @@ public class EventServiceImpl implements EventService {
   public EventResponseDto createEvent(CreateEventRequestDto requestDto) {
     CreateEventRequestDto e = new CreateEventRequestDto();
     Event createdEvent = e.dtoToEvent(requestDto);
+
+    // check if there's a duplicate
+    if (isDuplicateEvent(requestDto)) {
+      throw new EventExistsException("Event already exists. Please create another one.");
+    }
 
     // extract user
     Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -142,6 +149,21 @@ public class EventServiceImpl implements EventService {
   public EventResponseDto getSpecificEvent(Long eventId) {
     Optional<Event> optionalEvent = eventRepository.findById(eventId);
     return optionalEvent.map(EventResponseDto::toEventResponseDto).orElse(null);
+  }
+
+
+  @Override
+  public Boolean isDuplicateEvent(CreateEventRequestDto checkDuplicate) {
+    String title = checkDuplicate.getTitle();
+    String location = checkDuplicate.getLocation();
+    LocalDate eventDate = checkDuplicate.getEventDate();
+    LocalTime startTime = checkDuplicate.getStartTime();
+    Optional<Event> checkEvent = eventRepository.findByTitleAndLocationAndEventDateAndStartTime(title, location, eventDate, startTime);
+    if (checkEvent.isPresent()) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
 }
