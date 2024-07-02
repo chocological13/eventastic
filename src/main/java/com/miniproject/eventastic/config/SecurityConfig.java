@@ -8,6 +8,7 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
@@ -146,7 +147,20 @@ public class SecurityConfig {
         // * session management
         .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         // * oauth2 resource server to validate jwt
-        .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.decoder(jwtDecoder())))
+        .oauth2ResourceServer((oauth2) -> {
+          oauth2.jwt((jwt) -> jwt.decoder(jwtDecoder()));
+          oauth2.bearerTokenResolver((request) -> {
+            Cookie[] cookies = request.getCookies();
+            if (cookies != null) {
+              for (Cookie cookie : cookies) {
+                if ("JSESSIONID".equals(cookie.getName())) {
+                  return cookie.getValue();
+                }
+              }
+            }
+            return null;
+          });
+        })
         // * configuring UserDetailsService, we will pass the one we already made
         .userDetailsService(userDetailsService)
         // * basic http authentication
