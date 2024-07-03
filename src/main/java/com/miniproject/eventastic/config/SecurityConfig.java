@@ -91,7 +91,7 @@ public class SecurityConfig {
         .authorizeHttpRequests(auth -> {
 
           auth.requestMatchers("/error/**").permitAll();
-          auth.requestMatchers("/api/v1/auth/login/**").permitAll();
+          auth.requestMatchers("/api/v1/auth/**").permitAll();
           auth.requestMatchers("/api/v1/users/register/**").permitAll();
           // ! TODO: dev purposes, delete when not used
 //          auth.requestMatchers("/api/**").permitAll();
@@ -99,9 +99,11 @@ public class SecurityConfig {
           // ! TODO: add roles related authorizations
           // * event management - only organizer
           auth.requestMatchers("/api/v1/events/create/**").hasAuthority("SCOPE_ROLE_ORGANIZER");
+          auth.requestMatchers("/api/v1/events/{eventId}/update/**").hasAuthority("SCOPE_ROLE_ORGANIZER");
+//          auth.requestMatchers("/**").authenticated();
 
           // > for dev
-          auth.requestMatchers("/**").hasAuthority("SCOPE_ROLE_SUPERCAT");
+//          auth.requestMatchers("/**").hasAuthority("SCOPE_ROLE_SUPERCAT");
 
           auth.anyRequest().authenticated();
         })
