@@ -94,7 +94,7 @@ public class SecurityConfig {
           auth.requestMatchers("/api/v1/auth/**").permitAll();
           auth.requestMatchers("/api/v1/users/register/**").permitAll();
           // ! TODO: dev purposes, delete when not used
-//          auth.requestMatchers("/api/**").permitAll();
+          auth.requestMatchers("/api/**").permitAll();
 
           // ! TODO: add roles related authorizations
           // * event management - only organizer
@@ -105,7 +105,7 @@ public class SecurityConfig {
           // > for dev
 //          auth.requestMatchers("/**").hasAuthority("SCOPE_ROLE_SUPERCAT");
 
-          auth.anyRequest().authenticated();
+//          auth.anyRequest().authenticated();
         })
         // * exception handling
         .exceptionHandling(e -> {

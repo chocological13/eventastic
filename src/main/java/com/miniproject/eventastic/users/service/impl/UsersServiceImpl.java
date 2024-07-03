@@ -185,4 +185,12 @@ public class UsersServiceImpl implements UsersService {
     return usersRepository.findByUsername(username).orElse(null);
   }
 
+  @SneakyThrows
+  @Override
+  public PointsWalletResponseDto getUsersPointsWallet() {
+    // get currently logged-in user
+    Users currentUser = getCurrentUser();
+    return pointsWalletService.getPointsWallet(currentUser);
+  }
+
 }

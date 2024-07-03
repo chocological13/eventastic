@@ -1,5 +1,6 @@
 package com.miniproject.eventastic.users.controller;
 
+import com.miniproject.eventastic.pointsWallet.entity.dto.PointsWalletResponseDto;
 import com.miniproject.eventastic.referralCodeUsage.entity.dto.ReferralCodeUsageOwnerDto;
 import com.miniproject.eventastic.referralCodeUsage.entity.dto.ReferralCodeUsageSummaryDto;
 import com.miniproject.eventastic.responses.Response;
@@ -59,6 +60,15 @@ public class UsersController {
     } else {
       return Response.failedResponse("There is no user profile");
     }
+  }
+
+  // * Get logged-in user's points wallet
+  @GetMapping("/points")
+  public ResponseEntity<Response<PointsWalletResponseDto>> getUsersPointsWallet() {
+    String currentUser =
+        usersService.getCurrentUser().getFirstName() + " " + usersService.getCurrentUser().getLastName();
+    return Response.successfulResponse(HttpStatus.FOUND.value(), "Showing Points Wallet for: " + currentUser,
+        usersService.getUsersPointsWallet());
   }
 
   // * Edit Profile

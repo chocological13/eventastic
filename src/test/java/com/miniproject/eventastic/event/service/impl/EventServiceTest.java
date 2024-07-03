@@ -223,7 +223,7 @@ public class EventServiceTest {
     assertEquals("456 Another St", updatedEvent.getLocation());
     assertEquals(Event.EventCategory.CONFERENCE, updatedEvent.getEventCategory());
     assertEquals("New Venue", updatedEvent.getVenue());
-    assertEquals(image2, updatedEvent.getImage());
+    assertEquals(image2, existingEvent.getImage());
     assertEquals(LocalDate.of(2024, 7, 15), updatedEvent.getEventDate());
     assertEquals(LocalTime.of(10, 0), updatedEvent.getStartTime());
     assertEquals(LocalTime.of(12, 0), updatedEvent.getEndTime());

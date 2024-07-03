@@ -1,5 +1,6 @@
 package com.miniproject.eventastic.users.service;
 
+import com.miniproject.eventastic.pointsWallet.entity.dto.PointsWalletResponseDto;
 import com.miniproject.eventastic.referralCodeUsage.entity.ReferralCodeUsage;
 import com.miniproject.eventastic.referralCodeUsage.entity.dto.ReferralCodeUsageSummaryDto;
 import com.miniproject.eventastic.users.entity.Users;
@@ -32,6 +33,10 @@ public interface UsersService {
 
   ReferralCodeUsageSummaryDto getCodeUsageSummary();
 
+  // getting logged-in user
   Users getCurrentUser();
+
+  // showing user's points wallet
+  PointsWalletResponseDto getUsersPointsWallet();
 
 }
