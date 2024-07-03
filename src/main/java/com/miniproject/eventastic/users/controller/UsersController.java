@@ -1,7 +1,6 @@
 package com.miniproject.eventastic.users.controller;
 
 import com.miniproject.eventastic.pointsWallet.entity.dto.PointsWalletResponseDto;
-import com.miniproject.eventastic.referralCodeUsage.entity.dto.ReferralCodeUsageOwnerDto;
 import com.miniproject.eventastic.referralCodeUsage.entity.dto.ReferralCodeUsageSummaryDto;
 import com.miniproject.eventastic.responses.Response;
 import com.miniproject.eventastic.users.entity.Users;
@@ -14,9 +13,9 @@ import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -35,20 +34,18 @@ public class UsersController {
   // ! Get all
   @GetMapping
   public ResponseEntity<Response<List<UserProfileDto>>> getAllUsers() {
-    List<UserProfileDto> users = usersService.getAllUsers();
-    if (!users.isEmpty()) {
-      return Response.successfulResponse(HttpStatus.FOUND.value(), "Displaying all users...", users);
-    } else {
-      return Response.failedResponse("There are no users to display");
+    try {
+      List<UserProfileDto> users = usersService.getAllUsers();
+      return Response.successfulResponse(HttpStatus.FOUND.value(), "Displaying all users..", users);
+    } catch (EmptyResultDataAccessException e) {
+      return Response.failedResponse(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
     }
   }
 
   // * Register
   @PostMapping("/register")
   public ResponseEntity<Response<RegisterResponseDto>> registerUser(@Valid @RequestBody RegisterRequestDto requestDto) {
-    Users newUser = new Users();
-    log.info("Registered user: {}", newUser);
-    RegisterResponseDto response = usersService.register(newUser, requestDto);
+    RegisterResponseDto response = usersService.register(requestDto);
     return Response.successfulResponse(HttpStatus.CREATED.value(),
         "Register successful!!",
         response);

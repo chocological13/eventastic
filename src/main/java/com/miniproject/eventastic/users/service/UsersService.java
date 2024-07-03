@@ -22,7 +22,7 @@ public interface UsersService {
 
   Users getById(Long id);
 
-  RegisterResponseDto register(Users newUser, RegisterRequestDto requestDto);
+  RegisterResponseDto register(RegisterRequestDto requestDto);
 
   void resetPassword(Users user, String newPassword);
 

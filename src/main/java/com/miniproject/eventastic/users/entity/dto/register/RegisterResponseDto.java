@@ -17,7 +17,6 @@ public class RegisterResponseDto {
   private Long id;
   private String username;
   private String email;
-  private String fullName;
   private String ownedRefCode;
   private String refCodeUsed;
   private PointsWalletResponseDto pointsWallet;

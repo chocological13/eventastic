@@ -3,7 +3,6 @@ package com.miniproject.eventastic.users.service.impl;
 import com.miniproject.eventastic.pointsWallet.entity.dto.PointsWalletResponseDto;
 import com.miniproject.eventastic.pointsWallet.service.impl.PointsWalletServiceImpl;
 import com.miniproject.eventastic.referralCodeUsage.entity.ReferralCodeUsage;
-import com.miniproject.eventastic.referralCodeUsage.entity.composite.ReferralCodeUsageId;
 import com.miniproject.eventastic.referralCodeUsage.entity.dto.ReferralCodeUsageSummaryDto;
 import com.miniproject.eventastic.referralCodeUsage.repository.ReferralCodeUsageRepository;
 import com.miniproject.eventastic.users.entity.Users;
@@ -14,19 +13,19 @@ import com.miniproject.eventastic.users.entity.dto.register.RegisterRequestDto;
 import com.miniproject.eventastic.users.event.UserRegistrationEvent;
 import com.miniproject.eventastic.users.repository.UsersRepository;
 import com.miniproject.eventastic.users.service.UsersService;
-import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -46,12 +45,12 @@ public class UsersServiceImpl implements UsersService {
   @Override
   public List<UserProfileDto> getAllUsers() {
     List<Users> users = usersRepository.findAll();
-    List<UserProfileDto> userProfileDtoList = new ArrayList<>();
-    for (Users user : users) {
-      UserProfileDto userProfileDto = new UserProfileDto(user);
-      userProfileDtoList.add(userProfileDto);
+    if (users.isEmpty()) {
+      throw new EmptyResultDataAccessException("No users found", 1);
     }
-    return userProfileDtoList;
+    return users.stream()
+        .map(UserProfileDto::new)
+        .collect(Collectors.toList());
   }
 
   @Override
@@ -91,54 +90,29 @@ public class UsersServiceImpl implements UsersService {
 
   @SneakyThrows
   @Override
-  public RegisterResponseDto register(Users newUser, RegisterRequestDto requestDto) {
-    // init
-    RegisterResponseDto response = new RegisterResponseDto();
+  public RegisterResponseDto register(RegisterRequestDto requestDto) {
+    // init new user and the dto
+    Users newUser = new Users();
     RegisterRequestDto reqToUser = new RegisterRequestDto();
-
-    // map to entity
     reqToUser.toEntity(newUser, requestDto);
+
+    // encode password and save user so that it persists in db
     newUser.setPassword(passwordEncoder.encode(requestDto.getPassword()));
     usersRepository.save(newUser);
     eventPublisher.publishEvent(new UserRegistrationEvent(this, newUser));
 
-    //* create ref code
-    String ownedReferralCode = UUID.randomUUID().toString().substring(0, 7);
-    newUser.setOwnedRefCode(ownedReferralCode);
-    response.setOwnedRefCode(ownedReferralCode);
-    usersRepository.save(newUser);
-    log.info("ownedReferralCode: {}", ownedReferralCode);
+    log.info("Registered user: {}", newUser);
+    return responseBuilder(newUser);
+  }
 
-    //* check if user entered other user's ref code
-    String refCodeUsed = requestDto.getRefCodeUsed();
-
-    //* look for owner of code
-    Optional<Users> ownerOptional = usersRepository.findByOwnedRefCode(refCodeUsed);
-    log.info("RefCodeUsed: {}, Owner: {}", refCodeUsed, ownerOptional.orElse(null));
-    if (ownerOptional.isPresent()) {
-      Users owner = ownerOptional.get();
-
-      // ! TODO: add business logic for giving voucher to new user and points to owner of code here
-      pointsWalletService.addPointsWallet(newUser.getPointsWallet(), 10000);
-
-      // > Log the usage of referral code
-      ReferralCodeUsage usage = new ReferralCodeUsage(
-          new ReferralCodeUsageId(newUser.getId(), owner.getId()),
-          newUser,
-          owner,
-          Instant.now()
-      );
-      saveRefCode(usage);
-      response.setRefCodeUsed("Referral code from user " + owner.getUsername() + " was used!");
-    } else {
-      response.setRefCodeUsed("No referral code was used");
-    }
-
-    String fullName = newUser.getFirstName() + " " + newUser.getLastName();
-    response.setWelcomeMessage("Welcome to Eventastic, " + fullName);
+  public RegisterResponseDto responseBuilder(Users newUser) {
+    RegisterResponseDto response = new RegisterResponseDto();
+    response.setWelcomeMessage("Welcome to Eventastic, " + newUser.getFirstName() + " " + newUser.getLastName());
+    response.setId(newUser.getId());
     response.setUsername(newUser.getUsername());
     response.setEmail(newUser.getEmail());
-    response.setFullName(fullName);
+    response.setOwnedRefCode(newUser.getOwnedRefCode());
+    response.setRefCodeUsed(newUser.getRefCodeUsed());
     response.setPointsWallet(new PointsWalletResponseDto(newUser.getPointsWallet()));
     return response;
   }
