@@ -1,5 +1,6 @@
 package com.miniproject.eventastic.pointsWallet.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.miniproject.eventastic.pointsTrx.entity.PointsTrx;
 import com.miniproject.eventastic.toHandle.Trx;
 import com.miniproject.eventastic.users.entity.Users;
@@ -21,6 +22,7 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import lombok.Getter;
@@ -47,7 +49,7 @@ public class PointsWallet {
   private Users user;
 
   @Column(name = "points")
-  private BigDecimal points = BigDecimal.ZERO;
+  private Integer points;
 
   @ColumnDefault("CURRENT_TIMESTAMP")
   @Column(name = "awarded_at")
@@ -76,7 +78,7 @@ public class PointsWallet {
   @PreUpdate
   protected void onUpdate() {
     awardedAt = Instant.now();
-    expiresAt = awardedAt.plusNanos(90);
+    expiresAt = awardedAt.plus(90, ChronoUnit.DAYS);
   }
 
 }

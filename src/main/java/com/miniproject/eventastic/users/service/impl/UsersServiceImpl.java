@@ -1,5 +1,8 @@
 package com.miniproject.eventastic.users.service.impl;
 
+import com.miniproject.eventastic.pointsWallet.entity.PointsWallet;
+import com.miniproject.eventastic.pointsWallet.entity.dto.PointsWalletResponseDto;
+import com.miniproject.eventastic.pointsWallet.service.impl.PointsWalletServiceImpl;
 import com.miniproject.eventastic.referralCodeUsage.entity.ReferralCodeUsage;
 import com.miniproject.eventastic.referralCodeUsage.entity.composite.ReferralCodeUsageId;
 import com.miniproject.eventastic.referralCodeUsage.entity.dto.ReferralCodeUsageSummaryDto;
@@ -38,6 +41,7 @@ public class UsersServiceImpl implements UsersService {
   private final AuthenticationManager authenticationManager;
   private final ReferralCodeUsageRepository referralCodeUsageRepository;
   private final ApplicationEventPublisher eventPublisher;
+  private final PointsWalletServiceImpl pointsWalletService;
 
   @Override
   public List<Users> getAllUsers() {
@@ -92,12 +96,12 @@ public class UsersServiceImpl implements UsersService {
     usersRepository.save(newUser);
     eventPublisher.publishEvent(new UserRegistrationEvent(this, newUser));
 
-
-
     //* create ref code
     String ownedReferralCode = UUID.randomUUID().toString().substring(0, 7);
     newUser.setOwnedRefCode(ownedReferralCode);
     response.setOwnedRefCode(ownedReferralCode);
+    usersRepository.save(newUser);
+    log.info("ownedReferralCode: {}", ownedReferralCode);
 
     //* check if user entered other user's ref code
     String refCodeUsed = requestDto.getRefCodeUsed();
@@ -109,6 +113,7 @@ public class UsersServiceImpl implements UsersService {
       Users owner = ownerOptional.get();
 
       // ! TODO: add business logic for giving voucher to new user and points to owner of code here
+      pointsWalletService.addPointsWallet(newUser.getPointsWallet(), 10000);
 
       // > Log the usage of referral code
       ReferralCodeUsage usage = new ReferralCodeUsage(
@@ -122,12 +127,13 @@ public class UsersServiceImpl implements UsersService {
     } else {
       response.setRefCodeUsed("No referral code was used");
     }
+
     String fullName = newUser.getFirstName() + " " + newUser.getLastName();
     response.setWelcomeMessage("Welcome to Eventastic, " + fullName);
     response.setUsername(newUser.getUsername());
     response.setEmail(newUser.getEmail());
     response.setFullName(fullName);
-    response.setPointsWallet(newUser.getPointsWallet());
+    response.setPointsWallet(new PointsWalletResponseDto(newUser.getPointsWallet()));
     return response;
   }
 
