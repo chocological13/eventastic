@@ -11,6 +11,11 @@ import com.miniproject.eventastic.voucher.repository.VoucherRepository;
 import com.miniproject.eventastic.voucher.service.VoucherService;
 import jakarta.transaction.Transactional;
 import java.nio.file.AccessDeniedException;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +34,6 @@ public class VoucherServiceImpl implements VoucherService {
 
   @SneakyThrows
   @Override
-  @Transactional
   public Voucher createVoucher(VoucherRequestDto voucherRequestDto) {
     // verify user
     Users loggedInUser = usersService.getCurrentUser();
@@ -37,17 +41,23 @@ public class VoucherServiceImpl implements VoucherService {
       throw new AccessDeniedException("Only organizers can create a voucher.");
     }
 
+    // time set up
+    ZonedDateTime endOfDay = ZonedDateTime.now().with(LocalTime.MAX);
+    Instant expiresAt = endOfDay.toInstant().plus(voucherRequestDto.getValidity(), ChronoUnit.DAYS);
+
     // init voucher
     Voucher newVoucher = new Voucher();
     newVoucher.setCode(voucherRequestDto.getCode());
     newVoucher.setDescription(voucherRequestDto.getDescription());
-    newVoucher.setDiscountPercentage(voucherRequestDto.getDiscountPercentage());
+    newVoucher.setPercentDiscount(voucherRequestDto.getPercentDiscount());
+    newVoucher.setCreatedAt(Instant.now());
+    newVoucher.setExpiresAt(expiresAt);
     voucherRepository.save(newVoucher);
 
     // see if voucher is for a user or specific to an event
-    if (voucherRequestDto.getAwardedToId() != null) {
-      Users awardedUser = usersService.getById(voucherRequestDto.getAwardedToId());
-      newVoucher.setAwardedTo(awardedUser);
+    if (voucherRequestDto.getAwardeeId() != null) {
+      Users awardedUser = usersService.getById(voucherRequestDto.getAwardeeId());
+      newVoucher.setAwardee(awardedUser);
     }
     if (voucherRequestDto.getEventId() != null) {
       Event event = eventService.getEventById(voucherRequestDto.getEventId());

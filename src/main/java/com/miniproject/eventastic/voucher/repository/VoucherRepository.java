@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface VoucherRepository extends JpaRepository<Voucher, Long> {
-//  List<Voucher> findByAwardedTo(Long awardedToId);
-//  List<Voucher> findByEventId(Long eventId);
-  List<Voucher> findByAwardedToIsNull();
+  List<Voucher> findByAwardeeId(Long awardedTo);
+  List<Voucher> findByEventId(Long eventId);
+  List<Voucher> findByAwardeeIdIsNull();
 }
