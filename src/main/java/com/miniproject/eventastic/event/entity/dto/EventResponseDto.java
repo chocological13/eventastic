@@ -4,6 +4,7 @@ import com.miniproject.eventastic.event.entity.Event;
 import com.miniproject.eventastic.ticketType.entity.dto.TicketTypeDto;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -18,48 +19,27 @@ import lombok.NoArgsConstructor;
 @Data
 public class EventResponseDto {
 
-  @NotNull
+  private Long id;
   private String organizer;
-
-  @NotEmpty
   private String title;
-
-  @NotEmpty
   private String description;
-
-  @NotEmpty
   private String location;
-
-  @NotEmpty
   private String venue;
-
-  @NotNull
   private LocalDate eventDate;
-
-  @NotNull
   private LocalTime startTime;
-
-  @NotNull
   private LocalTime endTime;
-
-  @NotNull
   private Event.EventCategory eventCategory;
-
-  @NotNull
   private Boolean isFree;
-
   private int seatLimit;
   private int availableSeat;
-
-  private LocalDateTime createdAt;
-  private LocalDateTime updatedAt;
-
-  @NotEmpty
+  private Instant createdAt;
+  private Instant updatedAt;
   private Set<TicketTypeDto> ticketTypes;
 
 
   public EventResponseDto(Event event) {
     // Populate fields from the Event entity
+    this.id = event.getId();
     this.organizer = event.getOrganizer().getUsername();
     this.title = event.getTitle();
     this.description = event.getDescription();
@@ -72,8 +52,8 @@ public class EventResponseDto {
     this.isFree = event.getIsFree();
     this.seatLimit = event.getSeatLimit();
     this.availableSeat = event.getAvailableSeat();
-    this.createdAt = LocalDateTime.from(event.getCreatedAt());
-    this.updatedAt = LocalDateTime.from(event.getUpdatedAt());
+    this.createdAt = event.getCreatedAt();
+    this.updatedAt = event.getUpdatedAt();
     this.ticketTypes = event.getTicketTypes().stream()
         .map(TicketTypeDto::new)
         .collect(Collectors.toSet());

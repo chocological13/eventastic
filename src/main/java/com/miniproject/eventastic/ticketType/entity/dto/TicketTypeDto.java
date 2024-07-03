@@ -13,20 +13,15 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class TicketTypeDto {
 
-  @NotEmpty
+  private Long id;
   private String name;
-
   private String description;
-
-  @NotNull
   private BigDecimal price;
-
-  @NotNull
   private Integer seatLimit;
-
   private Integer availableSeat;
 
   public TicketTypeDto(TicketType ticketType) {
+    this.id = ticketType.getId();
     this.name = ticketType.getName();
     this.description = ticketType.getDescription();
     this.price = ticketType.getPrice();
@@ -40,6 +35,7 @@ public class TicketTypeDto {
 
   public TicketType toTicketTypeEntity(TicketTypeDto ticketTypeDto) {
     TicketType ticketType = new TicketType();
+    ticketType.setId(ticketTypeDto.getId());
     ticketType.setName(ticketTypeDto.getName());
     ticketType.setDescription(ticketTypeDto.getDescription());
     ticketType.setPrice(ticketTypeDto.getPrice());

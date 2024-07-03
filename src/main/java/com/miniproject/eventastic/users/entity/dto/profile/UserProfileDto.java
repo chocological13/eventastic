@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UserProfileDto {
 
+  private Long id;
   private String username;
   private String email;
   private boolean isOrganizer;
@@ -22,6 +23,7 @@ public class UserProfileDto {
 
   public UserProfileDto toDto(Users user) {
     UserProfileDto userProfileDto = new UserProfileDto();
+    userProfileDto.setId(user.getId());
     userProfileDto.setUsername(user.getUsername());
     userProfileDto.setEmail(user.getEmail());
     userProfileDto.setFirstName(user.getFirstName());
