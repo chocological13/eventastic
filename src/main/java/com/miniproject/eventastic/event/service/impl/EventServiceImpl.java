@@ -164,6 +164,11 @@ public class EventServiceImpl implements EventService {
     return optionalEvent.map(EventResponseDto::toEventResponseDto).orElse(null);
   }
 
+  @Override
+  public Event getEventById(Long eventId) {
+    return eventRepository.findById(eventId).orElse(null);
+  }
+
 
   @Override
   public Boolean isDuplicateEvent(CreateEventRequestDto checkDuplicate) {

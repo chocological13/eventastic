@@ -18,6 +18,8 @@ public interface EventService {
 
   EventResponseDto getSpecificEvent(Long eventId);
 
+  Event getEventById(Long eventId);
+
   Boolean isDuplicateEvent(CreateEventRequestDto checkDuplicate);
 
   EventResponseDto updateEvent(Long eventId, UpdateEventRequestDto requestDto);
