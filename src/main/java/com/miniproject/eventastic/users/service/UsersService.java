@@ -12,7 +12,7 @@ import java.util.List;
 
 public interface UsersService {
 
-  List<Users> getAllUsers();
+  List<UserProfileDto> getAllUsers();
 
   UserProfileDto getProfile();
 

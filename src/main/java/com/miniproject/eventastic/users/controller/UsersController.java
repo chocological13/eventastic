@@ -10,13 +10,16 @@ import com.miniproject.eventastic.users.entity.dto.register.RegisterRequestDto;
 import com.miniproject.eventastic.users.entity.dto.register.RegisterResponseDto;
 import com.miniproject.eventastic.users.entity.dto.userManagement.ProfileUpdateRequestDTO;
 import com.miniproject.eventastic.users.service.UsersService;
+import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -31,8 +34,8 @@ public class UsersController {
 
   // ! Get all
   @GetMapping
-  public ResponseEntity<Response<List<Users>>> getAllUsers() {
-    List<Users> users = usersService.getAllUsers();
+  public ResponseEntity<Response<List<UserProfileDto>>> getAllUsers() {
+    List<UserProfileDto> users = usersService.getAllUsers();
     if (!users.isEmpty()) {
       return Response.successfulResponse(HttpStatus.FOUND.value(), "Displaying all users...", users);
     } else {
@@ -42,7 +45,7 @@ public class UsersController {
 
   // * Register
   @PostMapping("/register")
-  public ResponseEntity<Response<RegisterResponseDto>> registerUser(@RequestBody RegisterRequestDto requestDto) {
+  public ResponseEntity<Response<RegisterResponseDto>> registerUser(@Valid @RequestBody RegisterRequestDto requestDto) {
     Users newUser = new Users();
     log.info("Registered user: {}", newUser);
     RegisterResponseDto response = usersService.register(newUser, requestDto);
@@ -72,8 +75,8 @@ public class UsersController {
   }
 
   // * Edit Profile
-  @PostMapping("/me/update")
-  public ResponseEntity<Response<UserProfileDto>> updateUserProfile(@RequestBody ProfileUpdateRequestDTO requestDTO) {
+  @PutMapping("/me/update")
+  public ResponseEntity<Response<UserProfileDto>> updateUserProfile(@Valid @RequestBody ProfileUpdateRequestDTO requestDTO) {
     usersService.update(requestDTO);
     UserProfileDto userProfile = usersService.getProfile();
     return Response.successfulResponse(HttpStatus.OK.value(), "Profile update successful!! :D", userProfile);

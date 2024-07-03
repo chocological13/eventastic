@@ -20,18 +20,23 @@ public class UserProfileDto {
   private String avatar;
   private String bio;
   private Date birthday;
+  private String ownedRefCode;
+
+  public UserProfileDto(Users user) {
+    this.id = user.getId();
+    this.username = user.getUsername();
+    this.email = user.getEmail();
+    this.isOrganizer = user.getIsOrganizer();
+    this.firstName = user.getFirstName();
+    this.lastName = user.getLastName();
+    this.avatar = user.getAvatar();
+    this.bio = user.getBio();
+    this.birthday = user.getBirthday();
+    this.ownedRefCode = user.getOwnedRefCode();
+  }
 
   public UserProfileDto toDto(Users user) {
-    UserProfileDto userProfileDto = new UserProfileDto();
-    userProfileDto.setId(user.getId());
-    userProfileDto.setUsername(user.getUsername());
-    userProfileDto.setEmail(user.getEmail());
-    userProfileDto.setFirstName(user.getFirstName());
-    userProfileDto.setLastName(user.getLastName());
-    userProfileDto.setAvatar(user.getAvatar());
-    userProfileDto.setBio(user.getBio());
-    userProfileDto.setBirthday(user.getBirthday());
-    return userProfileDto;
+    return new UserProfileDto(user);
   }
 
 }

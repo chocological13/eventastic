@@ -1,6 +1,5 @@
 package com.miniproject.eventastic.users.service.impl;
 
-import com.miniproject.eventastic.pointsWallet.entity.PointsWallet;
 import com.miniproject.eventastic.pointsWallet.entity.dto.PointsWalletResponseDto;
 import com.miniproject.eventastic.pointsWallet.service.impl.PointsWalletServiceImpl;
 import com.miniproject.eventastic.referralCodeUsage.entity.ReferralCodeUsage;
@@ -16,6 +15,7 @@ import com.miniproject.eventastic.users.event.UserRegistrationEvent;
 import com.miniproject.eventastic.users.repository.UsersRepository;
 import com.miniproject.eventastic.users.service.UsersService;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -44,8 +44,14 @@ public class UsersServiceImpl implements UsersService {
   private final PointsWalletServiceImpl pointsWalletService;
 
   @Override
-  public List<Users> getAllUsers() {
-    return usersRepository.findAll();
+  public List<UserProfileDto> getAllUsers() {
+    List<Users> users = usersRepository.findAll();
+    List<UserProfileDto> userProfileDtoList = new ArrayList<>();
+    for (Users user : users) {
+      UserProfileDto userProfileDto = new UserProfileDto(user);
+      userProfileDtoList.add(userProfileDto);
+    }
+    return userProfileDtoList;
   }
 
   @Override
