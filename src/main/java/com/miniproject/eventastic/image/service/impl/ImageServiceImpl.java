@@ -54,8 +54,7 @@ public class ImageServiceImpl implements ImageService {
       image.setOwner(owner);
       imageRepository.save(image);
 
-      ImageUploadResponseDto response = new ImageUploadResponseDto(imageName, imageUrl, owner.getUsername());
-      return response;
+      return new ImageUploadResponseDto(image);
     } catch (Exception e) {
       e.printStackTrace();
       return null;

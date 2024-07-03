@@ -10,6 +10,8 @@ import com.miniproject.eventastic.event.repository.EventRepository;
 import com.miniproject.eventastic.event.service.EventService;
 import com.miniproject.eventastic.exceptions.EventExistsException;
 import com.miniproject.eventastic.exceptions.EventNotFoundException;
+import com.miniproject.eventastic.image.entity.Image;
+import com.miniproject.eventastic.image.repository.ImageRepository;
 import com.miniproject.eventastic.ticketType.entity.TicketType;
 import com.miniproject.eventastic.ticketType.entity.dto.TicketTypeRequestDto;
 import com.miniproject.eventastic.ticketType.repository.TicketTypeRepository;
@@ -44,6 +46,7 @@ public class EventServiceImpl implements EventService {
   private final EventRepository eventRepository;
   private final TicketTypeRepository ticketTypeRepository;
   private final UsersService usersService;
+  private final ImageRepository imageRepository;
 
   @Override
   public EventResponseDto createEvent(CreateEventRequestDto requestDto) {
@@ -61,6 +64,15 @@ public class EventServiceImpl implements EventService {
     Event createdEvent = requestDto.dtoToEvent(requestDto);
     organizerOptional.ifPresent(createdEvent::setOrganizer);
     eventRepository.save(createdEvent);
+
+    // check for image
+    if (requestDto.getImageId() != null) {
+      Optional<Image> imageOptional = imageRepository.findById(requestDto.getImageId());
+      if (imageOptional.isPresent()) {
+        Image image = imageOptional.get();
+        createdEvent.setImage(image);
+      }
+    }
 
     // init ticket type
     Set<TicketTypeRequestDto> ticketTypeRequestDtos = requestDto.getTicketTypeRequestDtos();
@@ -184,6 +196,13 @@ public class EventServiceImpl implements EventService {
     // update event
     UpdateEventRequestDto dto = new UpdateEventRequestDto();
     Event updatedEvent = dto.dtoToEvent(optionalEvent.get(), requestDto);
+
+    // check for image
+    Optional<Image> imageOptional = imageRepository.findById(requestDto.getImageId());
+    if (imageOptional.isPresent()) {
+      Image image = imageOptional.get();
+      updatedEvent.setImage(image);
+    }
 
     // save event
     eventRepository.save(updatedEvent);

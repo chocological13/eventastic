@@ -1,5 +1,6 @@
 package com.miniproject.eventastic.event.entity;
 
+import com.miniproject.eventastic.image.entity.Image;
 import com.miniproject.eventastic.toHandle.Review;
 import com.miniproject.eventastic.ticketType.entity.TicketType;
 import com.miniproject.eventastic.toHandle.Trx;
@@ -106,6 +107,10 @@ public class Event {
 
   @Column(name = "deleted_at")
   private Instant deletedAt;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "image_id")
+  private Image image;
 
   @OneToMany(mappedBy = "event")
   private Set<Review> reviews = new LinkedHashSet<>();

@@ -1,5 +1,6 @@
 package com.miniproject.eventastic.image.entity.dto;
 
+import com.miniproject.eventastic.image.entity.Image;
 import lombok.Data;
 
 @Data
@@ -9,10 +10,10 @@ public class ImageUploadResponseDto {
   private String imageUrl;
   private String owner;
 
-  public ImageUploadResponseDto(Long id, String imageName, String imageUrl, String owner) {
-    this.id = id;
-    this.imageName = imageName;
-    this.imageUrl = imageUrl;
-    this.owner = owner;
+  public ImageUploadResponseDto(Image image) {
+    this.id = image.getId();
+    this.imageName = image.getImageName();
+    this.imageUrl = image.getImageUrl();
+    this.owner = image.getOwner().getUsername();
   }
 }

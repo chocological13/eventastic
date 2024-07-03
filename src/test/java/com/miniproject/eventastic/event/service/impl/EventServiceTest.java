@@ -16,6 +16,8 @@ import com.miniproject.eventastic.event.entity.dto.updateEvent.UpdateEventReques
 import com.miniproject.eventastic.event.repository.EventRepository;
 import com.miniproject.eventastic.event.service.EventService;
 import com.miniproject.eventastic.exceptions.EventNotFoundException;
+import com.miniproject.eventastic.image.entity.Image;
+import com.miniproject.eventastic.image.repository.ImageRepository;
 import com.miniproject.eventastic.ticketType.repository.TicketTypeRepository;
 import com.miniproject.eventastic.users.entity.Users;
 import com.miniproject.eventastic.users.service.UsersService;
@@ -45,9 +47,12 @@ public class EventServiceTest {
   @Mock
   private UsersService usersService;
 
+  @Mock
+  private ImageRepository imageRepository;
+
   // tells eventService to use the mock repository
   @InjectMocks
-  private EventService eventService = new EventServiceImpl(eventRepository, ticketTypeRepository, usersService);
+  private EventService eventService = new EventServiceImpl(eventRepository, ticketTypeRepository, usersService, imageRepository);
 
   private Users eventOrganizer;
 
@@ -55,7 +60,7 @@ public class EventServiceTest {
   @BeforeEach
   public void setUp() {
     MockitoAnnotations.openMocks(this);
-    eventService = new EventServiceImpl(eventRepository, ticketTypeRepository, usersService);
+    eventService = new EventServiceImpl(eventRepository, ticketTypeRepository, usersService, imageRepository);
     eventOrganizer = new Users();
     eventOrganizer.setId(1L);
     eventOrganizer.setUsername("Organizer");
@@ -170,12 +175,21 @@ public class EventServiceTest {
 
   @Test
   public void testUpdateEvent_success() {
+
+    // Image in Event
+    Image image = new Image();
+    image.setId(1L);
+    // Image to update
+    Image image2 = new Image();
+    image2.setId(2L);
+
     // Prepare update request DTO
     UpdateEventRequestDto updateEventRequestDto = new UpdateEventRequestDto();
     updateEventRequestDto.setTitle("Updated Event");
     updateEventRequestDto.setLocation("456 Another St");
     updateEventRequestDto.setEventCategory(Event.EventCategory.CONFERENCE);
     updateEventRequestDto.setVenue("New Venue");
+    updateEventRequestDto.setImageId(2L);
     updateEventRequestDto.setEventDate(LocalDate.of(2024, 7, 15));
     updateEventRequestDto.setStartTime(LocalTime.of(10, 0));
     updateEventRequestDto.setEndTime(LocalTime.of(12, 0));
@@ -187,6 +201,7 @@ public class EventServiceTest {
     existingEvent.setLocation("123 Main St");
     existingEvent.setEventCategory(Event.EventCategory.WORKSHOP);
     existingEvent.setVenue("Old Venue");
+    existingEvent.setImage(image);
     existingEvent.setEventDate(LocalDate.of(2024, 7, 14));
     existingEvent.setStartTime(LocalTime.of(9, 0));
     existingEvent.setEndTime(LocalTime.of(11, 0));
@@ -198,6 +213,7 @@ public class EventServiceTest {
     when(eventRepository.save(existingEvent)).thenReturn(existingEvent);
     when(eventRepository.findById(1L)).thenReturn(Optional.of(existingEvent));
     when(usersService.getCurrentUser()).thenReturn(eventOrganizer); // Mock the logged-in user
+    when(imageRepository.findById(2L)).thenReturn(Optional.of(image2));
 
     // Call the method
     EventResponseDto updatedEvent = eventService.updateEvent(1L, updateEventRequestDto);
@@ -207,6 +223,7 @@ public class EventServiceTest {
     assertEquals("456 Another St", updatedEvent.getLocation());
     assertEquals(Event.EventCategory.CONFERENCE, updatedEvent.getEventCategory());
     assertEquals("New Venue", updatedEvent.getVenue());
+    assertEquals(image2, updatedEvent.getImage());
     assertEquals(LocalDate.of(2024, 7, 15), updatedEvent.getEventDate());
     assertEquals(LocalTime.of(10, 0), updatedEvent.getStartTime());
     assertEquals(LocalTime.of(12, 0), updatedEvent.getEndTime());
