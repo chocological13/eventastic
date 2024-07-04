@@ -6,6 +6,8 @@ import com.miniproject.eventastic.users.entity.Users;
 
 public interface PointsWalletService {
 
+  void savePointsWallet(PointsWallet pointsWallet);
+
   void addPointsWallet(PointsWallet pointsWallet, Integer addPointsWallet);
 
   PointsWalletResponseDto getPointsWallet(Users loggedInUser);

@@ -12,24 +12,26 @@ import java.util.List;
 
 public interface UsersService {
 
+  void saveUser(Users user);
+
+  void resetPassword(Users user, String newPassword);
+
+  void update(ProfileUpdateRequestDTO requestDto);
+
   List<UserProfileDto> getAllUsers();
 
   UserProfileDto getProfile();
 
   Users getByUsername(String username);
 
-  Users getByEmail(String email);
-
   Users getById(Long id);
 
   RegisterResponseDto register(RegisterRequestDto requestDto);
 
-  void resetPassword(Users user, String newPassword);
-
-  void update(ProfileUpdateRequestDTO requestDto);
-
   // ref code related
   void saveRefCode(ReferralCodeUsage usage);
+
+  Users getUserByOwnedCode(String ownedCode);
 
   ReferralCodeUsageSummaryDto getCodeUsageSummary();
 

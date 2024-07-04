@@ -8,7 +8,7 @@ import static org.mockito.Mockito.when;
 
 import com.miniproject.eventastic.pointsWallet.entity.PointsWallet;
 import com.miniproject.eventastic.pointsWallet.entity.dto.PointsWalletResponseDto;
-import com.miniproject.eventastic.pointsWallet.service.impl.PointsWalletServiceImpl;
+import com.miniproject.eventastic.pointsWallet.service.impl.PointsWalletService;
 import com.miniproject.eventastic.referralCodeUsage.repository.ReferralCodeUsageRepository;
 import com.miniproject.eventastic.users.entity.Users;
 import com.miniproject.eventastic.users.repository.UsersRepository;
@@ -40,7 +40,7 @@ public class UsersServiceImplTest {
   @Mock
   private ApplicationEventPublisher eventPublisher;
   @Mock
-  private PointsWalletServiceImpl pointsWalletService;
+  private PointsWalletService pointsWalletService;
   @Mock
   private SecurityContext securityContext;
   @Mock

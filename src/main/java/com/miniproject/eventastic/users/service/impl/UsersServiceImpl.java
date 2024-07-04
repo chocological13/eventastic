@@ -1,8 +1,10 @@
 package com.miniproject.eventastic.users.service.impl;
 
 import com.miniproject.eventastic.pointsWallet.entity.dto.PointsWalletResponseDto;
-import com.miniproject.eventastic.pointsWallet.service.impl.PointsWalletServiceImpl;
+import com.miniproject.eventastic.pointsWallet.service.impl.PointsWalletService;
 import com.miniproject.eventastic.referralCodeUsage.entity.ReferralCodeUsage;
+import com.miniproject.eventastic.referralCodeUsage.entity.dto.ReferralCodeUsersDto;
+import com.miniproject.eventastic.referralCodeUsage.entity.dto.ReferralCodeUseCountDto;
 import com.miniproject.eventastic.referralCodeUsage.entity.dto.ReferralCodeUsageSummaryDto;
 import com.miniproject.eventastic.referralCodeUsage.repository.ReferralCodeUsageRepository;
 import com.miniproject.eventastic.users.entity.Users;
@@ -25,7 +27,6 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -40,7 +41,7 @@ public class UsersServiceImpl implements UsersService {
   private final AuthenticationManager authenticationManager;
   private final ReferralCodeUsageRepository referralCodeUsageRepository;
   private final ApplicationEventPublisher eventPublisher;
-  private final PointsWalletServiceImpl pointsWalletService;
+  private final PointsWalletService pointsWalletService;
 
   @Override
   public List<UserProfileDto> getAllUsers() {
@@ -73,12 +74,6 @@ public class UsersServiceImpl implements UsersService {
   @Override
   public Users getByUsername(String username) {
     Optional<Users> usersOptional = usersRepository.findByUsername(username);
-    return usersOptional.orElse(null);
-  }
-
-  @Override
-  public Users getByEmail(String email) {
-    Optional<Users> usersOptional = usersRepository.findByEmail(email);
     return usersOptional.orElse(null);
   }
 
@@ -118,6 +113,11 @@ public class UsersServiceImpl implements UsersService {
   }
 
   @Override
+  public void saveUser(Users user) {
+    usersRepository.save(user);
+  }
+
+  @Override
   public void resetPassword(Users user, String newPassword) {
     user.setPassword(passwordEncoder.encode(newPassword));
     usersRepository.save(user);
@@ -144,6 +144,11 @@ public class UsersServiceImpl implements UsersService {
   }
 
   @Override
+  public Users getUserByOwnedCode(String ownedCode) {
+    return usersRepository.findByOwnedRefCode(ownedCode).orElse(null);
+  }
+
+  @Override
   public ReferralCodeUsageSummaryDto getCodeUsageSummary() {
     Authentication auth = SecurityContextHolder.getContext().getAuthentication();
     String username = auth.getName();
@@ -152,10 +157,10 @@ public class UsersServiceImpl implements UsersService {
     Users codeOwner = getByUsername(username);
     log.info("CodeOwner: {}", codeOwner);
 
-    ReferralCodeUsageSummaryDto response = new ReferralCodeUsageSummaryDto();
-    response.setReferralCodeUsageOwnerDto(referralCodeUsageRepository.findUsageSummaryByCodeOwner(codeOwner));
-    response.setReferralCodeUsageByDto(referralCodeUsageRepository.findUsersByCodeOwner(codeOwner));
-    return response;
+    ReferralCodeUseCountDto owner = referralCodeUsageRepository.countReferralCodeUsageWhereOwnerIs(codeOwner);
+    ReferralCodeUsersDto usedBy = referralCodeUsageRepository.findReferralCodeUsersWhereOwnerIs(codeOwner);
+
+    return new ReferralCodeUsageSummaryDto(owner, usedBy);
   }
 
   @Override
