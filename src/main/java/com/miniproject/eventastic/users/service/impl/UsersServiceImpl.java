@@ -1,5 +1,11 @@
 package com.miniproject.eventastic.users.service.impl;
 
+import com.miniproject.eventastic.exceptions.ImageNotFoundException;
+import com.miniproject.eventastic.image.entity.Image;
+import com.miniproject.eventastic.image.entity.dto.ImageUploadRequestDto;
+import com.miniproject.eventastic.image.entity.dto.ImageUploadResponseDto;
+import com.miniproject.eventastic.image.service.CloudinaryService;
+import com.miniproject.eventastic.image.service.ImageService;
 import com.miniproject.eventastic.pointsWallet.entity.dto.PointsWalletResponseDto;
 import com.miniproject.eventastic.pointsWallet.service.impl.PointsWalletService;
 import com.miniproject.eventastic.referralCodeUsage.entity.ReferralCodeUsage;
@@ -7,7 +13,6 @@ import com.miniproject.eventastic.referralCodeUsage.entity.dto.ReferralCodeUsage
 import com.miniproject.eventastic.referralCodeUsage.entity.dto.ReferralCodeUseCountDto;
 import com.miniproject.eventastic.referralCodeUsage.entity.dto.ReferralCodeUsersDto;
 import com.miniproject.eventastic.referralCodeUsage.service.ReferralCodeUsageService;
-import com.miniproject.eventastic.referralCodeUsage.service.impl.ReferralCodeUsageServiceImpl;
 import com.miniproject.eventastic.users.entity.Users;
 import com.miniproject.eventastic.users.entity.dto.profile.UserProfileDto;
 import com.miniproject.eventastic.users.entity.dto.register.RegisterRequestDto;
@@ -43,7 +48,8 @@ public class UsersServiceImpl implements UsersService {
   private final ReferralCodeUsageService referralCodeUsageService;
   private final ApplicationEventPublisher eventPublisher;
   private final PointsWalletService pointsWalletService;
-  private final ReferralCodeUsageServiceImpl referralCodeUsageServiceImpl;
+  private final CloudinaryService cloudinaryService;
+  private final ImageService imageService;
 
   @Override
   public List<UserProfileDto> getAllUsers() {
@@ -132,14 +138,26 @@ public class UsersServiceImpl implements UsersService {
   }
 
   @Override
-  public void update(ProfileUpdateRequestDTO requestDto) {
+  public void update(ProfileUpdateRequestDTO requestDto) throws ImageNotFoundException {
     // get logged in user
     String username = SecurityContextHolder.getContext().getAuthentication().getName();
     Optional<Users> usersOptional = usersRepository.findByUsername(username);
     if (usersOptional.isPresent()) {
       Users existingUser = usersOptional.get();
       ProfileUpdateRequestDTO update = new ProfileUpdateRequestDTO();
-      update.profileUpdateRequestDTOtoUsers(existingUser, requestDto);
+      update.dtoToEntity(existingUser, requestDto);
+
+      // check for image
+      if (requestDto.getAvatarId() != null) {
+        Image avatar = imageService.getImageById(requestDto.getAvatarId());
+        if (avatar != null) {
+          existingUser.setAvatar(avatar);
+        } else {
+          throw new ImageNotFoundException("Image doesn't exist in database. Please enter another imageId or upload a "
+                                           + "new image");
+        }
+      }
+
       usersRepository.save(existingUser);
     }
   }
@@ -184,6 +202,39 @@ public class UsersServiceImpl implements UsersService {
     // get currently logged-in user
     Users currentUser = getCurrentUser();
     return pointsWalletService.getPointsWallet(currentUser);
+  }
+
+  @Override
+  public Image uploadImage(ImageUploadRequestDto requestDto) {
+    try {
+      if (requestDto.getFileName().isEmpty()) {
+        return null;
+      }
+      if (requestDto.getFile().isEmpty()) {
+        return null;
+      }
+
+      // Get the currently logged-in user
+      Users owner = getCurrentUser();
+
+      // Define the objects
+      String imageName = requestDto.getFileName();
+      String imageUrl = cloudinaryService.uploadFile(requestDto.getFile(), "eventastic");
+
+      Image image = new Image();
+      image.setImageName(imageName);
+      image.setImageUrl(imageUrl);
+      if (image.getImageUrl() == null) {
+        return null;
+      }
+      image.setOwner(owner);
+      imageService.saveImage(image);
+
+      return image;
+    } catch (Exception e) {
+      e.printStackTrace();
+      return null;
+    }
   }
 
 }

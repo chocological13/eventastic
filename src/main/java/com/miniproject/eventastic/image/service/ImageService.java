@@ -6,7 +6,9 @@ import com.miniproject.eventastic.image.entity.dto.ImageUploadResponseDto;
 
 public interface ImageService {
 
-  ImageUploadResponseDto uploadImage(ImageUploadRequestDto imageUploadRequestDto);
+//  ImageUploadResponseDto uploadImage(ImageUploadRequestDto imageUploadRequestDto);
 
   Image getImageById(Long imageId);
+
+  void saveImage(Image image);
 }

@@ -1,6 +1,10 @@
 package com.miniproject.eventastic.users.controller;
 
+import com.miniproject.eventastic.exceptions.ImageNotFoundException;
 import com.miniproject.eventastic.exceptions.VoucherNotFoundException;
+import com.miniproject.eventastic.image.entity.Image;
+import com.miniproject.eventastic.image.entity.dto.ImageUploadRequestDto;
+import com.miniproject.eventastic.image.entity.dto.ImageUploadResponseDto;
 import com.miniproject.eventastic.pointsWallet.entity.dto.PointsWalletResponseDto;
 import com.miniproject.eventastic.referralCodeUsage.entity.dto.ReferralCodeUsageSummaryDto;
 import com.miniproject.eventastic.responses.Response;
@@ -92,15 +96,27 @@ public class UsersController {
 
   // * Edit Profile
   @PutMapping("/me/update")
-  public ResponseEntity<Response<UserProfileDto>> updateUserProfile(@Valid @RequestBody ProfileUpdateRequestDTO requestDTO) {
+  public ResponseEntity<Response<UserProfileDto>> updateUserProfile(@Valid @RequestBody ProfileUpdateRequestDTO requestDTO)
+      throws ImageNotFoundException {
     usersService.update(requestDTO);
     UserProfileDto userProfile = usersService.getProfile();
     return Response.successfulResponse(HttpStatus.OK.value(), "Profile update successful!! :D", userProfile);
   }
 
-  // > Ref Code related
+  // * Ref Code related
   @GetMapping("/referral/usage")
   public ReferralCodeUsageSummaryDto referralCodeUsageSummary() {
     return usersService.getCodeUsageSummary();
+  }
+
+  // * upload image
+  @PostMapping("/image/upload")
+  public ResponseEntity<Response<ImageUploadResponseDto>> uploadImage(ImageUploadRequestDto requestDto) {
+    Image uploadedImage = usersService.uploadImage(requestDto);
+    if (uploadedImage == null) {
+      return ResponseEntity.noContent().build();
+    } else {
+      return Response.successfulResponse(HttpStatus.OK.value(), "Image uploaded! :D", new ImageUploadResponseDto(uploadedImage));
+    }
   }
 }

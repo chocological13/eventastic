@@ -16,4 +16,8 @@ public class ImageUploadResponseDto {
     this.imageUrl = image.getImageUrl();
     this.owner = image.getOwner().getUsername();
   }
+
+  public ImageUploadResponseDto toDto(Image image) {
+    return new ImageUploadResponseDto(image);
+  }
 }

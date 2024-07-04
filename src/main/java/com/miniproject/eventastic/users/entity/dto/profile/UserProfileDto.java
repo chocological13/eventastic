@@ -1,5 +1,6 @@
 package com.miniproject.eventastic.users.entity.dto.profile;
 
+import com.miniproject.eventastic.image.entity.dto.ImageUploadResponseDto;
 import com.miniproject.eventastic.users.entity.Users;
 import java.util.Date;
 import lombok.AllArgsConstructor;
@@ -17,7 +18,7 @@ public class UserProfileDto {
   private boolean isOrganizer;
   private String firstName;
   private String lastName;
-  private String avatar;
+  private ImageUploadResponseDto avatar;
   private String bio;
   private Date birthday;
   private String ownedRefCode;
@@ -29,7 +30,7 @@ public class UserProfileDto {
     this.isOrganizer = user.getIsOrganizer();
     this.firstName = user.getFirstName();
     this.lastName = user.getLastName();
-    this.avatar = user.getAvatar();
+    this.avatar = new ImageUploadResponseDto(user.getAvatar());
     this.bio = user.getBio();
     this.birthday = user.getBirthday();
     this.ownedRefCode = user.getOwnedRefCode();

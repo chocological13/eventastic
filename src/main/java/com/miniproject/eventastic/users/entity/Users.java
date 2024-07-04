@@ -1,5 +1,6 @@
 package com.miniproject.eventastic.users.entity;
 
+import com.miniproject.eventastic.image.entity.Image;
 import com.miniproject.eventastic.pointsWallet.entity.PointsWallet;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -67,8 +68,9 @@ public class Users {
   @Column(name = "deleted_at")
   private Instant deletedAt;
 
-  @Column(name = "avatar", length = Integer.MAX_VALUE)
-  private String avatar;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "avatar_id")
+  private Image avatar;
 
   @Size(max = 50)
   @Column(name = "first_name", length = 50)

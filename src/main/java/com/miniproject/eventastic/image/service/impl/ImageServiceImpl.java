@@ -20,44 +20,48 @@ import org.springframework.stereotype.Service;
 public class ImageServiceImpl implements ImageService {
 
   private final ImageRepository imageRepository;
-  private final CloudinaryService cloudinaryService;
-  private final UsersService usersService;
-
+//  private final CloudinaryService cloudinaryService;
+//  private final UsersService usersService;
 
   @Override
-  public ImageUploadResponseDto uploadImage(ImageUploadRequestDto imageUploadRequestDto) {
-    try {
-      if (imageUploadRequestDto.getFileName().isEmpty()) {
-        return null;
-      }
-      if (imageUploadRequestDto.getFile().isEmpty()) {
-        return null;
-      }
-
-      // Get the currently logged-in user
-      Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-      String username = authentication.getName();
-      Users owner = usersService.getByUsername(username);
-
-      // Define the objects
-      String imageName = imageUploadRequestDto.getFileName();
-      String imageUrl = cloudinaryService.uploadFile(imageUploadRequestDto.getFile(), "eventastic");
-
-      Image image = new Image();
-      image.setImageName(imageName);
-      image.setImageUrl(imageUrl);
-      if (image.getImageUrl() == null) {
-        return null;
-      }
-      image.setOwner(owner);
-      imageRepository.save(image);
-
-      return new ImageUploadResponseDto(image);
-    } catch (Exception e) {
-      e.printStackTrace();
-      return null;
-    }
+  public void saveImage(Image image) {
+    imageRepository.save(image);
   }
+
+//  @Override
+//  public ImageUploadResponseDto uploadImage(ImageUploadRequestDto imageUploadRequestDto) {
+//    try {
+//      if (imageUploadRequestDto.getFileName().isEmpty()) {
+//        return null;
+//      }
+//      if (imageUploadRequestDto.getFile().isEmpty()) {
+//        return null;
+//      }
+//
+//      // Get the currently logged-in user
+//      Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//      String username = authentication.getName();
+//      Users owner = usersService.getByUsername(username);
+//
+//      // Define the objects
+//      String imageName = imageUploadRequestDto.getFileName();
+//      String imageUrl = cloudinaryService.uploadFile(imageUploadRequestDto.getFile(), "eventastic");
+//
+//      Image image = new Image();
+//      image.setImageName(imageName);
+//      image.setImageUrl(imageUrl);
+//      if (image.getImageUrl() == null) {
+//        return null;
+//      }
+//      image.setOwner(owner);
+//      imageRepository.save(image);
+//
+//      return new ImageUploadResponseDto(image);
+//    } catch (Exception e) {
+//      e.printStackTrace();
+//      return null;
+//    }
+//  }
 
   @Override
   public Image getImageById(Long imageId) {
