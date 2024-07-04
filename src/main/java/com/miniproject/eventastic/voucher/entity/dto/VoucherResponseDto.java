@@ -14,6 +14,7 @@ public class VoucherResponseDto {
   private String organizer;
   private String eventTitle;
   private Integer percentDiscount;
+  private Integer useLimit;
   private Instant createdAt;
   private Instant expiresAt;
 
@@ -31,6 +32,7 @@ public class VoucherResponseDto {
         voucher.getEvent().getTitle() :
         "Available for all events!";
     this.percentDiscount = voucher.getPercentDiscount();
+    this.useLimit = voucher.getUseLimit();
     this.createdAt = voucher.getCreatedAt();
     this.expiresAt = voucher.getExpiresAt();
   }

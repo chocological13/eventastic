@@ -59,7 +59,12 @@ public class VoucherServiceImpl implements VoucherService {
     if (voucherRequestDto.getAwardeeId() != null) {
       Users awardedUser = usersService.getById(voucherRequestDto.getAwardeeId());
       newVoucher.setAwardee(awardedUser);
+    } else {
+      // limit usage only for global voucher, if user is null and useLimit is null, default useLimit is 100
+      newVoucher.setUseLimit(voucherRequestDto.getUseLimit() != null ? voucherRequestDto.getUseLimit() : 100);
     }
+
+    // see if voucher is tied to a specific event
     if (voucherRequestDto.getEventId() != null) {
       Event event = eventService.getEventById(voucherRequestDto.getEventId());
       newVoucher.setEvent(event);

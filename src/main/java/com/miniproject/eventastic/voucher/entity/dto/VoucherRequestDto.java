@@ -10,4 +10,5 @@ public class VoucherRequestDto {
   private String description;
   private Integer percentDiscount;
   private Integer validity;
+  private Integer useLimit;
 }

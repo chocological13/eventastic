@@ -62,6 +62,10 @@ public class Voucher {
   @Column(name = "expires_at")
   private Instant expiresAt;
 
+  @Column(name = "use_limit")
+  private Integer useLimit;
+
+
   @PrePersist
   protected void onCreate() {
     createdAt = Instant.now();
