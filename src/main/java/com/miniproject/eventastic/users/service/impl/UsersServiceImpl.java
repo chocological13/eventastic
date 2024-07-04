@@ -107,7 +107,13 @@ public class UsersServiceImpl implements UsersService {
     response.setUsername(newUser.getUsername());
     response.setEmail(newUser.getEmail());
     response.setOwnedRefCode(newUser.getOwnedRefCode());
-    response.setRefCodeUsed(newUser.getRefCodeUsed());
+    if (newUser.getRefCodeUsed() != null) {
+      response.setRefCodeUsed(
+          "Successfully used referral code " + newUser.getRefCodeUsed() + " by user " + getUserByOwnedCode(
+              newUser.getRefCodeUsed()).getUsername());
+    } else {
+      response.setRefCodeUsed("No referral code used");
+    }
     response.setPointsWallet(new PointsWalletResponseDto(newUser.getPointsWallet()));
     return response;
   }
