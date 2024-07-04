@@ -45,4 +45,18 @@ public class VoucherController {
     }
   }
 
+  @GetMapping
+  public ResponseEntity<Response<List<VoucherResponseDto>>> getVouchersForAllUsers() {
+    try {
+      List<Voucher> voucherList = voucherService.getVouchersForAllUsers();
+      List<VoucherResponseDto> responseDtos = voucherList.stream()
+          .map(VoucherResponseDto::new)
+          .toList();
+      return Response.successfulResponse(HttpStatus.FOUND.value(), "Displaying vouchers available for all users",
+          responseDtos);
+    } catch (VoucherNotFoundException e) {
+      return Response.failedResponse(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
+    }
+  }
+
 }

@@ -90,4 +90,14 @@ public class VoucherServiceImpl implements VoucherService {
     return voucherList;
   }
 
+  @Override
+  public List<Voucher> getVouchersForAllUsers() {
+    List<Voucher> voucherList = voucherRepository.findByAwardeeIdIsNull();
+    if (voucherList.isEmpty()) {
+      throw new VoucherNotFoundException("There are no active global vouchers");
+    }
+    return voucherList;
+  }
+
+
 }
