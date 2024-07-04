@@ -2,6 +2,7 @@ package com.miniproject.eventastic.voucher.entity.dto;
 
 import com.miniproject.eventastic.voucher.entity.Voucher;
 import java.time.Instant;
+import java.util.Objects;
 import lombok.Data;
 
 @Data
@@ -10,6 +11,7 @@ public class VoucherResponseDto {
   private String code;
   private String description;
   private String awardee;
+  private String organizer;
   private String eventTitle;
   private Integer percentDiscount;
   private Instant createdAt;
@@ -22,6 +24,9 @@ public class VoucherResponseDto {
     this.awardee = voucher.getAwardee() != null ?
         voucher.getAwardee().getUsername() :
         "Available for all users!";
+    this.organizer = !Objects.equals(voucher.getOrganizer().getUsername(), "strwbry") ?
+        voucher.getOrganizer().getUsername() :
+        "Presented to you by EVENTASTIC!";
     this.eventTitle = voucher.getEvent() != null ?
         voucher.getEvent().getTitle() :
         "Available for all events!";

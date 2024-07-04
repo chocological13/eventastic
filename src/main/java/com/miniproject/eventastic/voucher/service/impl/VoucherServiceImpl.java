@@ -38,8 +38,8 @@ public class VoucherServiceImpl implements VoucherService {
   public Voucher createVoucher(VoucherRequestDto voucherRequestDto) throws AccessDeniedException {
     // verify user
     Users loggedInUser = usersService.getCurrentUser();
-    if (!loggedInUser.getIsOrganizer()) {
-      throw new AccessDeniedException("Only organizers can create a voucher.");
+    if (!loggedInUser.getIsOrganizer() || !loggedInUser.getUsername().equals("strwbry")) {
+      throw new AccessDeniedException("Only organizers and admins can create a voucher.");
     }
 
     // time set up
@@ -53,6 +53,7 @@ public class VoucherServiceImpl implements VoucherService {
     newVoucher.setPercentDiscount(voucherRequestDto.getPercentDiscount());
     newVoucher.setCreatedAt(Instant.now());
     newVoucher.setExpiresAt(expiresAt);
+    newVoucher.setOrganizer(loggedInUser);
 
     // see if voucher is for a user or specific to an event
     if (voucherRequestDto.getAwardeeId() != null) {

@@ -41,6 +41,10 @@ public class Voucher {
   @JoinColumn(name = "event_id")
   private Event event;
 
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "organizer_id")
+  private Users organizer;
+
   @Column(name = "description", length = Integer.MAX_VALUE)
   private String description;
 
