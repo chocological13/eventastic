@@ -75,7 +75,7 @@ public class UsersController {
   @GetMapping("/points")
   public ResponseEntity<Response<PointsWalletResponseDto>> getUsersPointsWallet() {
     String currentUser =
-        usersService.getCurrentUser().getFirstName() + " " + usersService.getCurrentUser().getLastName();
+        usersService.getCurrentUser().getFullName();
     return Response.successfulResponse(HttpStatus.FOUND.value(), "Showing Points Wallet for: " + currentUser,
         usersService.getUsersPointsWallet());
   }

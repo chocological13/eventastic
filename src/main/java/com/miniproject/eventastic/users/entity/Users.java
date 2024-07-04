@@ -73,12 +73,8 @@ public class Users {
   private Image avatar;
 
   @Size(max = 50)
-  @Column(name = "first_name", length = 50)
-  private String firstName;
-
-  @Size(max = 50)
-  @Column(name = "last_name", length = 50)
-  private String lastName;
+  @Column(name = "full_name", length = 50)
+  private String fullName;
 
   @Column(name = "bio", length = Integer.MAX_VALUE)
   private String bio;

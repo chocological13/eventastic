@@ -18,8 +18,7 @@ public class RegisterRequestDto {
   private String username;
   private String email;
   private String password;
-  private String firstName;
-  private String lastName;
+  private String fullName;
   private String refCodeUsed;
   private Boolean isOrganizer;
 
@@ -27,8 +26,7 @@ public class RegisterRequestDto {
     user.setUsername(registerRequestDto.getUsername());
     user.setEmail(registerRequestDto.getEmail());
     user.setPassword(registerRequestDto.getPassword());
-    user.setFirstName(registerRequestDto.getFirstName());
-    user.setLastName(registerRequestDto.getLastName());
+    user.setFullName(registerRequestDto.getFullName());
     Optional.ofNullable(registerRequestDto.refCodeUsed).ifPresent(user::setRefCodeUsed);
     user.setIsOrganizer(registerRequestDto.getIsOrganizer());
     return user;

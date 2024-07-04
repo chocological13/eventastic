@@ -16,8 +16,7 @@ public class UserProfileDto {
   private String username;
   private String email;
   private boolean isOrganizer;
-  private String firstName;
-  private String lastName;
+  private String fullName;
   private ImageUploadResponseDto avatar;
   private String bio;
   private Date birthday;
@@ -28,8 +27,7 @@ public class UserProfileDto {
     this.username = user.getUsername();
     this.email = user.getEmail();
     this.isOrganizer = user.getIsOrganizer();
-    this.firstName = user.getFirstName();
-    this.lastName = user.getLastName();
+    this.fullName = user.getFullName();
     this.avatar = new ImageUploadResponseDto(user.getAvatar());
     this.bio = user.getBio();
     this.birthday = user.getBirthday();

@@ -10,15 +10,13 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ProfileUpdateRequestDTO {
 
-  private String firstName;
-  private String lastName;
+  private String fullName;
   private Long avatarId;
   private String bio;
   private Date birthday;
 
   public Users dtoToEntity(Users user, ProfileUpdateRequestDTO requestDto) {
-    Optional.ofNullable(requestDto.getFirstName()).ifPresent(user::setFirstName);
-    Optional.ofNullable(requestDto.getLastName()).ifPresent(user::setLastName);
+    Optional.ofNullable(requestDto.getFullName()).ifPresent(user::setFullName);
     Optional.ofNullable(requestDto.getBio()).ifPresent(user::setBio);
     Optional.ofNullable(requestDto.getBirthday()).ifPresent(user::setBirthday);
     return user;
