@@ -1,21 +1,21 @@
 package com.miniproject.eventastic.event.service.impl;
 
-import static com.miniproject.eventastic.event.entity.dto.EventResponseDto.toEventResponseDto;
-
+import com.miniproject.eventastic.event.entity.Category;
 import com.miniproject.eventastic.event.entity.Event;
 import com.miniproject.eventastic.event.entity.dto.EventResponseDto;
 import com.miniproject.eventastic.event.entity.dto.createEvent.CreateEventRequestDto;
 import com.miniproject.eventastic.event.entity.dto.updateEvent.UpdateEventRequestDto;
+import com.miniproject.eventastic.event.repository.CategoryRepository;
 import com.miniproject.eventastic.event.repository.EventRepository;
 import com.miniproject.eventastic.event.service.EventService;
+import com.miniproject.eventastic.exceptions.CategoryNotFoundException;
 import com.miniproject.eventastic.exceptions.DuplicateEventException;
 import com.miniproject.eventastic.exceptions.EventNotFoundException;
+import com.miniproject.eventastic.exceptions.ImageNotFoundException;
 import com.miniproject.eventastic.image.entity.Image;
-import com.miniproject.eventastic.image.repository.ImageRepository;
 import com.miniproject.eventastic.image.service.ImageService;
 import com.miniproject.eventastic.ticketType.entity.TicketType;
 import com.miniproject.eventastic.ticketType.entity.dto.TicketTypeRequestDto;
-import com.miniproject.eventastic.ticketType.repository.TicketTypeRepository;
 import com.miniproject.eventastic.ticketType.service.TicketTypeService;
 import com.miniproject.eventastic.users.entity.Users;
 import com.miniproject.eventastic.users.service.UsersService;
@@ -49,6 +49,7 @@ public class EventServiceImpl implements EventService {
   private final TicketTypeService ticketTypeService;
   private final UsersService usersService;
   private final ImageService imageService;
+  private final CategoryRepository categoryRepository;
 
   @Override
   public EventResponseDto createEvent(CreateEventRequestDto requestDto) {
@@ -67,11 +68,23 @@ public class EventServiceImpl implements EventService {
     organizerOptional.ifPresent(createdEvent::setOrganizer);
     eventRepository.save(createdEvent);
 
+    // check for category
+    if (requestDto.getCategoryId() != null) {
+      Category category = getCategoryById(requestDto.getCategoryId());
+      if (category != null) {
+        createdEvent.setCategory(category);
+      } else {
+        throw new CategoryNotFoundException("Category not found, please enter another ID");
+      }
+    }
+
     // check for image
     if (requestDto.getImageId() != null) {
       Image image = imageService.getImageById(requestDto.getImageId());
       if (image != null) {
         createdEvent.setImage(image);
+      } else {
+        throw new ImageNotFoundException("Image does not exist! Please enter a new ID.");
       }
     }
 
@@ -118,7 +131,7 @@ public class EventServiceImpl implements EventService {
     createdEvent.getTicketTypes().addAll(ticketTypes);
     eventRepository.save(createdEvent);
 
-    return toEventResponseDto(createdEvent);
+    return new EventResponseDto(createdEvent);
   }
 
   @Override
@@ -146,7 +159,7 @@ public class EventServiceImpl implements EventService {
     }
 
     Page<Event> eventsPage = eventRepository.findAll(specification, pageable);
-    return eventsPage.map(EventResponseDto::toEventResponseDto);
+    return eventsPage.map(EventResponseDto::new);
   }
 
   @Override
@@ -156,7 +169,7 @@ public class EventServiceImpl implements EventService {
     Specification<Event> specification = EventSpecifications.isUpcoming();
 
     Page<Event> eventsPage = eventRepository.findAll(specification, pageable);
-    return eventsPage.map(EventResponseDto::toEventResponseDto);
+    return eventsPage.map(EventResponseDto::new);
   }
 
   @Override
@@ -203,7 +216,7 @@ public class EventServiceImpl implements EventService {
 
     // save event
     eventRepository.save(updatedEvent);
-    return EventResponseDto.toEventResponseDto(updatedEvent);
+    return new EventResponseDto(updatedEvent);
   }
 
   @Override
@@ -222,6 +235,11 @@ public class EventServiceImpl implements EventService {
 
     Event eventToDelete = optionalEvent.get();
     eventToDelete.setDeletedAt(Instant.now());
+  }
+
+  @Override
+  public Category getCategoryById(Long eventId) {
+    return categoryRepository.findById(eventId).orElse(null);
   }
 
 }

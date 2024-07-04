@@ -1,12 +1,14 @@
 package com.miniproject.eventastic.exceptions;
 
-import com.cloudinary.api.exceptions.NotFound;
 
-public class ImageNotFoundException extends NotFound {
+public class ImageNotFoundException extends RuntimeException {
 
 
   public ImageNotFoundException(String message) {
     super(message);
   }
 
+  public ImageNotFoundException(String message, Throwable cause) {
+    super(message, cause);
+  }
 }

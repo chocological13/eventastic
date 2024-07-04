@@ -1,6 +1,8 @@
 package com.miniproject.eventastic.event.service.impl;
 
 import com.miniproject.eventastic.event.entity.Event;
+import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Predicate;
 import java.time.LocalDate;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -14,8 +16,10 @@ public class EventSpecifications {
 
   // Method to filter by category
   public static Specification<Event> hasCategory(String category) {
-    return ((root, query, criteriaBuilder) ->
-        criteriaBuilder.equal(criteriaBuilder.lower(root.get("category")), category.toLowerCase()));
+    return ((root, query, criteriaBuilder) -> {
+      var categoryJoin = root.join("category", JoinType.INNER);
+      return criteriaBuilder.equal(criteriaBuilder.lower(categoryJoin.get("name")), category.toLowerCase());
+    });
   }
 
   // Method to filter by locations

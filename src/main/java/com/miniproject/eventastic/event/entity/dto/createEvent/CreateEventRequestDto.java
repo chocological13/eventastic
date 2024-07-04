@@ -1,8 +1,6 @@
 package com.miniproject.eventastic.event.entity.dto.createEvent;
 
 import com.miniproject.eventastic.event.entity.Event;
-import com.miniproject.eventastic.image.entity.Image;
-import com.miniproject.eventastic.image.repository.ImageRepository;
 import com.miniproject.eventastic.ticketType.entity.dto.TicketTypeRequestDto;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -25,7 +23,7 @@ public class CreateEventRequestDto {
   private String description;
 
   @NotNull
-  private Event.EventCategory eventCategory;
+  private Long categoryId;
 
   @NotEmpty
   private String location;
@@ -54,7 +52,6 @@ public class CreateEventRequestDto {
     Event event = new Event();
     event.setTitle(eventRequestDto.title);
     event.setDescription(eventRequestDto.description);
-    event.setEventCategory(eventRequestDto.eventCategory);
     event.setLocation(eventRequestDto.location);
     event.setVenue(eventRequestDto.venue);
     event.setEventDate(eventRequestDto.eventDate);

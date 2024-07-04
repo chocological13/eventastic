@@ -1,5 +1,6 @@
 package com.miniproject.eventastic.event.service;
 
+import com.miniproject.eventastic.event.entity.Category;
 import com.miniproject.eventastic.event.entity.Event;
 import com.miniproject.eventastic.event.entity.dto.EventResponseDto;
 import com.miniproject.eventastic.event.entity.dto.createEvent.CreateEventRequestDto;
@@ -24,4 +25,7 @@ public interface EventService {
 
   // soft delete
   void deleteEvent(Long eventId);
+
+  // category
+  Category getCategoryById(Long eventId);
 }

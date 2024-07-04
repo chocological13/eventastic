@@ -9,7 +9,7 @@
 //
 //import com.miniproject.eventastic.event.controller.EventController;
 //import com.miniproject.eventastic.event.entity.Event;
-//import com.miniproject.eventastic.event.entity.Event.EventCategory;
+//import com.miniproject.eventastic.event.entity.Event.Category;
 //import com.miniproject.eventastic.event.entity.dto.EventResponseDto;
 //import com.miniproject.eventastic.event.entity.dto.createEvent.CreateEventRequestDto;
 //import com.miniproject.eventastic.event.entity.dto.updateEvent.UpdateEventRequestDto;
@@ -139,7 +139,7 @@
 ////    UpdateEventRequestDto updateEventRequestDto = new UpdateEventRequestDto();
 ////    updateEventRequestDto.setTitle("Updated Event");
 ////    updateEventRequestDto.setLocation("456 Another St");
-////    updateEventRequestDto.setEventCategory(EventCategory.CONFERENCE);
+////    updateEventRequestDto.setCategory(Category.CONFERENCE);
 ////    updateEventRequestDto.setVenue("New Venue");
 ////    updateEventRequestDto.setEventDate(LocalDate.of(2024, 7, 15));
 ////    updateEventRequestDto.setStartTime(LocalTime.of(10, 0));
@@ -149,7 +149,7 @@
 ////    existingEvent.setId(1L);
 ////    existingEvent.setTitle("Original Event");
 ////    existingEvent.setLocation("123 Main St");
-////    existingEvent.setEventCategory(EventCategory.WORKSHOP);
+////    existingEvent.setCategory(Category.WORKSHOP);
 ////    existingEvent.setVenue("Old Venue");
 ////    existingEvent.setEventDate(LocalDate.of(2024, 7, 14));
 ////    existingEvent.setStartTime(LocalTime.of(9, 0));
@@ -166,7 +166,7 @@
 ////
 ////    assertEquals("Updated Event", updatedEvent.getTitle());
 ////    assertEquals("456 Another St", updatedEvent.getLocation());
-////    assertEquals(EventCategory.CONFERENCE, updatedEvent.getEventCategory());
+////    assertEquals(Category.CONFERENCE, updatedEvent.getCategory());
 ////    assertEquals("New Venue", updatedEvent.getVenue());
 ////    assertEquals(LocalDate.of(2024, 7, 15), updatedEvent.getEventDate());
 ////    assertEquals(LocalTime.of(10, 0), updatedEvent.getStartTime());
@@ -187,7 +187,7 @@
 //    UpdateEventRequestDto updateEventRequestDto = new UpdateEventRequestDto();
 //    updateEventRequestDto.setTitle("Updated Event");
 //    updateEventRequestDto.setLocation("456 Another St");
-//    updateEventRequestDto.setEventCategory(Event.EventCategory.CONFERENCE);
+//    updateEventRequestDto.setCategory(Event.Category.CONFERENCE);
 //    updateEventRequestDto.setVenue("New Venue");
 //    updateEventRequestDto.setImageId(2L);
 //    updateEventRequestDto.setEventDate(LocalDate.of(2024, 7, 15));
@@ -199,7 +199,7 @@
 //    existingEvent.setId(1L);
 //    existingEvent.setTitle("Original Event");
 //    existingEvent.setLocation("123 Main St");
-//    existingEvent.setEventCategory(Event.EventCategory.WORKSHOP);
+//    existingEvent.setCategory(Event.Category.WORKSHOP);
 //    existingEvent.setVenue("Old Venue");
 //    existingEvent.setImage(image);
 //    existingEvent.setEventDate(LocalDate.of(2024, 7, 14));
@@ -221,7 +221,7 @@
 //    // Assertions
 //    assertEquals("Updated Event", updatedEvent.getTitle());
 //    assertEquals("456 Another St", updatedEvent.getLocation());
-//    assertEquals(Event.EventCategory.CONFERENCE, updatedEvent.getEventCategory());
+//    assertEquals(Event.Category.CONFERENCE, updatedEvent.getCategory());
 //    assertEquals("New Venue", updatedEvent.getVenue());
 //    assertEquals(image2, existingEvent.getImage());
 //    assertEquals(LocalDate.of(2024, 7, 15), updatedEvent.getEventDate());
@@ -237,7 +237,7 @@
 //    UpdateEventRequestDto updateEventRequestDto = new UpdateEventRequestDto();
 //    updateEventRequestDto.setTitle("Updated Event");
 //    updateEventRequestDto.setLocation("456 Another St");
-//    updateEventRequestDto.setEventCategory(Event.EventCategory.CONFERENCE);
+//    updateEventRequestDto.setCategory(Event.Category.CONFERENCE);
 //    updateEventRequestDto.setVenue("New Venue");
 //    updateEventRequestDto.setEventDate(LocalDate.of(2024, 7, 15));
 //    updateEventRequestDto.setStartTime(LocalTime.of(10, 0));
@@ -247,7 +247,7 @@
 //    existingEvent.setId(1L);
 //    existingEvent.setTitle("Original Event");
 //    existingEvent.setLocation("123 Main St");
-//    existingEvent.setEventCategory(Event.EventCategory.WORKSHOP);
+//    existingEvent.setCategory(Event.Category.WORKSHOP);
 //    existingEvent.setVenue("Old Venue");
 //    existingEvent.setEventDate(LocalDate.of(2024, 7, 14));
 //    existingEvent.setStartTime(LocalTime.of(9, 0));
@@ -269,7 +269,7 @@
 //    UpdateEventRequestDto updateEventRequestDto = new UpdateEventRequestDto();
 //    updateEventRequestDto.setTitle("Updated Event");
 //    updateEventRequestDto.setLocation("456 Another St");
-//    updateEventRequestDto.setEventCategory(Event.EventCategory.CONFERENCE);
+//    updateEventRequestDto.setCategory(Event.Category.CONFERENCE);
 //    updateEventRequestDto.setVenue("New Venue");
 //    updateEventRequestDto.setEventDate(LocalDate.of(2024, 7, 15));
 //    updateEventRequestDto.setStartTime(LocalTime.of(10, 0));

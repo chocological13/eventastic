@@ -8,8 +8,6 @@ import com.miniproject.eventastic.users.entity.Users;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -63,13 +61,13 @@ public class Event {
   @Column(name = "description", nullable = false, length = Integer.MAX_VALUE)
   private String description;
 
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "category_id")
+  private Category category;
+
   @NotNull
   @Column(name = "location", nullable = false, length = Integer.MAX_VALUE)
   private String location;
-
-  @Enumerated(EnumType.STRING)
-  @Column(name = "event_category", nullable = false)
-  private EventCategory eventCategory;
 
   @NotNull
   @Column(name = "venue", nullable = false, length = Integer.MAX_VALUE)
@@ -120,21 +118,6 @@ public class Event {
 
   @OneToMany(mappedBy = "event")
   private Set<Trx> trxes = new LinkedHashSet<>();
-
-  // enum
-  public enum EventCategory {
-    ONLINE,
-    CONCERT,
-    CONFERENCE,
-    WORKSHOP,
-    FESTIVAL,
-    SPORTING_EVENT,
-    ART_EXHIBITION,
-    FOOD_BEVERAGE,
-    BUSINESS_MEETING,
-    SEMINAR,
-    OTHER
-  }
 
   @PrePersist
   protected void onCreate() {

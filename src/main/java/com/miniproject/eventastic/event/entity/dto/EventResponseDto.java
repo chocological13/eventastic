@@ -1,14 +1,11 @@
 package com.miniproject.eventastic.event.entity.dto;
 
+import com.miniproject.eventastic.event.entity.Category;
 import com.miniproject.eventastic.event.entity.Event;
-import com.miniproject.eventastic.image.entity.Image;
 import com.miniproject.eventastic.image.entity.dto.eventImage.EventImageResponseDto;
 import com.miniproject.eventastic.ticketType.entity.dto.TicketTypeDto;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -31,7 +28,7 @@ public class EventResponseDto {
   private LocalDate eventDate;
   private LocalTime startTime;
   private LocalTime endTime;
-  private Event.EventCategory eventCategory;
+  private String category;
   private Boolean isFree;
   private int seatLimit;
   private int availableSeat;
@@ -46,7 +43,7 @@ public class EventResponseDto {
     this.organizer = event.getOrganizer().getUsername();
     this.title = event.getTitle();
     this.description = event.getDescription();
-    this.eventCategory = event.getEventCategory();
+    this.category = event.getCategory().getName();
     this.location = event.getLocation();
     this.venue = event.getVenue();
     this.image = new EventImageResponseDto(event.getImage());
@@ -63,7 +60,7 @@ public class EventResponseDto {
         .collect(Collectors.toSet());
   }
 
-  public static EventResponseDto toEventResponseDto(Event event) {
+  public EventResponseDto toEventResponseDto(Event event) {
     return new EventResponseDto(event);
   }
 
