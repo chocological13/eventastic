@@ -73,7 +73,7 @@ public class VoucherServiceImpl implements VoucherService {
   public List<Voucher> getAwardeesVouchers() {
     Users loggedInUser = usersService.getCurrentUser();
     Long userId = loggedInUser.getId();
-    List<Voucher> voucherList = voucherRepository.findByAwardeeId(userId);
+    List<Voucher> voucherList = voucherRepository.findByAwardeeIdAndExpiresAtIsAfter(userId, Instant.now());
     if (voucherList.isEmpty()) {
       throw new VoucherNotFoundException("You currently have no active vouchers.");
     }
@@ -83,7 +83,7 @@ public class VoucherServiceImpl implements VoucherService {
   // this will be called under event
   @Override
   public List<Voucher> getEventVouchers(Long eventId) {
-    List<Voucher> voucherList = voucherRepository.findByEventId(eventId);
+    List<Voucher> voucherList = voucherRepository.findByEventIdAndExpiresAtIsAfter(eventId, Instant.now());
     if (voucherList.isEmpty()) {
       throw new VoucherNotFoundException("This event currently offers no vouchers :(");
     }
@@ -92,7 +92,7 @@ public class VoucherServiceImpl implements VoucherService {
 
   @Override
   public List<Voucher> getVouchersForAllUsers() {
-    List<Voucher> voucherList = voucherRepository.findByAwardeeIdIsNull();
+    List<Voucher> voucherList = voucherRepository.findByAwardeeIdIsNullAndExpiresAtIsAfter(Instant.now());
     if (voucherList.isEmpty()) {
       throw new VoucherNotFoundException("There are no active global vouchers");
     }
