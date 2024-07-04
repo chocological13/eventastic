@@ -12,9 +12,11 @@ import com.miniproject.eventastic.exceptions.DuplicateEventException;
 import com.miniproject.eventastic.exceptions.EventNotFoundException;
 import com.miniproject.eventastic.image.entity.Image;
 import com.miniproject.eventastic.image.repository.ImageRepository;
+import com.miniproject.eventastic.image.service.ImageService;
 import com.miniproject.eventastic.ticketType.entity.TicketType;
 import com.miniproject.eventastic.ticketType.entity.dto.TicketTypeRequestDto;
 import com.miniproject.eventastic.ticketType.repository.TicketTypeRepository;
+import com.miniproject.eventastic.ticketType.service.TicketTypeService;
 import com.miniproject.eventastic.users.entity.Users;
 import com.miniproject.eventastic.users.service.UsersService;
 import java.math.BigDecimal;
@@ -44,9 +46,9 @@ import org.springframework.stereotype.Service;
 public class EventServiceImpl implements EventService {
 
   private final EventRepository eventRepository;
-  private final TicketTypeRepository ticketTypeRepository;
+  private final TicketTypeService ticketTypeService;
   private final UsersService usersService;
-  private final ImageRepository imageRepository;
+  private final ImageService imageService;
 
   @Override
   public EventResponseDto createEvent(CreateEventRequestDto requestDto) {
@@ -67,9 +69,8 @@ public class EventServiceImpl implements EventService {
 
     // check for image
     if (requestDto.getImageId() != null) {
-      Optional<Image> imageOptional = imageRepository.findById(requestDto.getImageId());
-      if (imageOptional.isPresent()) {
-        Image image = imageOptional.get();
+      Image image = imageService.getImageById(requestDto.getImageId());
+      if (image != null) {
         createdEvent.setImage(image);
       }
     }
@@ -86,7 +87,7 @@ public class EventServiceImpl implements EventService {
         ticketType.setAvailableSeat(ticketTypeRequestDto.getSeatLimit());
 
         ticketTypes.add(ticketType);
-        ticketTypeRepository.save(ticketType);
+        ticketTypeService.saveTicketType(ticketType);
       }
     } else {
 
@@ -102,7 +103,7 @@ public class EventServiceImpl implements EventService {
       freeTicketType.setEvent(createdEvent);
 
       ticketTypes.add(freeTicketType);
-      ticketTypeRepository.save(freeTicketType);
+      ticketTypeService.saveTicketType(freeTicketType);
     }
 
     // update seat limit
@@ -171,11 +172,7 @@ public class EventServiceImpl implements EventService {
     LocalDate eventDate = checkDuplicate.getEventDate();
     LocalTime startTime = checkDuplicate.getStartTime();
     Optional<Event> checkEvent = eventRepository.findByTitleAndLocationAndEventDateAndStartTime(title, location, eventDate, startTime);
-    if (checkEvent.isPresent()) {
-      return true;
-    } else {
-      return false;
-    }
+    return checkEvent.isPresent();
   }
 
   @Override
@@ -197,10 +194,11 @@ public class EventServiceImpl implements EventService {
     Event updatedEvent = dto.dtoToEvent(optionalEvent.get(), requestDto);
 
     // check for image
-    Optional<Image> imageOptional = imageRepository.findById(requestDto.getImageId());
-    if (imageOptional.isPresent()) {
-      Image image = imageOptional.get();
-      updatedEvent.setImage(image);
+    if (requestDto.getImageId() != null) {
+      Image image = imageService.getImageById(requestDto.getImageId());
+      if (image != null) {
+        updatedEvent.setImage(image);
+      }
     }
 
     // save event

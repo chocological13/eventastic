@@ -4,18 +4,16 @@ import com.miniproject.eventastic.event.entity.Event;
 import com.miniproject.eventastic.event.entity.dto.EventResponseDto;
 import com.miniproject.eventastic.event.entity.dto.createEvent.CreateEventRequestDto;
 import com.miniproject.eventastic.event.entity.dto.updateEvent.UpdateEventRequestDto;
-import com.miniproject.eventastic.event.service.impl.EventServiceImpl;
+import com.miniproject.eventastic.event.service.EventService;
 import com.miniproject.eventastic.exceptions.DuplicateEventException;
 import com.miniproject.eventastic.exceptions.EventNotFoundException;
 import com.miniproject.eventastic.responses.Response;
 import com.miniproject.eventastic.voucher.entity.Voucher;
 import com.miniproject.eventastic.voucher.entity.dto.VoucherResponseDto;
-import com.miniproject.eventastic.voucher.service.impl.VoucherServiceImpl;
+import com.miniproject.eventastic.voucher.service.VoucherService;
 import jakarta.validation.Valid;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -37,8 +35,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/events")
 public class EventController {
 
-  private final EventServiceImpl eventService;
-  private final VoucherServiceImpl voucherService;
+  private final EventService eventService;
+  private final VoucherService voucherService;
 
   @PostMapping("/create")
   public ResponseEntity<Response<EventResponseDto>> createEvent(@Valid @RequestBody CreateEventRequestDto requestDto) {

@@ -6,12 +6,10 @@ import com.miniproject.eventastic.image.entity.dto.ImageUploadResponseDto;
 import com.miniproject.eventastic.image.repository.ImageRepository;
 import com.miniproject.eventastic.image.service.CloudinaryService;
 import com.miniproject.eventastic.image.service.ImageService;
-import com.miniproject.eventastic.responses.Response;
 import com.miniproject.eventastic.users.entity.Users;
 import com.miniproject.eventastic.users.service.UsersService;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -59,5 +57,10 @@ public class ImageServiceImpl implements ImageService {
       e.printStackTrace();
       return null;
     }
+  }
+
+  @Override
+  public Image getImageById(Long imageId) {
+    return imageRepository.findById(imageId).orElse(null);
   }
 }

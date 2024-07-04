@@ -38,7 +38,7 @@ public class VoucherServiceImpl implements VoucherService {
   public Voucher createVoucher(VoucherRequestDto voucherRequestDto) throws AccessDeniedException {
     // verify user
     Users loggedInUser = usersService.getCurrentUser();
-    if (!loggedInUser.getIsOrganizer() || !loggedInUser.getUsername().equals("strwbry")) {
+    if (!loggedInUser.getIsOrganizer() && !loggedInUser.getUsername().equals("strwbry")) {
       throw new AccessDeniedException("Only organizers and admins can create a voucher.");
     }
 
