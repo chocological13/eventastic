@@ -11,4 +11,6 @@ public interface VoucherService {
   Voucher createVoucher(VoucherRequestDto voucherRequestDto) throws AccessDeniedException;
 
   List<Voucher> getAwardeesVouchers();
+
+  List<Voucher> getEventVouchers(Long eventId);
 }

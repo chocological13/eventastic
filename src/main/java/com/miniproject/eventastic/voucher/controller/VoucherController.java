@@ -37,7 +37,7 @@ public class VoucherController {
     try {
       List<Voucher> voucherList = voucherService.getAwardeesVouchers();
       List<VoucherResponseDto> responseDtos = voucherList.stream()
-          .map(VoucherResponseDto::toDto)
+          .map(VoucherResponseDto::new)
           .toList();
       return Response.successfulResponse(HttpStatus.FOUND.value(), "Displaying your vouchers..", responseDtos);
     } catch (VoucherNotFoundException e) {

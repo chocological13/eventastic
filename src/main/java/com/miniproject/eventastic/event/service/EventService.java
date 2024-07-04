@@ -16,8 +16,6 @@ public interface EventService {
 
   Page<EventResponseDto> getUpcomingEvents(int page, int size);
 
-  EventResponseDto getSpecificEvent(Long eventId);
-
   Event getEventById(Long eventId);
 
   Boolean isDuplicateEvent(CreateEventRequestDto checkDuplicate);

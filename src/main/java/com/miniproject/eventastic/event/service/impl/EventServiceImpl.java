@@ -159,12 +159,6 @@ public class EventServiceImpl implements EventService {
   }
 
   @Override
-  public EventResponseDto getSpecificEvent(Long eventId) {
-    Optional<Event> optionalEvent = eventRepository.findById(eventId);
-    return optionalEvent.map(EventResponseDto::toEventResponseDto).orElse(null);
-  }
-
-  @Override
   public Event getEventById(Long eventId) {
     return eventRepository.findById(eventId).orElse(null);
   }

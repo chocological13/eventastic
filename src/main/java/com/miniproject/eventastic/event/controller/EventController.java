@@ -1,5 +1,6 @@
 package com.miniproject.eventastic.event.controller;
 
+import com.miniproject.eventastic.event.entity.Event;
 import com.miniproject.eventastic.event.entity.dto.EventResponseDto;
 import com.miniproject.eventastic.event.entity.dto.createEvent.CreateEventRequestDto;
 import com.miniproject.eventastic.event.entity.dto.updateEvent.UpdateEventRequestDto;
@@ -7,8 +8,14 @@ import com.miniproject.eventastic.event.service.impl.EventServiceImpl;
 import com.miniproject.eventastic.exceptions.DuplicateEventException;
 import com.miniproject.eventastic.exceptions.EventNotFoundException;
 import com.miniproject.eventastic.responses.Response;
+import com.miniproject.eventastic.voucher.entity.Voucher;
+import com.miniproject.eventastic.voucher.entity.dto.VoucherResponseDto;
+import com.miniproject.eventastic.voucher.service.impl.VoucherServiceImpl;
 import jakarta.validation.Valid;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -31,6 +38,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class EventController {
 
   private final EventServiceImpl eventService;
+  private final VoucherServiceImpl voucherService;
 
   @PostMapping("/create")
   public ResponseEntity<Response<EventResponseDto>> createEvent(@Valid @RequestBody CreateEventRequestDto requestDto) {
@@ -48,11 +56,29 @@ public class EventController {
 
   @GetMapping("/{eventId}")
   public ResponseEntity<Response<EventResponseDto>> getEvent(@PathVariable Long eventId) {
-    EventResponseDto response = eventService.getSpecificEvent(eventId);
-    if (response == null) {
+    Event existingEvent = eventService.getEventById(eventId);
+    if (existingEvent == null) {
       return Response.failedResponse(HttpStatus.NOT_FOUND.value(), "Event not found!", null);
     }
-    return Response.successfulResponse(HttpStatus.OK.value(), "Event successfully retrieved!", response);
+    EventResponseDto responseDto = new EventResponseDto(existingEvent);
+    return Response.successfulResponse(HttpStatus.OK.value(), "Event successfully retrieved!", responseDto);
+  }
+
+  // * Display available vouchers for event
+  @GetMapping("/{eventId}/vouchers")
+  public ResponseEntity<Response<List<VoucherResponseDto>>> getVouchers(@PathVariable Long eventId) {
+    try {
+      Event existingEvent = eventService.getEventById(eventId);
+      if (existingEvent == null) {
+        return Response.failedResponse(HttpStatus.NOT_FOUND.value(), "Event not found!", null);
+      }
+      List<Voucher> eventVoucher = voucherService.getEventVouchers(eventId);
+      List<VoucherResponseDto> voucherResponseDtos = eventVoucher.stream().map(VoucherResponseDto::new).toList();
+      return Response.successfulResponse(HttpStatus.FOUND.value(), "Displaying vouchers for " + existingEvent.getTitle(),
+          voucherResponseDtos);
+    } catch (EventNotFoundException e) {
+      return Response.failedResponse(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
+    }
   }
 
   // search, sort, pagination

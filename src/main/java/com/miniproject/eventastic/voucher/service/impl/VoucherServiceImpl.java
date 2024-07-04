@@ -80,4 +80,14 @@ public class VoucherServiceImpl implements VoucherService {
     return voucherList;
   }
 
+  // this will be called under event
+  @Override
+  public List<Voucher> getEventVouchers(Long eventId) {
+    List<Voucher> voucherList = voucherRepository.findByEventId(eventId);
+    if (voucherList.isEmpty()) {
+      throw new VoucherNotFoundException("This event currently offers no vouchers :(");
+    }
+    return voucherList;
+  }
+
 }
