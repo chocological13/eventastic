@@ -1,5 +1,6 @@
 package com.miniproject.eventastic.users.controller;
 
+import com.miniproject.eventastic.exceptions.VoucherNotFoundException;
 import com.miniproject.eventastic.pointsWallet.entity.dto.PointsWalletResponseDto;
 import com.miniproject.eventastic.referralCodeUsage.entity.dto.ReferralCodeUsageSummaryDto;
 import com.miniproject.eventastic.responses.Response;
@@ -9,6 +10,9 @@ import com.miniproject.eventastic.users.entity.dto.register.RegisterRequestDto;
 import com.miniproject.eventastic.users.entity.dto.register.RegisterResponseDto;
 import com.miniproject.eventastic.users.entity.dto.userManagement.ProfileUpdateRequestDTO;
 import com.miniproject.eventastic.users.service.UsersService;
+import com.miniproject.eventastic.voucher.entity.Voucher;
+import com.miniproject.eventastic.voucher.entity.dto.VoucherResponseDto;
+import com.miniproject.eventastic.voucher.service.VoucherService;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class UsersController {
 
   private final UsersService usersService;
+  private final VoucherService voucherService;
 
   // ! Get all
   @GetMapping
@@ -69,6 +74,20 @@ public class UsersController {
         usersService.getCurrentUser().getFirstName() + " " + usersService.getCurrentUser().getLastName();
     return Response.successfulResponse(HttpStatus.FOUND.value(), "Showing Points Wallet for: " + currentUser,
         usersService.getUsersPointsWallet());
+  }
+
+  // * Get logged-in user's vouchers
+  @GetMapping("/vouchers")
+  public ResponseEntity<Response<List<VoucherResponseDto>>> getAwardeesVoucher() {
+    try {
+      List<Voucher> voucherList = voucherService.getAwardeesVouchers();
+      List<VoucherResponseDto> responseDtos = voucherList.stream()
+          .map(VoucherResponseDto::new)
+          .toList();
+      return Response.successfulResponse(HttpStatus.FOUND.value(), "Displaying your vouchers..", responseDtos);
+    } catch (VoucherNotFoundException e) {
+      return Response.failedResponse(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
+    }
   }
 
   // * Edit Profile

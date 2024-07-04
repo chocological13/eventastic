@@ -32,19 +32,6 @@ public class VoucherController {
     return Response.successfulResponse(HttpStatus.CREATED.value(), "New Voucher Created!", newVoucher);
   }
 
-  @GetMapping("/me")
-  public ResponseEntity<Response<List<VoucherResponseDto>>> getAwardeesVoucher() {
-    try {
-      List<Voucher> voucherList = voucherService.getAwardeesVouchers();
-      List<VoucherResponseDto> responseDtos = voucherList.stream()
-          .map(VoucherResponseDto::new)
-          .toList();
-      return Response.successfulResponse(HttpStatus.FOUND.value(), "Displaying your vouchers..", responseDtos);
-    } catch (VoucherNotFoundException e) {
-      return Response.failedResponse(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
-    }
-  }
-
   @GetMapping
   public ResponseEntity<Response<List<VoucherResponseDto>>> getVouchersForAllUsers() {
     try {
