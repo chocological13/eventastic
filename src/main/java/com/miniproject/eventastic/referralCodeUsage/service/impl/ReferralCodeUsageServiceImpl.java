@@ -6,6 +6,7 @@ import com.miniproject.eventastic.referralCodeUsage.entity.dto.ReferralCodeUsers
 import com.miniproject.eventastic.referralCodeUsage.repository.ReferralCodeUsageRepository;
 import com.miniproject.eventastic.referralCodeUsage.service.ReferralCodeUsageService;
 import com.miniproject.eventastic.users.entity.Users;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -26,7 +27,7 @@ public class ReferralCodeUsageServiceImpl implements ReferralCodeUsageService {
   }
 
   @Override
-  public ReferralCodeUsersDto getReferralCodeUsers(Users codeOwner) {
+  public List<ReferralCodeUsersDto> getReferralCodeUsers(Users codeOwner) {
     return referralCodeUsageRepository.findReferralCodeUsersWhereOwnerIs(codeOwner);
   }
 

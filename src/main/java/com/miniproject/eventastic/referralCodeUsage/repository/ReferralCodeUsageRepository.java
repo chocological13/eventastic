@@ -5,6 +5,7 @@ import com.miniproject.eventastic.referralCodeUsage.entity.composite.ReferralCod
 import com.miniproject.eventastic.referralCodeUsage.entity.dto.ReferralCodeUsersDto;
 import com.miniproject.eventastic.referralCodeUsage.entity.dto.ReferralCodeUseCountDto;
 import com.miniproject.eventastic.users.entity.Users;
+import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -19,15 +20,16 @@ public interface ReferralCodeUsageRepository extends JpaRepository<ReferralCodeU
       FROM ReferralCodeUsage r
       INNER JOIN Users u ON r.codeOwner.id = u.id
       WHERE u = :user
-      GROUP BY u.username, r.usedBy.id
+      GROUP BY u.username
       """)
   ReferralCodeUseCountDto countReferralCodeUsageWhereOwnerIs(@Param("user") Users user);
 
   // query for who has used code owner's code
   @Query("""
-      SELECT new com.miniproject.eventastic.referralCodeUsage.entity.dto.ReferralCodeUsersDto(r.usedBy.id, r.usedBy.username, r.usedAt)
+      SELECT new com.miniproject.eventastic.referralCodeUsage.entity.dto.ReferralCodeUsersDto(r.usedBy.id, u.username, r.usedAt)
       FROM ReferralCodeUsage r
+      JOIN Users u ON r.usedBy.id = u.id
       WHERE r.codeOwner = :user
       """)
-  ReferralCodeUsersDto findReferralCodeUsersWhereOwnerIs(@Param("user") Users user);
+  List<ReferralCodeUsersDto> findReferralCodeUsersWhereOwnerIs(@Param("user") Users user);
 }

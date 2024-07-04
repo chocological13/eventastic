@@ -1,5 +1,6 @@
 package com.miniproject.eventastic.referralCodeUsage.entity.dto;
 
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,15 +10,15 @@ import lombok.NoArgsConstructor;
 public class ReferralCodeUsageSummaryDto {
 
   private ReferralCodeUseCountDto referralCodeUseCountDto;
-  private ReferralCodeUsersDto referralCodeUsersDto;
+  private List<ReferralCodeUsersDto> referralCodeUsersList;
 
-  public ReferralCodeUsageSummaryDto(ReferralCodeUseCountDto owner, ReferralCodeUsersDto usedBy) {
+  public ReferralCodeUsageSummaryDto(ReferralCodeUseCountDto owner, List<ReferralCodeUsersDto> usedBy) {
     this.referralCodeUseCountDto = owner;
-    this.referralCodeUsersDto = usedBy;
+    this.referralCodeUsersList = usedBy;
   }
 
   public ReferralCodeUsageSummaryDto getSummary(ReferralCodeUseCountDto owner,
-      ReferralCodeUsersDto usedBy) {
+      List<ReferralCodeUsersDto> usedBy) {
     return new ReferralCodeUsageSummaryDto(owner, usedBy);
   }
 

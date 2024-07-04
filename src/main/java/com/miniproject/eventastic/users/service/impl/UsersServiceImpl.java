@@ -3,15 +3,16 @@ package com.miniproject.eventastic.users.service.impl;
 import com.miniproject.eventastic.pointsWallet.entity.dto.PointsWalletResponseDto;
 import com.miniproject.eventastic.pointsWallet.service.impl.PointsWalletService;
 import com.miniproject.eventastic.referralCodeUsage.entity.ReferralCodeUsage;
-import com.miniproject.eventastic.referralCodeUsage.entity.dto.ReferralCodeUsersDto;
-import com.miniproject.eventastic.referralCodeUsage.entity.dto.ReferralCodeUseCountDto;
 import com.miniproject.eventastic.referralCodeUsage.entity.dto.ReferralCodeUsageSummaryDto;
-import com.miniproject.eventastic.referralCodeUsage.repository.ReferralCodeUsageRepository;
+import com.miniproject.eventastic.referralCodeUsage.entity.dto.ReferralCodeUseCountDto;
+import com.miniproject.eventastic.referralCodeUsage.entity.dto.ReferralCodeUsersDto;
+import com.miniproject.eventastic.referralCodeUsage.service.ReferralCodeUsageService;
+import com.miniproject.eventastic.referralCodeUsage.service.impl.ReferralCodeUsageServiceImpl;
 import com.miniproject.eventastic.users.entity.Users;
 import com.miniproject.eventastic.users.entity.dto.profile.UserProfileDto;
+import com.miniproject.eventastic.users.entity.dto.register.RegisterRequestDto;
 import com.miniproject.eventastic.users.entity.dto.register.RegisterResponseDto;
 import com.miniproject.eventastic.users.entity.dto.userManagement.ProfileUpdateRequestDTO;
-import com.miniproject.eventastic.users.entity.dto.register.RegisterRequestDto;
 import com.miniproject.eventastic.users.event.UserRegistrationEvent;
 import com.miniproject.eventastic.users.repository.UsersRepository;
 import com.miniproject.eventastic.users.service.UsersService;
@@ -39,9 +40,10 @@ public class UsersServiceImpl implements UsersService {
   private final UsersRepository usersRepository;
   private final PasswordEncoder passwordEncoder;
   private final AuthenticationManager authenticationManager;
-  private final ReferralCodeUsageRepository referralCodeUsageRepository;
+  private final ReferralCodeUsageService referralCodeUsageService;
   private final ApplicationEventPublisher eventPublisher;
   private final PointsWalletService pointsWalletService;
+  private final ReferralCodeUsageServiceImpl referralCodeUsageServiceImpl;
 
   @Override
   public List<UserProfileDto> getAllUsers() {
@@ -146,7 +148,7 @@ public class UsersServiceImpl implements UsersService {
   // refcode related
   @Override
   public void saveRefCode(ReferralCodeUsage usage) {
-    referralCodeUsageRepository.save(usage);
+    referralCodeUsageService.saveReferralCodeUsage(usage);
   }
 
   @Override
@@ -163,8 +165,8 @@ public class UsersServiceImpl implements UsersService {
     Users codeOwner = getByUsername(username);
     log.info("CodeOwner: {}", codeOwner);
 
-    ReferralCodeUseCountDto owner = referralCodeUsageRepository.countReferralCodeUsageWhereOwnerIs(codeOwner);
-    ReferralCodeUsersDto usedBy = referralCodeUsageRepository.findReferralCodeUsersWhereOwnerIs(codeOwner);
+    ReferralCodeUseCountDto owner = referralCodeUsageService.getReferralCodeUseCount(codeOwner);
+    List<ReferralCodeUsersDto> usedBy = referralCodeUsageService.getReferralCodeUsers(codeOwner);
 
     return new ReferralCodeUsageSummaryDto(owner, usedBy);
   }
