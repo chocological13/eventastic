@@ -2,6 +2,7 @@ package com.miniproject.eventastic.voucher.service.impl;
 
 import com.miniproject.eventastic.event.entity.Event;
 import com.miniproject.eventastic.event.service.EventService;
+import com.miniproject.eventastic.exceptions.VoucherNotFoundException;
 import com.miniproject.eventastic.users.entity.Users;
 import com.miniproject.eventastic.users.service.UsersService;
 import com.miniproject.eventastic.voucher.entity.Voucher;
@@ -16,6 +17,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Optional;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -32,9 +34,8 @@ public class VoucherServiceImpl implements VoucherService {
   private final UsersService usersService;
   private final EventService eventService;
 
-  @SneakyThrows
   @Override
-  public Voucher createVoucher(VoucherRequestDto voucherRequestDto) {
+  public Voucher createVoucher(VoucherRequestDto voucherRequestDto) throws AccessDeniedException {
     // verify user
     Users loggedInUser = usersService.getCurrentUser();
     if (!loggedInUser.getIsOrganizer()) {
@@ -52,7 +53,6 @@ public class VoucherServiceImpl implements VoucherService {
     newVoucher.setPercentDiscount(voucherRequestDto.getPercentDiscount());
     newVoucher.setCreatedAt(Instant.now());
     newVoucher.setExpiresAt(expiresAt);
-    voucherRepository.save(newVoucher);
 
     // see if voucher is for a user or specific to an event
     if (voucherRequestDto.getAwardeeId() != null) {
@@ -67,4 +67,16 @@ public class VoucherServiceImpl implements VoucherService {
     voucherRepository.save(newVoucher);
     return newVoucher;
   }
+
+  @Override
+  public List<Voucher> getAwardeesVouchers() {
+    Users loggedInUser = usersService.getCurrentUser();
+    Long userId = loggedInUser.getId();
+    List<Voucher> voucherList = voucherRepository.findByAwardeeId(userId);
+    if (voucherList.isEmpty()) {
+      throw new VoucherNotFoundException("You currently have no active vouchers.");
+    }
+    return voucherList;
+  }
+
 }

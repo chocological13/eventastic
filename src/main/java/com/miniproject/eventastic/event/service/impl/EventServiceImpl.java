@@ -8,7 +8,7 @@ import com.miniproject.eventastic.event.entity.dto.createEvent.CreateEventReques
 import com.miniproject.eventastic.event.entity.dto.updateEvent.UpdateEventRequestDto;
 import com.miniproject.eventastic.event.repository.EventRepository;
 import com.miniproject.eventastic.event.service.EventService;
-import com.miniproject.eventastic.exceptions.EventExistsException;
+import com.miniproject.eventastic.exceptions.DuplicateEventException;
 import com.miniproject.eventastic.exceptions.EventNotFoundException;
 import com.miniproject.eventastic.image.entity.Image;
 import com.miniproject.eventastic.image.repository.ImageRepository;
@@ -52,7 +52,7 @@ public class EventServiceImpl implements EventService {
   public EventResponseDto createEvent(CreateEventRequestDto requestDto) {
     // check if there's a duplicate
     if (isDuplicateEvent(requestDto)) {
-      throw new EventExistsException("Event already exists. Please create another one.");
+      throw new DuplicateEventException("Event already exists. Please create another one.");
     }
 
     // extract user

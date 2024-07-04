@@ -30,7 +30,7 @@ public class VoucherResponseDto {
     this.expiresAt = voucher.getExpiresAt();
   }
 
-  public VoucherResponseDto toDto(Voucher voucher) {
+  public static VoucherResponseDto toDto(Voucher voucher) {
     return new VoucherResponseDto(voucher);
   }
 

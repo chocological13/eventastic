@@ -3,9 +3,8 @@ package com.miniproject.eventastic.event.controller;
 import com.miniproject.eventastic.event.entity.dto.EventResponseDto;
 import com.miniproject.eventastic.event.entity.dto.createEvent.CreateEventRequestDto;
 import com.miniproject.eventastic.event.entity.dto.updateEvent.UpdateEventRequestDto;
-import com.miniproject.eventastic.event.service.EventService;
 import com.miniproject.eventastic.event.service.impl.EventServiceImpl;
-import com.miniproject.eventastic.exceptions.EventExistsException;
+import com.miniproject.eventastic.exceptions.DuplicateEventException;
 import com.miniproject.eventastic.exceptions.EventNotFoundException;
 import com.miniproject.eventastic.responses.Response;
 import jakarta.validation.Valid;
@@ -42,7 +41,7 @@ public class EventController {
       log.info("Event created successfully: {} by organizer: {} on date: {}", responseDto.getTitle(), responseDto.getOrganizer(), responseDto.getEventDate());
       return Response.successfulResponse(HttpStatus.CREATED.value(), "Event successfully created!", responseDto);
 
-    } catch (EventExistsException e) {
+    } catch (DuplicateEventException e) {
       return Response.failedResponse(HttpStatus.CONFLICT.value(), e.getMessage(), null);
     }
   }
