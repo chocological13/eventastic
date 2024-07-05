@@ -12,4 +12,5 @@ FROM openjdk:22-slim
 WORKDIR /app
 COPY . .
 COPY --from=build /app/target/app.jar /app/
+EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
