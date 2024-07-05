@@ -9,5 +9,5 @@ RUN echo "done"
 
 #run the app
 FROM openjdk:22-slim
-ADD target/eventastic-0.0.1-SNAPSHOT.jar eventastic-0.0.1-SNAPSHOT.jar
-ENTRYPOINT ["java", "-jar", "eventastic-0.0.1-SNAPSHOT.jar"]
+COPY --from=build /app/target/app.jar /app/
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]
