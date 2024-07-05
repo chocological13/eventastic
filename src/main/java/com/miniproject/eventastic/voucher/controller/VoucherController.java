@@ -1,14 +1,13 @@
 package com.miniproject.eventastic.voucher.controller;
 
-import com.miniproject.eventastic.exceptions.VoucherNotFoundException;
+import com.miniproject.eventastic.exceptions.trx.VoucherNotFoundException;
 import com.miniproject.eventastic.responses.Response;
 import com.miniproject.eventastic.voucher.entity.Voucher;
-import com.miniproject.eventastic.voucher.entity.dto.VoucherRequestDto;
-import com.miniproject.eventastic.voucher.entity.dto.VoucherResponseDto;
+import com.miniproject.eventastic.voucher.entity.dto.create.CreateVoucherRequestDto;
+import com.miniproject.eventastic.voucher.entity.dto.create.CreateVoucherResponseDto;
 import com.miniproject.eventastic.voucher.service.VoucherService;
 import java.nio.file.AccessDeniedException;
 import java.util.List;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,18 +25,18 @@ public class VoucherController {
   private final VoucherService voucherService;
 
   @PostMapping("/create")
-  public ResponseEntity<Response<VoucherResponseDto>> createVoucher(@RequestBody VoucherRequestDto voucherRequestDto)
+  public ResponseEntity<Response<CreateVoucherResponseDto>> createVoucher(@RequestBody CreateVoucherRequestDto createVoucherRequestDto)
       throws AccessDeniedException {
-    VoucherResponseDto newVoucher = new VoucherResponseDto(voucherService.createVoucher(voucherRequestDto));
+    CreateVoucherResponseDto newVoucher = new CreateVoucherResponseDto(voucherService.createVoucher(createVoucherRequestDto));
     return Response.successfulResponse(HttpStatus.CREATED.value(), "New Voucher Created!", newVoucher);
   }
 
   @GetMapping
-  public ResponseEntity<Response<List<VoucherResponseDto>>> getVouchersForAllUsers() {
+  public ResponseEntity<Response<List<CreateVoucherResponseDto>>> getVouchersForAllUsers() {
     try {
       List<Voucher> voucherList = voucherService.getVouchersForAllUsers();
-      List<VoucherResponseDto> responseDtos = voucherList.stream()
-          .map(VoucherResponseDto::new)
+      List<CreateVoucherResponseDto> responseDtos = voucherList.stream()
+          .map(CreateVoucherResponseDto::new)
           .toList();
       return Response.successfulResponse(HttpStatus.FOUND.value(), "Displaying vouchers available for all users",
           responseDtos);

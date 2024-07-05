@@ -1,5 +1,6 @@
 package com.miniproject.eventastic.toHandle;
 
+import com.miniproject.eventastic.trx.entity.Payment;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

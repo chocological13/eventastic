@@ -15,9 +15,8 @@ import com.miniproject.eventastic.users.entity.Users;
 import com.miniproject.eventastic.users.repository.UsersRepository;
 import com.miniproject.eventastic.users.service.impl.UsersServiceImpl;
 import com.miniproject.eventastic.voucher.entity.Voucher;
-import com.miniproject.eventastic.voucher.entity.dto.VoucherRequestDto;
+import com.miniproject.eventastic.voucher.entity.dto.create.CreateVoucherRequestDto;
 import com.miniproject.eventastic.voucher.repository.VoucherRepository;
-import com.miniproject.eventastic.voucher.service.VoucherService;
 import java.nio.file.AccessDeniedException;
 import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;
@@ -26,7 +25,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -97,7 +95,7 @@ public class VoucherServiceImplTest {
   @Test
   public void testCreateVoucherByOrganizer() throws AccessDeniedException {
     // set up dto
-    VoucherRequestDto requestDto = new VoucherRequestDto();
+    CreateVoucherRequestDto requestDto = new CreateVoucherRequestDto();
     requestDto.setCode("TEST");
     requestDto.setDescription("test desc");
     requestDto.setPercentDiscount(10);

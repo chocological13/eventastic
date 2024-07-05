@@ -1,11 +1,11 @@
 package com.miniproject.eventastic.users.service.impl;
 
-import com.miniproject.eventastic.exceptions.ImageNotFoundException;
+import com.miniproject.eventastic.exceptions.image.ImageNotFoundException;
 import com.miniproject.eventastic.image.entity.Image;
 import com.miniproject.eventastic.image.entity.dto.ImageUploadRequestDto;
-import com.miniproject.eventastic.image.entity.dto.ImageUploadResponseDto;
 import com.miniproject.eventastic.image.service.CloudinaryService;
 import com.miniproject.eventastic.image.service.ImageService;
+import com.miniproject.eventastic.pointsWallet.entity.PointsWallet;
 import com.miniproject.eventastic.pointsWallet.entity.dto.PointsWalletResponseDto;
 import com.miniproject.eventastic.pointsWallet.service.impl.PointsWalletService;
 import com.miniproject.eventastic.referralCodeUsage.entity.ReferralCodeUsage;
@@ -198,7 +198,7 @@ public class UsersServiceImpl implements UsersService {
 
   @SneakyThrows
   @Override
-  public PointsWalletResponseDto getUsersPointsWallet() {
+  public PointsWallet getUsersPointsWallet() {
     // get currently logged-in user
     Users currentUser = getCurrentUser();
     return pointsWalletService.getPointsWallet(currentUser);

@@ -3,7 +3,7 @@ package com.miniproject.eventastic.event.entity;
 import com.miniproject.eventastic.image.entity.Image;
 import com.miniproject.eventastic.toHandle.Review;
 import com.miniproject.eventastic.ticketType.entity.TicketType;
-import com.miniproject.eventastic.toHandle.Trx;
+import com.miniproject.eventastic.trx.entity.Trx;
 import com.miniproject.eventastic.users.entity.Users;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;

@@ -1,4 +1,4 @@
-package com.miniproject.eventastic.ticketType.entity.dto;
+package com.miniproject.eventastic.ticketType.entity.dto.create;
 
 import com.miniproject.eventastic.ticketType.entity.TicketType;
 import jakarta.validation.constraints.NotEmpty;
@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class TicketTypeRequestDto {
+public class CreateTicketTypeRequestDto {
 
   @NotEmpty
   private String name;
@@ -24,23 +24,23 @@ public class TicketTypeRequestDto {
   @NotNull
   private Integer seatLimit;
 
-  public TicketTypeRequestDto(TicketType ticketType) {
+  public CreateTicketTypeRequestDto(TicketType ticketType) {
     this.name = ticketType.getName();
     this.description = ticketType.getDescription();
     this.price = ticketType.getPrice();
     this.seatLimit = ticketType.getSeatLimit();
   }
 
-  public static TicketTypeRequestDto toTicketTypeRequestDto(TicketType ticketType) {
-    return new TicketTypeRequestDto(ticketType);
+  public static CreateTicketTypeRequestDto toTicketTypeRequestDto(TicketType ticketType) {
+    return new CreateTicketTypeRequestDto(ticketType);
   }
 
-  public static TicketType requestToTicketTypeEntity(TicketTypeRequestDto ticketTypeRequestDto) {
+  public static TicketType requestToTicketTypeEntity(CreateTicketTypeRequestDto createTicketTypeRequestDto) {
     TicketType ticketType = new TicketType();
-    ticketType.setName(ticketTypeRequestDto.getName());
-    ticketType.setDescription(ticketTypeRequestDto.getDescription());
-    ticketType.setPrice(ticketTypeRequestDto.getPrice());
-    ticketType.setSeatLimit(ticketTypeRequestDto.getSeatLimit());
+    ticketType.setName(createTicketTypeRequestDto.getName());
+    ticketType.setDescription(createTicketTypeRequestDto.getDescription());
+    ticketType.setPrice(createTicketTypeRequestDto.getPrice());
+    ticketType.setSeatLimit(createTicketTypeRequestDto.getSeatLimit());
     return ticketType;
   }
 }

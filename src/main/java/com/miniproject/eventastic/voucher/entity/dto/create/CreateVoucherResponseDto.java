@@ -1,4 +1,4 @@
-package com.miniproject.eventastic.voucher.entity.dto;
+package com.miniproject.eventastic.voucher.entity.dto.create;
 
 import com.miniproject.eventastic.voucher.entity.Voucher;
 import java.time.Instant;
@@ -6,7 +6,7 @@ import java.util.Objects;
 import lombok.Data;
 
 @Data
-public class VoucherResponseDto {
+public class CreateVoucherResponseDto {
 
   private String code;
   private String description;
@@ -18,7 +18,7 @@ public class VoucherResponseDto {
   private Instant createdAt;
   private Instant expiresAt;
 
-  public VoucherResponseDto(Voucher voucher) {
+  public CreateVoucherResponseDto(Voucher voucher) {
 
     this.code = voucher.getCode();
     this.description = voucher.getDescription();
@@ -37,8 +37,8 @@ public class VoucherResponseDto {
     this.expiresAt = voucher.getExpiresAt();
   }
 
-  public VoucherResponseDto toDto(Voucher voucher) {
-    return new VoucherResponseDto(voucher);
+  public CreateVoucherResponseDto toDto(Voucher voucher) {
+    return new CreateVoucherResponseDto(voucher);
   }
 
 }

@@ -1,4 +1,4 @@
-package com.miniproject.eventastic.exceptions;
+package com.miniproject.eventastic.exceptions.trx;
 
 public class VoucherNotFoundException extends RuntimeException {
 

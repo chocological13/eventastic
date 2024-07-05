@@ -5,11 +5,11 @@ import com.miniproject.eventastic.event.entity.dto.EventResponseDto;
 import com.miniproject.eventastic.event.entity.dto.createEvent.CreateEventRequestDto;
 import com.miniproject.eventastic.event.entity.dto.updateEvent.UpdateEventRequestDto;
 import com.miniproject.eventastic.event.service.EventService;
-import com.miniproject.eventastic.exceptions.DuplicateEventException;
-import com.miniproject.eventastic.exceptions.EventNotFoundException;
+import com.miniproject.eventastic.exceptions.event.DuplicateEventException;
+import com.miniproject.eventastic.exceptions.event.EventNotFoundException;
 import com.miniproject.eventastic.responses.Response;
 import com.miniproject.eventastic.voucher.entity.Voucher;
-import com.miniproject.eventastic.voucher.entity.dto.VoucherResponseDto;
+import com.miniproject.eventastic.voucher.entity.dto.create.CreateVoucherResponseDto;
 import com.miniproject.eventastic.voucher.service.VoucherService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -64,16 +64,16 @@ public class EventController {
 
   // * Display available vouchers for event
   @GetMapping("/{eventId}/vouchers")
-  public ResponseEntity<Response<List<VoucherResponseDto>>> getVouchers(@PathVariable Long eventId) {
+  public ResponseEntity<Response<List<CreateVoucherResponseDto>>> getVouchers(@PathVariable Long eventId) {
     try {
       Event existingEvent = eventService.getEventById(eventId);
       if (existingEvent == null) {
         return Response.failedResponse(HttpStatus.NOT_FOUND.value(), "Event not found!", null);
       }
       List<Voucher> eventVoucher = voucherService.getEventVouchers(eventId);
-      List<VoucherResponseDto> voucherResponseDtos = eventVoucher.stream().map(VoucherResponseDto::new).toList();
+      List<CreateVoucherResponseDto> createVoucherResponseDtos = eventVoucher.stream().map(CreateVoucherResponseDto::new).toList();
       return Response.successfulResponse(HttpStatus.FOUND.value(), "Displaying vouchers for " + existingEvent.getTitle(),
-          voucherResponseDtos);
+          createVoucherResponseDtos);
     } catch (EventNotFoundException e) {
       return Response.failedResponse(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
     }

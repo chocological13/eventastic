@@ -1,6 +1,4 @@
-package com.miniproject.eventastic.exceptions;
-
-import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
+package com.miniproject.eventastic.exceptions.event;
 
 public class CategoryNotFoundException extends RuntimeException {
 

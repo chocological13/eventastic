@@ -1,21 +1,20 @@
 package com.miniproject.eventastic.users.controller;
 
-import com.miniproject.eventastic.exceptions.ImageNotFoundException;
-import com.miniproject.eventastic.exceptions.VoucherNotFoundException;
+import com.miniproject.eventastic.exceptions.image.ImageNotFoundException;
+import com.miniproject.eventastic.exceptions.trx.VoucherNotFoundException;
 import com.miniproject.eventastic.image.entity.Image;
 import com.miniproject.eventastic.image.entity.dto.ImageUploadRequestDto;
 import com.miniproject.eventastic.image.entity.dto.ImageUploadResponseDto;
 import com.miniproject.eventastic.pointsWallet.entity.dto.PointsWalletResponseDto;
 import com.miniproject.eventastic.referralCodeUsage.entity.dto.ReferralCodeUsageSummaryDto;
 import com.miniproject.eventastic.responses.Response;
-import com.miniproject.eventastic.users.entity.Users;
 import com.miniproject.eventastic.users.entity.dto.profile.UserProfileDto;
 import com.miniproject.eventastic.users.entity.dto.register.RegisterRequestDto;
 import com.miniproject.eventastic.users.entity.dto.register.RegisterResponseDto;
 import com.miniproject.eventastic.users.entity.dto.userManagement.ProfileUpdateRequestDTO;
 import com.miniproject.eventastic.users.service.UsersService;
 import com.miniproject.eventastic.voucher.entity.Voucher;
-import com.miniproject.eventastic.voucher.entity.dto.VoucherResponseDto;
+import com.miniproject.eventastic.voucher.entity.dto.create.CreateVoucherResponseDto;
 import com.miniproject.eventastic.voucher.service.VoucherService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -77,16 +76,16 @@ public class UsersController {
     String currentUser =
         usersService.getCurrentUser().getFullName();
     return Response.successfulResponse(HttpStatus.FOUND.value(), "Showing Points Wallet for: " + currentUser,
-        usersService.getUsersPointsWallet());
+        new PointsWalletResponseDto(usersService.getUsersPointsWallet()));
   }
 
   // * Get logged-in user's vouchers
   @GetMapping("/vouchers")
-  public ResponseEntity<Response<List<VoucherResponseDto>>> getAwardeesVoucher() {
+  public ResponseEntity<Response<List<CreateVoucherResponseDto>>> getAwardeesVoucher() {
     try {
       List<Voucher> voucherList = voucherService.getAwardeesVouchers();
-      List<VoucherResponseDto> responseDtos = voucherList.stream()
-          .map(VoucherResponseDto::new)
+      List<CreateVoucherResponseDto> responseDtos = voucherList.stream()
+          .map(CreateVoucherResponseDto::new)
           .toList();
       return Response.successfulResponse(HttpStatus.FOUND.value(), "Displaying your vouchers..", responseDtos);
     } catch (VoucherNotFoundException e) {

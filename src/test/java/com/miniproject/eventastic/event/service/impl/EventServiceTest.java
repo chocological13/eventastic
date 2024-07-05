@@ -15,7 +15,7 @@
 //import com.miniproject.eventastic.event.entity.dto.updateEvent.UpdateEventRequestDto;
 //import com.miniproject.eventastic.event.repository.EventRepository;
 //import com.miniproject.eventastic.event.service.EventService;
-//import com.miniproject.eventastic.exceptions.EventNotFoundException;
+//import com.miniproject.eventastic.exceptions.event.EventNotFoundException;
 //import com.miniproject.eventastic.image.entity.Image;
 //import com.miniproject.eventastic.image.repository.ImageRepository;
 //import com.miniproject.eventastic.ticketType.repository.TicketTypeRepository;

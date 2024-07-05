@@ -1,9 +1,12 @@
-package com.miniproject.eventastic.toHandle;
+package com.miniproject.eventastic.trx.entity;
 
 import com.miniproject.eventastic.event.entity.Event;
 import com.miniproject.eventastic.pointsWallet.entity.PointsWallet;
+import com.miniproject.eventastic.ticket.entity.Ticket;
+import com.miniproject.eventastic.ticketType.entity.TicketType;
 import com.miniproject.eventastic.users.entity.Users;
 import com.miniproject.eventastic.voucher.entity.Voucher;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -13,11 +16,16 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
@@ -51,6 +59,7 @@ public class Trx {
 
   @NotNull
   @ColumnDefault("1")
+  @Min(value = 1)
   @Column(name = "qty", nullable = false)
   private Integer qty;
 
@@ -59,7 +68,7 @@ public class Trx {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "points_id")
-  private PointsWallet points;
+  private PointsWallet pointsWallet;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "voucher_id")
@@ -84,5 +93,18 @@ public class Trx {
   @ColumnDefault("false")
   @Column(name = "is_paid", nullable = false)
   private Boolean isPaid = false;
+
+  @NotNull
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "ticket_type_id", nullable = false)
+  private TicketType ticketType;
+
+  @OneToMany(mappedBy = "trx", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+  private Set<Ticket> tickets = new LinkedHashSet<>();
+
+  @PrePersist
+  protected void onCreate() {
+    this.trxDate = Instant.now();
+  }
 
 }

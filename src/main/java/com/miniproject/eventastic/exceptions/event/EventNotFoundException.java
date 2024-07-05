@@ -1,4 +1,4 @@
-package com.miniproject.eventastic.exceptions;
+package com.miniproject.eventastic.exceptions.event;
 
 public class EventNotFoundException extends RuntimeException {
 

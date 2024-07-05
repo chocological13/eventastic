@@ -1,9 +1,8 @@
 package com.miniproject.eventastic.event.entity.dto;
 
-import com.miniproject.eventastic.event.entity.Category;
 import com.miniproject.eventastic.event.entity.Event;
 import com.miniproject.eventastic.image.entity.dto.eventImage.EventImageResponseDto;
-import com.miniproject.eventastic.ticketType.entity.dto.TicketTypeDto;
+import com.miniproject.eventastic.ticketType.entity.dto.create.CreateTicketTypeResponseDto;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -34,7 +33,7 @@ public class EventResponseDto {
   private int availableSeat;
   private Instant createdAt;
   private Instant updatedAt;
-  private Set<TicketTypeDto> ticketTypes;
+  private Set<CreateTicketTypeResponseDto> ticketTypes;
 
 
   public EventResponseDto(Event event) {
@@ -56,7 +55,7 @@ public class EventResponseDto {
     this.createdAt = event.getCreatedAt();
     this.updatedAt = event.getUpdatedAt();
     this.ticketTypes = event.getTicketTypes().stream()
-        .map(TicketTypeDto::new)
+        .map(CreateTicketTypeResponseDto::new)
         .collect(Collectors.toSet());
   }
 

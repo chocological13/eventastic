@@ -16,4 +16,11 @@ public class TicketTypeServiceImpl implements TicketTypeService {
   public void saveTicketType(TicketType ticketType) {
     ticketTypeRepository.save(ticketType);
   }
+
+  @Override
+  public TicketType getTicketTypeById(Long id) {
+    return ticketTypeRepository.findById(id).orElse(null);
+  }
+
+
 }

@@ -1,4 +1,4 @@
-package com.miniproject.eventastic.exceptions;
+package com.miniproject.eventastic.exceptions.image;
 
 
 public class ImageNotFoundException extends RuntimeException {

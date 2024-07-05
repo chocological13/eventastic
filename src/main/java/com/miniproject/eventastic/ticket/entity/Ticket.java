@@ -1,6 +1,8 @@
-package com.miniproject.eventastic.toHandle;
+package com.miniproject.eventastic.ticket.entity;
 
+import com.miniproject.eventastic.event.entity.Event;
 import com.miniproject.eventastic.ticketType.entity.TicketType;
+import com.miniproject.eventastic.trx.entity.Trx;
 import com.miniproject.eventastic.users.entity.Users;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -39,6 +41,11 @@ public class Ticket {
 
   @NotNull
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "event_id", nullable = false)
+  private Event event;
+
+  @NotNull
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "ticket_type_id", nullable = false)
   private TicketType ticketType;
 
@@ -54,5 +61,9 @@ public class Ticket {
   @ColumnDefault("CURRENT_TIMESTAMP")
   @Column(name = "issued_at")
   private Instant issuedAt;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "trx_id")
+  private Trx trx;
 
 }

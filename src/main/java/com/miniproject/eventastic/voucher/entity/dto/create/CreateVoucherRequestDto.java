@@ -1,9 +1,9 @@
-package com.miniproject.eventastic.voucher.entity.dto;
+package com.miniproject.eventastic.voucher.entity.dto.create;
 
 import lombok.Data;
 
 @Data
-public class VoucherRequestDto {
+public class CreateVoucherRequestDto {
   private String code;
   private Long awardeeId;
   private Long eventId;

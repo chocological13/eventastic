@@ -1,7 +1,7 @@
 package com.miniproject.eventastic.event.entity.dto.createEvent;
 
 import com.miniproject.eventastic.event.entity.Event;
-import com.miniproject.eventastic.ticketType.entity.dto.TicketTypeRequestDto;
+import com.miniproject.eventastic.ticketType.entity.dto.create.CreateTicketTypeRequestDto;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
@@ -45,7 +45,7 @@ public class CreateEventRequestDto {
   @NotNull
   private Boolean isFree;
 
-  private Set<TicketTypeRequestDto> ticketTypeRequestDtos;
+  private Set<CreateTicketTypeRequestDto> createTicketTypeRequestDtos;
 
   public Event dtoToEvent(CreateEventRequestDto eventRequestDto) {
 

@@ -8,14 +8,14 @@ import com.miniproject.eventastic.event.entity.dto.updateEvent.UpdateEventReques
 import com.miniproject.eventastic.event.repository.CategoryRepository;
 import com.miniproject.eventastic.event.repository.EventRepository;
 import com.miniproject.eventastic.event.service.EventService;
-import com.miniproject.eventastic.exceptions.CategoryNotFoundException;
-import com.miniproject.eventastic.exceptions.DuplicateEventException;
-import com.miniproject.eventastic.exceptions.EventNotFoundException;
-import com.miniproject.eventastic.exceptions.ImageNotFoundException;
+import com.miniproject.eventastic.exceptions.event.CategoryNotFoundException;
+import com.miniproject.eventastic.exceptions.event.DuplicateEventException;
+import com.miniproject.eventastic.exceptions.event.EventNotFoundException;
+import com.miniproject.eventastic.exceptions.image.ImageNotFoundException;
 import com.miniproject.eventastic.image.entity.Image;
 import com.miniproject.eventastic.image.service.ImageService;
 import com.miniproject.eventastic.ticketType.entity.TicketType;
-import com.miniproject.eventastic.ticketType.entity.dto.TicketTypeRequestDto;
+import com.miniproject.eventastic.ticketType.entity.dto.create.CreateTicketTypeRequestDto;
 import com.miniproject.eventastic.ticketType.service.TicketTypeService;
 import com.miniproject.eventastic.users.entity.Users;
 import com.miniproject.eventastic.users.service.UsersService;
@@ -89,15 +89,15 @@ public class EventServiceImpl implements EventService {
     }
 
     // init ticket type
-    Set<TicketTypeRequestDto> ticketTypeRequestDtos = requestDto.getTicketTypeRequestDtos();
+    Set<CreateTicketTypeRequestDto> createTicketTypeRequestDtos = requestDto.getCreateTicketTypeRequestDtos();
     Set<TicketType> ticketTypes = new HashSet<>();
 
     if (!createdEvent.getIsFree()) {
       // map ticket type
-      for (TicketTypeRequestDto ticketTypeRequestDto : ticketTypeRequestDtos) {
-        TicketType ticketType = TicketTypeRequestDto.requestToTicketTypeEntity(ticketTypeRequestDto);
+      for (CreateTicketTypeRequestDto createTicketTypeRequestDto : createTicketTypeRequestDtos) {
+        TicketType ticketType = CreateTicketTypeRequestDto.requestToTicketTypeEntity(createTicketTypeRequestDto);
         ticketType.setEvent(createdEvent); // Associate with the created Event
-        ticketType.setAvailableSeat(ticketTypeRequestDto.getSeatLimit());
+        ticketType.setAvailableSeat(createTicketTypeRequestDto.getSeatLimit());
 
         ticketTypes.add(ticketType);
         ticketTypeService.saveTicketType(ticketType);
@@ -106,7 +106,7 @@ public class EventServiceImpl implements EventService {
 
       // default ticket type if isFree is true
       TicketType freeTicketType = new TicketType();
-      TicketTypeRequestDto firstInSet = ticketTypeRequestDtos.iterator().next();
+      CreateTicketTypeRequestDto firstInSet = createTicketTypeRequestDtos.iterator().next();
 
       freeTicketType.setName("Free Admission");
       freeTicketType.setDescription("Free entry ticket");

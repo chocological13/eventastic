@@ -1,4 +1,4 @@
-package com.miniproject.eventastic.exceptions;
+package com.miniproject.eventastic.exceptions.event;
 
 public class DuplicateEventException extends RuntimeException {
   public DuplicateEventException(String message) {
