@@ -9,5 +9,9 @@ RUN echo "done"
 
 #run the app
 FROM openjdk:22-slim
+WORKDIR /app
+COPY . .
 COPY --from=build /app/target/app.jar /app/
+COPY .env /app/.env
+COPY src/main/resources/.env.properties /app/.env.properties
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
