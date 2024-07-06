@@ -46,6 +46,7 @@ public class SecurityConfig {
 
   private final RsaKeyConfigProperties rsaKeyConfigProperties;
   private final UserDetailsServiceImpl userDetailsService;
+  private final CorsConfigurationSourceImpl corsConfigurationSource;
 
   // password encoder
   @Bean
@@ -86,7 +87,7 @@ public class SecurityConfig {
     return http
         // * disables unused configs
         .csrf(AbstractHttpConfigurer::disable)
-        .cors(AbstractHttpConfigurer::disable)
+        .cors(cors -> cors.configurationSource(corsConfigurationSource))
         // * endpoints authorization
         .authorizeHttpRequests(auth -> {
 
@@ -97,9 +98,9 @@ public class SecurityConfig {
 //          auth.requestMatchers("/api/**").permitAll();
 
           // ! TODO: add roles related authorizations
-          // * event management - only organizer
-          auth.requestMatchers("/api/v1/events/create").hasAuthority("SCOPE_ROLE_ORGANIZER");
-          auth.requestMatchers("/api/v1/events/{eventId}/update").hasAuthority("SCOPE_ROLE_ORGANIZER");
+//          // * event management - only organizer
+          auth.requestMatchers("/api/v1/events/create/**").hasAuthority("SCOPE_ROLE_ORGANIZER");
+          auth.requestMatchers("/api/v1/events/{eventId}/update/**").hasAuthority("SCOPE_ROLE_ORGANIZER");
 //          auth.requestMatchers("/**").authenticated();
 
           // > for dev
