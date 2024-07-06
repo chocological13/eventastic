@@ -8,11 +8,15 @@ import jakarta.persistence.Id;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "payment", schema = "public")
 public class Payment {
@@ -24,7 +28,10 @@ public class Payment {
   private Long id;
 
   @NotNull
-  @Column(name = "payment_method", nullable = false, length = Integer.MAX_VALUE)
-  private String paymentMethod;
+  @Column(name = "bank_name", nullable = false, length = Integer.MAX_VALUE)
+  private String bankName;
+
+  @Column(name = "account_number", length = Integer.MAX_VALUE)
+  private String accountNumber;
 
 }

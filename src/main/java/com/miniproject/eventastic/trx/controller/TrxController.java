@@ -3,7 +3,7 @@ package com.miniproject.eventastic.trx.controller;
 import com.miniproject.eventastic.responses.Response;
 import com.miniproject.eventastic.trx.entity.Trx;
 import com.miniproject.eventastic.trx.entity.dto.TrxPurchaseRequestDto;
-import com.miniproject.eventastic.trx.entity.dto.TrxPurchaseResponseDto;
+import com.miniproject.eventastic.trx.entity.dto.response.TrxPurchaseResponseDto;
 import com.miniproject.eventastic.trx.service.TrxService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
