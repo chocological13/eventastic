@@ -110,7 +110,6 @@ public class UsersServiceImpl implements UsersService {
 
   public RegisterResponseDto responseBuilder(Users newUser) {
     RegisterResponseDto response = new RegisterResponseDto();
-    response.setWelcomeMessage("Welcome to Eventastic, " + newUser.getFullName());
     response.setId(newUser.getId());
     response.setUsername(newUser.getUsername());
     response.setEmail(newUser.getEmail());

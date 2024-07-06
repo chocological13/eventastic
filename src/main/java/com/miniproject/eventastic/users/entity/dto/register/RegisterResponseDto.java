@@ -12,8 +12,6 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class RegisterResponseDto {
-
-  private String welcomeMessage;
   private Long id;
   private String username;
   private String email;

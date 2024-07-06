@@ -12,6 +12,7 @@ import com.miniproject.eventastic.users.event.UserRegistrationEvent;
 import com.miniproject.eventastic.users.service.UsersService;
 import jakarta.transaction.Transactional;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -49,6 +50,8 @@ public class UserRegistrationListener {
     if (owner != null) {
       // ** Add points to the new user's wallet
       pointsWallet.setPoints(pointsWallet.getPoints() + 10000);
+      pointsWallet.setAwardedAt(Instant.now());
+      pointsWallet.setExpiresAt(Instant.now().plus(90, ChronoUnit.DAYS));
       pointsWalletService.savePointsWallet(pointsWallet);
 
       // ** Log the usage of referral code
