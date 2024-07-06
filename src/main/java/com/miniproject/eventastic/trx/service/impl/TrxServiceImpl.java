@@ -20,7 +20,7 @@ import com.miniproject.eventastic.ticketType.entity.TicketType;
 import com.miniproject.eventastic.ticketType.service.TicketTypeService;
 import com.miniproject.eventastic.trx.entity.Payment;
 import com.miniproject.eventastic.trx.entity.Trx;
-import com.miniproject.eventastic.trx.entity.dto.PurchaseRequestDto;
+import com.miniproject.eventastic.trx.entity.dto.TrxPurchaseRequestDto;
 import com.miniproject.eventastic.trx.repository.PaymentRepository;
 import com.miniproject.eventastic.trx.repository.TrxRepository;
 import com.miniproject.eventastic.trx.service.TrxService;
@@ -57,7 +57,7 @@ public class TrxServiceImpl implements TrxService {
 
   @Override
   @Transactional
-  public Trx purchaseTicket(PurchaseRequestDto requestDto) {
+  public Trx purchaseTicket(TrxPurchaseRequestDto requestDto) {
     // * get logged-in user
     Users loggedUser = usersService.getCurrentUser();
 
@@ -75,6 +75,7 @@ public class TrxServiceImpl implements TrxService {
     setPaymentMethod(requestDto, trx);
 
     trx.setTrxDate(Instant.now());
+    trx.setIsPaid(true);
     trxRepository.save(trx);
 
     return trx;
@@ -106,7 +107,7 @@ public class TrxServiceImpl implements TrxService {
   }
 
   // Trx = requestDto, loggedUser, event, ticketType
-  public Trx createTransaction(PurchaseRequestDto requestDto, Users loggedUser, Event event, TicketType ticketType) {
+  public Trx createTransaction(TrxPurchaseRequestDto requestDto, Users loggedUser, Event event, TicketType ticketType) {
     Trx trx = new Trx();
     trx.setUser(loggedUser);
     trx.setEvent(event);
@@ -123,7 +124,8 @@ public class TrxServiceImpl implements TrxService {
 
   // BigDecimal calcInitialPrice = ticketType,
   public BigDecimal calculateInitialAmount(TicketType ticketType, Integer qty) {
-    return ticketType.getPrice().multiply(BigDecimal.valueOf(qty));
+    return ticketType.getPrice().multiply(BigDecimal.valueOf(qty).stripTrailingZeros().setScale(0,
+        RoundingMode.HALF_UP));
   }
 
   // Set<Tickets> generate and save tickets
@@ -147,7 +149,7 @@ public class TrxServiceImpl implements TrxService {
   }
 
   // processPointsUsage calls applypoints
-  public void usePoints(PurchaseRequestDto requestDto, Trx trx) {
+  public void usePoints(TrxPurchaseRequestDto requestDto, Trx trx) {
     if (requestDto.getUsingPoints()) {
       PointsWallet pointsWallet = pointsWalletService.getPointsWallet(trx.getUser());
       if (pointsWallet.getPoints() <= 0) {
@@ -178,7 +180,7 @@ public class TrxServiceImpl implements TrxService {
   }
 
   // processVVoucherUsage -> applyvoucher
-  public void useVoucher(PurchaseRequestDto requestDto, Trx trx) {
+  public void useVoucher(TrxPurchaseRequestDto requestDto, Trx trx) {
     if (requestDto.getVoucherCode() != null) {
       Voucher voucher = voucherService.getVoucher(requestDto.getVoucherCode());
       if (voucher == null) {
@@ -203,7 +205,7 @@ public class TrxServiceImpl implements TrxService {
       BigDecimal discount = trx.getInitialAmount()
           .multiply(BigDecimal.valueOf(voucher.getPercentDiscount()).divide(BigDecimal.valueOf(100)));
 
-      trx.setTotalAmount(trx.getInitialAmount().subtract(discount));
+      trx.setTotalAmount(trx.getInitialAmount().subtract(discount).setScale(2, RoundingMode.HALF_UP));
       voucher.setUseLimit(voucher.getUseLimit() - 1);
       voucherService.saveVoucher(voucher);
     } else {
@@ -212,7 +214,7 @@ public class TrxServiceImpl implements TrxService {
   }
 
   // set payment method
-  private void setPaymentMethod(PurchaseRequestDto requestDto, Trx trx) {
+  private void setPaymentMethod(TrxPurchaseRequestDto requestDto, Trx trx) {
     Payment payment = paymentRepository.findById(requestDto.getPaymentId()).orElseThrow(() ->
         new PaymentMethodNotFound("Please enter a valid method of payment!"));
     trx.setPayment(payment);

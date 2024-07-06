@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 import lombok.Data;
 
 @Data
-public class PurchaseResponseDto {
+public class TrxPurchaseResponseDto {
 
   private Long id;
   private String attendee;
@@ -20,13 +20,15 @@ public class PurchaseResponseDto {
   private Integer ticketQty;
   private BigDecimal initialPrice;
   private TrxVoucherResponseDto voucher;
-  private Integer pointsUsed;
+  private Boolean usingPoints;
+  private String voucherUsed;
   private BigDecimal totalPrice;
+  private Boolean isPaid;
   private String paymentMethod;
   private Instant trxDate;
   private Set<TrxIssuedTicketDto> ticketSet;
 
-  public PurchaseResponseDto(Trx trx) {
+  public TrxPurchaseResponseDto(Trx trx, TrxPurchaseRequestDto requestDto) {
     this.id = trx.getId();
     this.attendee = trx.getUser().getUsername();
     this.eventTitle = trx.getEvent().getTitle();
@@ -34,8 +36,10 @@ public class PurchaseResponseDto {
     this.ticketQty = trx.getQty();
     this.initialPrice = trx.getInitialAmount();
     this.voucher = new TrxVoucherResponseDto(trx.getVoucher());
-    this.pointsUsed = trx.getPointsWallet().getPoints();
+    this.usingPoints = requestDto.getUsingPoints();
+    this.voucherUsed = trx.getVoucher().getCode();
     this.totalPrice = trx.getTotalAmount();
+    this.isPaid = trx.getIsPaid();
     this.paymentMethod = trx.getPayment().getPaymentMethod();
     this.trxDate = trx.getTrxDate();
     this.ticketSet = trx.getTickets().stream()
@@ -43,7 +47,7 @@ public class PurchaseResponseDto {
         .collect(Collectors.toSet());
   }
 
-  public PurchaseResponseDto toDto(Trx trx) {
-    return new PurchaseResponseDto(trx);
+  public TrxPurchaseResponseDto toDto(Trx trx, TrxPurchaseRequestDto requestDto) {
+    return new TrxPurchaseResponseDto(trx, requestDto);
   }
 }

@@ -7,11 +7,11 @@ import lombok.Data;
 public class TrxVoucherResponseDto {
 
   private String voucherCode;
-  private Integer voucherDiscount;
+  private Integer voucherPercent;
 
   public TrxVoucherResponseDto(Voucher voucher) {
     this.voucherCode = voucher.getCode();
-    this.voucherDiscount = voucher.getPercentDiscount();
+    this.voucherPercent = voucher.getPercentDiscount();
   }
 
   public TrxVoucherResponseDto toDto(Voucher voucher) {
