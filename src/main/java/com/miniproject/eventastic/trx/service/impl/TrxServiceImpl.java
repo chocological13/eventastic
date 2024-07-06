@@ -12,6 +12,7 @@ import com.miniproject.eventastic.exceptions.trx.InsufficientPointsException;
 import com.miniproject.eventastic.exceptions.trx.NotAwardeeException;
 import com.miniproject.eventastic.exceptions.trx.PaymentMethodNotFound;
 import com.miniproject.eventastic.exceptions.trx.SeatUnavailableException;
+import com.miniproject.eventastic.exceptions.trx.TicketNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.TicketTypeNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.VoucherInvalidException;
 import com.miniproject.eventastic.exceptions.trx.VoucherNotFoundException;
@@ -86,6 +87,17 @@ public class TrxServiceImpl implements TrxService {
     setAttendee(loggedUser, event, requestDto.getQty());
 
     return trx;
+  }
+
+  @Override
+  public Set<Ticket> getUserTickets() {
+    Users loggedUser = usersService.getCurrentUser();
+    Set<Ticket> ticketSet = ticketService.findTicketsByUser(loggedUser);
+    if (ticketSet.isEmpty()) {
+      throw new TicketNotFoundException("You have not purchased anything as of late :(");
+    } else {
+      return ticketSet;
+    }
   }
 
   // * utilities

@@ -1,6 +1,7 @@
 package com.miniproject.eventastic.users.controller;
 
 import com.miniproject.eventastic.exceptions.image.ImageNotFoundException;
+import com.miniproject.eventastic.exceptions.trx.TicketNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.VoucherNotFoundException;
 import com.miniproject.eventastic.image.entity.Image;
 import com.miniproject.eventastic.image.entity.dto.ImageUploadRequestDto;
@@ -8,6 +9,10 @@ import com.miniproject.eventastic.image.entity.dto.ImageUploadResponseDto;
 import com.miniproject.eventastic.pointsWallet.entity.dto.PointsWalletResponseDto;
 import com.miniproject.eventastic.referralCodeUsage.entity.dto.ReferralCodeUsageSummaryDto;
 import com.miniproject.eventastic.responses.Response;
+import com.miniproject.eventastic.ticket.entity.Ticket;
+import com.miniproject.eventastic.ticket.entity.dto.TrxIssuedTicketDto;
+import com.miniproject.eventastic.trx.service.TrxService;
+import com.miniproject.eventastic.trx.service.impl.TrxServiceImpl;
 import com.miniproject.eventastic.users.entity.dto.profile.UserProfileDto;
 import com.miniproject.eventastic.users.entity.dto.register.RegisterRequestDto;
 import com.miniproject.eventastic.users.entity.dto.register.RegisterResponseDto;
@@ -16,8 +21,11 @@ import com.miniproject.eventastic.users.service.UsersService;
 import com.miniproject.eventastic.voucher.entity.Voucher;
 import com.miniproject.eventastic.voucher.entity.dto.create.CreateVoucherResponseDto;
 import com.miniproject.eventastic.voucher.service.VoucherService;
+import com.miniproject.eventastic.voucher.service.impl.VoucherServiceImpl;
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -38,6 +46,7 @@ public class UsersController {
 
   private final UsersService usersService;
   private final VoucherService voucherService;
+  private final TrxService trxService;
 
   // ! Get all
   @GetMapping
@@ -71,7 +80,7 @@ public class UsersController {
   }
 
   // * Get logged-in user's points wallet
-  @GetMapping("/points")
+  @GetMapping("/me/points")
   public ResponseEntity<Response<PointsWalletResponseDto>> getUsersPointsWallet() {
     String currentUser =
         usersService.getCurrentUser().getFullName();
@@ -80,7 +89,7 @@ public class UsersController {
   }
 
   // * Get logged-in user's vouchers
-  @GetMapping("/vouchers")
+  @GetMapping("/me/vouchers")
   public ResponseEntity<Response<List<CreateVoucherResponseDto>>> getAwardeesVoucher() {
     try {
       List<Voucher> voucherList = voucherService.getAwardeesVouchers();
@@ -103,19 +112,31 @@ public class UsersController {
   }
 
   // * Ref Code related
-  @GetMapping("/referral/usage")
+  @GetMapping("/me/referral/usage")
   public ReferralCodeUsageSummaryDto referralCodeUsageSummary() {
     return usersService.getCodeUsageSummary();
   }
 
   // * upload image
-  @PostMapping("/image/upload")
+  @PostMapping("/me/image/upload")
   public ResponseEntity<Response<ImageUploadResponseDto>> uploadImage(ImageUploadRequestDto requestDto) {
     Image uploadedImage = usersService.uploadImage(requestDto);
     if (uploadedImage == null) {
       return ResponseEntity.noContent().build();
     } else {
       return Response.successfulResponse(HttpStatus.OK.value(), "Image uploaded! :D", new ImageUploadResponseDto(uploadedImage));
+    }
+  }
+
+  // * show list of purchased tickets
+  @GetMapping("/me/tickets")
+  public ResponseEntity<Response<Set<TrxIssuedTicketDto>>> getPurchasedTickets() {
+    try {
+      Set<Ticket> ticketSet = trxService.getUserTickets();
+      return Response.successfulResponse(HttpStatus.FOUND.value(), "Displaying your tickets..",
+          ticketSet.stream().map(TrxIssuedTicketDto::new).collect(Collectors.toSet()));
+    } catch (TicketNotFoundException e) {
+      return Response.failedResponse(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
     }
   }
 }
