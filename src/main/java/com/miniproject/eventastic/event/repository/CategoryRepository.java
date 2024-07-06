@@ -1,6 +1,6 @@
 package com.miniproject.eventastic.event.repository;
 
-import com.miniproject.eventastic.event.entity.Category;
+import com.miniproject.eventastic.event.metadata.Category;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

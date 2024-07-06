@@ -1,10 +1,9 @@
-package com.miniproject.eventastic.trx.entity.dto.response;
+package com.miniproject.eventastic.trx.entity.dto;
 
 import com.miniproject.eventastic.ticket.entity.dto.TrxIssuedTicketDto;
 import com.miniproject.eventastic.ticketType.entity.dto.trx.TrxTicketTypeResponseDto;
-import com.miniproject.eventastic.trx.entity.Payment;
 import com.miniproject.eventastic.trx.entity.Trx;
-import com.miniproject.eventastic.trx.entity.dto.TrxPurchaseRequestDto;
+import com.miniproject.eventastic.trx.metadata.dto.TrxPaymentResponseDto;
 import com.miniproject.eventastic.voucher.entity.dto.trx.TrxVoucherResponseDto;
 import java.math.BigDecimal;
 import java.time.Instant;

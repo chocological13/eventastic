@@ -1,5 +1,6 @@
 package com.miniproject.eventastic.event.entity;
 
+import com.miniproject.eventastic.event.metadata.Category;
 import com.miniproject.eventastic.image.entity.Image;
 import com.miniproject.eventastic.toHandle.Review;
 import com.miniproject.eventastic.ticketType.entity.TicketType;
