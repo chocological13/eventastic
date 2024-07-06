@@ -1,8 +1,10 @@
-package com.miniproject.eventastic.trx.entity.dto;
+package com.miniproject.eventastic.trx.entity.dto.response;
 
 import com.miniproject.eventastic.ticket.entity.dto.TrxIssuedTicketDto;
 import com.miniproject.eventastic.ticketType.entity.dto.trx.TrxTicketTypeResponseDto;
+import com.miniproject.eventastic.trx.entity.Payment;
 import com.miniproject.eventastic.trx.entity.Trx;
+import com.miniproject.eventastic.trx.entity.dto.TrxPurchaseRequestDto;
 import com.miniproject.eventastic.voucher.entity.dto.trx.TrxVoucherResponseDto;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -21,10 +23,9 @@ public class TrxPurchaseResponseDto {
   private BigDecimal initialPrice;
   private TrxVoucherResponseDto voucher;
   private Boolean usingPoints;
-  private String voucherUsed;
   private BigDecimal totalPrice;
   private Boolean isPaid;
-  private String paymentMethod;
+  private TrxPaymentResponseDto paymentMethod;
   private Instant trxDate;
   private Set<TrxIssuedTicketDto> ticketSet;
 
@@ -37,10 +38,9 @@ public class TrxPurchaseResponseDto {
     this.initialPrice = trx.getInitialAmount();
     this.voucher = new TrxVoucherResponseDto(trx.getVoucher());
     this.usingPoints = requestDto.getUsingPoints();
-    this.voucherUsed = trx.getVoucher().getCode();
     this.totalPrice = trx.getTotalAmount();
     this.isPaid = trx.getIsPaid();
-    this.paymentMethod = trx.getPayment().getPaymentMethod();
+    this.paymentMethod = new TrxPaymentResponseDto(trx.getPayment());
     this.trxDate = trx.getTrxDate();
     this.ticketSet = trx.getTickets().stream()
         .map(TrxIssuedTicketDto::new)
