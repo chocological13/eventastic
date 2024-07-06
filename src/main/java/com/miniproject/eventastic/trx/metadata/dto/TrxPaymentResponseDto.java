@@ -1,6 +1,6 @@
-package com.miniproject.eventastic.trx.entity.dto.response;
+package com.miniproject.eventastic.trx.metadata.dto;
 
-import com.miniproject.eventastic.trx.entity.Payment;
+import com.miniproject.eventastic.trx.metadata.Payment;
 import lombok.Data;
 
 @Data

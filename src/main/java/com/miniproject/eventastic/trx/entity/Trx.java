@@ -1,6 +1,8 @@
 package com.miniproject.eventastic.trx.entity;
 
+import com.miniproject.eventastic.attendee.entity.Attendee;
 import com.miniproject.eventastic.event.entity.Event;
+import com.miniproject.eventastic.trx.metadata.Payment;
 import com.miniproject.eventastic.pointsWallet.entity.PointsWallet;
 import com.miniproject.eventastic.ticket.entity.Ticket;
 import com.miniproject.eventastic.ticketType.entity.TicketType;

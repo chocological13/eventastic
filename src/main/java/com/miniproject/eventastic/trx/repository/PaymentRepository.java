@@ -1,6 +1,6 @@
 package com.miniproject.eventastic.trx.repository;
 
-import com.miniproject.eventastic.trx.entity.Payment;
+import com.miniproject.eventastic.trx.metadata.Payment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

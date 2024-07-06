@@ -1,4 +1,4 @@
-package com.miniproject.eventastic.trx.entity;
+package com.miniproject.eventastic.trx.metadata;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

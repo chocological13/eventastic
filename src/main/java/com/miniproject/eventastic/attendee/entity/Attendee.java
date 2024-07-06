@@ -36,4 +36,7 @@ public class Attendee {
   @Column(name = "attended_at")
   private Instant attendedAt;
 
+  @Column(name = "tickets_purchased")
+  private Integer ticketsPurchased;
+
 }

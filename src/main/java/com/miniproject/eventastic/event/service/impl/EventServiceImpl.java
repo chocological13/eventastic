@@ -1,6 +1,6 @@
 package com.miniproject.eventastic.event.service.impl;
 
-import com.miniproject.eventastic.event.entity.Category;
+import com.miniproject.eventastic.event.metadata.Category;
 import com.miniproject.eventastic.event.entity.Event;
 import com.miniproject.eventastic.event.entity.dto.EventResponseDto;
 import com.miniproject.eventastic.event.entity.dto.createEvent.CreateEventRequestDto;

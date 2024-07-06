@@ -1,4 +1,4 @@
-package com.miniproject.eventastic.event.entity;
+package com.miniproject.eventastic.event.metadata;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

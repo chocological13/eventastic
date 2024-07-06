@@ -1,5 +1,8 @@
 package com.miniproject.eventastic.trx.service.impl;
 
+import com.miniproject.eventastic.attendee.entity.Attendee;
+import com.miniproject.eventastic.attendee.entity.AttendeeId;
+import com.miniproject.eventastic.attendee.service.AttendeeService;
 import com.miniproject.eventastic.event.entity.Event;
 import com.miniproject.eventastic.event.repository.EventRepository;
 import com.miniproject.eventastic.event.service.EventService;
@@ -18,7 +21,7 @@ import com.miniproject.eventastic.ticket.entity.Ticket;
 import com.miniproject.eventastic.ticket.service.TicketService;
 import com.miniproject.eventastic.ticketType.entity.TicketType;
 import com.miniproject.eventastic.ticketType.service.TicketTypeService;
-import com.miniproject.eventastic.trx.entity.Payment;
+import com.miniproject.eventastic.trx.metadata.Payment;
 import com.miniproject.eventastic.trx.entity.Trx;
 import com.miniproject.eventastic.trx.entity.dto.TrxPurchaseRequestDto;
 import com.miniproject.eventastic.trx.repository.PaymentRepository;
@@ -53,6 +56,7 @@ public class TrxServiceImpl implements TrxService {
   private final UsersService usersService;
   private final EventRepository eventRepository;
   private final TicketService ticketService;
+  private final AttendeeService attendeeService;
 
 
   @Override
@@ -77,6 +81,9 @@ public class TrxServiceImpl implements TrxService {
     trx.setTrxDate(Instant.now());
     trx.setIsPaid(true);
     trxRepository.save(trx);
+
+    // set attendee for this purchase
+    setAttendee(loggedUser, event, requestDto.getQty());
 
     return trx;
   }
@@ -218,6 +225,18 @@ public class TrxServiceImpl implements TrxService {
     Payment payment = paymentRepository.findById(requestDto.getPaymentId()).orElseThrow(() ->
         new PaymentMethodNotFound("Please enter a valid method of payment!"));
     trx.setPayment(payment);
+  }
+
+  private void setAttendee(Users user, Event event, Integer qty) {
+    AttendeeId attendeeId = new AttendeeId(user.getId(), event.getId());
+
+    // check if attendee exists
+    Attendee attendee = attendeeService.findAttendee(attendeeId).orElse(new Attendee());
+    attendee.setId(attendeeId);
+    attendee.setUser(user);
+    attendee.setEvent(event);
+    attendee.setTicketsPurchased((attendee.getTicketsPurchased() == null ? 0 : attendee.getTicketsPurchased()) + qty);
+    attendeeService.saveAttendee(attendee);
   }
 
 }
