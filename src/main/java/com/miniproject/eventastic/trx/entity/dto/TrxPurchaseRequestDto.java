@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
-public class PurchaseRequestDto {
+public class TrxPurchaseRequestDto {
 
   @NotNull(message = "Must choose an event!")
   private Long eventId;
