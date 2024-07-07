@@ -1,6 +1,7 @@
 package com.miniproject.eventastic.users.entity;
 
 import com.miniproject.eventastic.image.entity.Image;
+import com.miniproject.eventastic.organizerWallet.entity.OrganizerWallet;
 import com.miniproject.eventastic.pointsWallet.entity.PointsWallet;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -16,7 +17,6 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.time.Instant;
@@ -92,6 +92,10 @@ public class Users {
 
   @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
   private PointsWallet pointsWallet;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "organizer_wallet_id")
+  private OrganizerWallet organizerWallet;
 
 
   @PrePersist

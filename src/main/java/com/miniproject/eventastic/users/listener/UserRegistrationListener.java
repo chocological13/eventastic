@@ -1,6 +1,8 @@
 package com.miniproject.eventastic.users.listener;
 
 
+import com.miniproject.eventastic.organizerWallet.entity.OrganizerWallet;
+import com.miniproject.eventastic.organizerWallet.service.OrganizerWalletService;
 import com.miniproject.eventastic.pointsTrx.entity.PointsTrx;
 import com.miniproject.eventastic.pointsTrx.service.PointsTrxService;
 import com.miniproject.eventastic.pointsWallet.entity.PointsWallet;
@@ -12,6 +14,7 @@ import com.miniproject.eventastic.users.entity.Users;
 import com.miniproject.eventastic.users.event.UserRegistrationEvent;
 import com.miniproject.eventastic.users.service.UsersService;
 import jakarta.transaction.Transactional;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
@@ -29,6 +32,7 @@ public class UserRegistrationListener {
   private final UsersService usersService;
   private final ReferralCodeUsageService referralCodeUsageService;
   private final PointsTrxService pointsTrxService;
+  private final OrganizerWalletService organizerWalletService;
 
   @EventListener
   @Transactional
@@ -38,6 +42,10 @@ public class UserRegistrationListener {
     // * init points wallet
     PointsWallet pointsWallet = initPointsWallet(user);
 
+    // * init org wallet if org
+    if (user.getIsOrganizer())
+      initOrganizerWallet(user);
+
     // * Generate and assign referral code
     String ownedReferralCode = UUID.randomUUID().toString().substring(0, 7);
     user.setOwnedRefCode(ownedReferralCode);
@@ -46,6 +54,14 @@ public class UserRegistrationListener {
     // * Process referral code and update in points trx if used
     String refCodeUsed = event.getUser().getRefCodeUsed();
     useRefCode(user, pointsWallet, refCodeUsed);
+  }
+
+  public void initOrganizerWallet(Users user) {
+    OrganizerWallet organizerWallet = new OrganizerWallet();
+    organizerWallet.setOrganizer(user);
+    organizerWallet.setBalance(BigDecimal.ZERO);
+    organizerWalletService.saveWallet(organizerWallet);
+    user.setOrganizerWallet(organizerWallet);
   }
 
   public PointsWallet initPointsWallet(Users user) {

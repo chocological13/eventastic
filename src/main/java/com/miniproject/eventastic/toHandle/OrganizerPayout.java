@@ -1,6 +1,7 @@
 package com.miniproject.eventastic.toHandle;
 
-import com.miniproject.eventastic.trx.metadata.Payment;
+import com.miniproject.eventastic.organizerWallet.entity.OrganizerWallet;
+import com.miniproject.eventastic.trx.entity.Trx;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -41,15 +42,15 @@ public class OrganizerPayout {
 
   @NotNull
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
-  @JoinColumn(name = "payment_id", nullable = false)
-  private Payment payment;
+  @JoinColumn(name = "trx_id", nullable = false)
+  private Trx trx;
 
   @NotNull
-  @Column(name = "amount", nullable = false)
+  @Column(name = "amount", nullable = false, precision = 38, scale = 2)
   private BigDecimal amount;
 
   @ColumnDefault("CURRENT_TIMESTAMP")
-  @Column(name = "created_at")
-  private Instant createdAt;
+  @Column(name = "credited_at")
+  private Instant creditedAt;
 
 }

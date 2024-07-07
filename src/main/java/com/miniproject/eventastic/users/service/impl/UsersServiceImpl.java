@@ -6,6 +6,7 @@ import com.miniproject.eventastic.image.entity.Image;
 import com.miniproject.eventastic.image.entity.dto.ImageUploadRequestDto;
 import com.miniproject.eventastic.image.service.CloudinaryService;
 import com.miniproject.eventastic.image.service.ImageService;
+import com.miniproject.eventastic.organizerWallet.entity.dto.OrganizerWalletDto;
 import com.miniproject.eventastic.pointsTrx.entity.PointsTrx;
 import com.miniproject.eventastic.pointsTrx.service.PointsTrxService;
 import com.miniproject.eventastic.pointsWallet.entity.PointsWallet;
@@ -126,6 +127,10 @@ public class UsersServiceImpl implements UsersService {
       response.setRefCodeUsed("No referral code used");
     }
     response.setPointsWallet(new PointsWalletResponseDto(newUser.getPointsWallet()));
+    response.setIsOrganizer(newUser.getIsOrganizer());
+    response.setOrganizerWallet(newUser.getOrganizerWallet() == null ? null :
+        new OrganizerWalletDto(newUser.getOrganizerWallet()));
+
     return response;
   }
 

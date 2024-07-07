@@ -1,5 +1,6 @@
 package com.miniproject.eventastic.users.entity.dto.register;
 
+import com.miniproject.eventastic.organizerWallet.entity.dto.OrganizerWalletDto;
 import com.miniproject.eventastic.pointsWallet.entity.dto.PointsWalletResponseDto;
 import com.miniproject.eventastic.users.entity.Users;
 import lombok.AllArgsConstructor;
@@ -18,6 +19,8 @@ public class RegisterResponseDto {
   private String ownedRefCode;
   private String refCodeUsed;
   private PointsWalletResponseDto pointsWallet;
+  private Boolean isOrganizer;
+  private OrganizerWalletDto organizerWallet;
 
   public RegisterResponseDto(Users newUser) {
     this.id = newUser.getId();
@@ -26,6 +29,9 @@ public class RegisterResponseDto {
     this.ownedRefCode = newUser.getOwnedRefCode();
     this.refCodeUsed = newUser.getRefCodeUsed();
     this.pointsWallet = new PointsWalletResponseDto(newUser.getPointsWallet());
+    this.isOrganizer = newUser.getIsOrganizer();
+    this.organizerWallet = newUser.getOrganizerWallet() == null ? null :
+        new OrganizerWalletDto(newUser.getOrganizerWallet());
   }
 
   public RegisterResponseDto toDto(Users newUser) {
