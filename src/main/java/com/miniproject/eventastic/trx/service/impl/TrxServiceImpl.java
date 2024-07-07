@@ -16,6 +16,9 @@ import com.miniproject.eventastic.exceptions.trx.TicketNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.TicketTypeNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.VoucherInvalidException;
 import com.miniproject.eventastic.exceptions.trx.VoucherNotFoundException;
+import com.miniproject.eventastic.organizerWallet.service.OrganizerWalletService;
+import com.miniproject.eventastic.organizerWalletTrx.entity.OrganizerWalletTrx;
+import com.miniproject.eventastic.organizerWalletTrx.service.OrganizerWalletTrxService;
 import com.miniproject.eventastic.pointsTrx.entity.PointsTrx;
 import com.miniproject.eventastic.pointsTrx.service.PointsTrxService;
 import com.miniproject.eventastic.pointsWallet.entity.PointsWallet;
@@ -61,6 +64,7 @@ public class TrxServiceImpl implements TrxService {
   private final TicketService ticketService;
   private final AttendeeService attendeeService;
   private final PointsTrxService pointsTrxService;
+  private final OrganizerWalletTrxService organizerWalletTrxService;
 
 
   @Override
@@ -91,6 +95,9 @@ public class TrxServiceImpl implements TrxService {
 
     // set trx to PointsTrx
     pointsTrx.setTrx(trx);
+
+    // send payout to organizer
+    organizerWalletTrxService.sendPayout(trx);
 
     return trx;
   }
