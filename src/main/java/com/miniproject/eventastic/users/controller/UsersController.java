@@ -1,12 +1,14 @@
 package com.miniproject.eventastic.users.controller;
 
 import com.miniproject.eventastic.exceptions.image.ImageNotFoundException;
+import com.miniproject.eventastic.exceptions.trx.OrganizerWalletNotFound;
 import com.miniproject.eventastic.exceptions.trx.PointsTrxNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.TicketNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.VoucherNotFoundException;
 import com.miniproject.eventastic.image.entity.Image;
 import com.miniproject.eventastic.image.entity.dto.ImageUploadRequestDto;
 import com.miniproject.eventastic.image.entity.dto.ImageUploadResponseDto;
+import com.miniproject.eventastic.organizerWallet.entity.dto.OrganizerWalletDisplayDto;
 import com.miniproject.eventastic.pointsTrx.entity.PointsTrx;
 import com.miniproject.eventastic.pointsTrx.entity.dto.PointsTrxDto;
 import com.miniproject.eventastic.pointsWallet.entity.dto.PointsWalletResponseDto;
@@ -33,6 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -153,4 +156,18 @@ public class UsersController {
       return Response.failedResponse(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
     }
   }
+
+  // !! Organizer space
+  @GetMapping("/organizer/wallet")
+  public ResponseEntity<Response<OrganizerWalletDisplayDto>> getOrganizerWallet() {
+    try {
+      return Response.successfulResponse(HttpStatus.FOUND.value(), "Displaying your wallet..",
+          usersService.getWalletDisplay());
+    } catch (AccessDeniedException e) {
+      return Response.failedResponse(HttpStatus.FORBIDDEN.value(), e.getMessage(), null);
+    } catch (OrganizerWalletNotFound e) {
+      return Response.failedResponse(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
+    }
+  }
+
 }

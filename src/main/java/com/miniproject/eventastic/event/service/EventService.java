@@ -9,6 +9,8 @@ import org.springframework.data.domain.Page;
 
 public interface EventService {
 
+  void saveEvent(Event event);
+
   EventResponseDto createEvent(CreateEventRequestDto requestDto);
 
   Page<EventResponseDto> getEvents(int page, int size, String title, String category, String location, String order,

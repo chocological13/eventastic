@@ -7,17 +7,17 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class OrganizerWalletDto {
+public class InitOrganizerWalletDto {
 
   private Long id;
   private BigDecimal balance;
 
-  public OrganizerWalletDto(OrganizerWallet organizerWallet) {
+  public InitOrganizerWalletDto(OrganizerWallet organizerWallet) {
     this.id = organizerWallet.getId();
     this.balance = organizerWallet.getBalance();
   }
 
-  public OrganizerWalletDto toDto(OrganizerWallet organizerWallet) {
-    return new OrganizerWalletDto(organizerWallet);
+  public InitOrganizerWalletDto toDto(OrganizerWallet organizerWallet) {
+    return new InitOrganizerWalletDto(organizerWallet);
   }
 }

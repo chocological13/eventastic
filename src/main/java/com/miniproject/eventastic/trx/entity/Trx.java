@@ -1,6 +1,7 @@
 package com.miniproject.eventastic.trx.entity;
 
 import com.miniproject.eventastic.event.entity.Event;
+import com.miniproject.eventastic.organizerWalletTrx.entity.OrganizerWalletTrx;
 import com.miniproject.eventastic.pointsWallet.entity.PointsWallet;
 import com.miniproject.eventastic.ticket.entity.Ticket;
 import com.miniproject.eventastic.ticketType.entity.TicketType;
@@ -25,6 +26,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import lombok.Getter;
@@ -113,4 +115,6 @@ public class Trx implements Comparable<Trx> {
     this.trxDate = Instant.now();
   }
 
+  @OneToMany(mappedBy = "trx")
+  private Collection<OrganizerWalletTrx> organizerWalletTrx;
 }

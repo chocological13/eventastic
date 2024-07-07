@@ -3,6 +3,7 @@ package com.miniproject.eventastic.users.service;
 import com.miniproject.eventastic.exceptions.image.ImageNotFoundException;
 import com.miniproject.eventastic.image.entity.Image;
 import com.miniproject.eventastic.image.entity.dto.ImageUploadRequestDto;
+import com.miniproject.eventastic.organizerWallet.entity.dto.OrganizerWalletDisplayDto;
 import com.miniproject.eventastic.pointsTrx.entity.PointsTrx;
 import com.miniproject.eventastic.pointsWallet.entity.PointsWallet;
 import com.miniproject.eventastic.referralCodeUsage.entity.dto.ReferralCodeUsageSummaryDto;
@@ -52,6 +53,9 @@ public interface UsersService {
 
   // display history of points usage
   Set<PointsTrx> getPointsTrx();
+
+  // display organizer's wallet and payout history
+OrganizerWalletDisplayDto getWalletDisplay();
 
 
 }

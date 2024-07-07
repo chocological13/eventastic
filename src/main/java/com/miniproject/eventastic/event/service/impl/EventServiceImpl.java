@@ -19,6 +19,7 @@ import com.miniproject.eventastic.ticketType.entity.dto.create.CreateTicketTypeR
 import com.miniproject.eventastic.ticketType.service.TicketTypeService;
 import com.miniproject.eventastic.users.entity.Users;
 import com.miniproject.eventastic.users.service.UsersService;
+import jakarta.transaction.Transactional;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -52,6 +53,12 @@ public class EventServiceImpl implements EventService {
   private final CategoryRepository categoryRepository;
 
   @Override
+  public void saveEvent(Event event) {
+    eventRepository.save(event);
+  }
+
+  @Override
+  @Transactional
   public EventResponseDto createEvent(CreateEventRequestDto requestDto) {
     // check if there's a duplicate
     if (isDuplicateEvent(requestDto)) {

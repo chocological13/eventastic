@@ -4,7 +4,6 @@ import com.miniproject.eventastic.attendee.entity.Attendee;
 import com.miniproject.eventastic.attendee.entity.AttendeeId;
 import com.miniproject.eventastic.attendee.service.AttendeeService;
 import com.miniproject.eventastic.event.entity.Event;
-import com.miniproject.eventastic.event.repository.EventRepository;
 import com.miniproject.eventastic.event.service.EventService;
 import com.miniproject.eventastic.exceptions.event.EventEndedException;
 import com.miniproject.eventastic.exceptions.event.EventNotFoundException;
@@ -16,8 +15,6 @@ import com.miniproject.eventastic.exceptions.trx.TicketNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.TicketTypeNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.VoucherInvalidException;
 import com.miniproject.eventastic.exceptions.trx.VoucherNotFoundException;
-import com.miniproject.eventastic.organizerWallet.service.OrganizerWalletService;
-import com.miniproject.eventastic.organizerWalletTrx.entity.OrganizerWalletTrx;
 import com.miniproject.eventastic.organizerWalletTrx.service.OrganizerWalletTrxService;
 import com.miniproject.eventastic.pointsTrx.entity.PointsTrx;
 import com.miniproject.eventastic.pointsTrx.service.PointsTrxService;
@@ -27,9 +24,9 @@ import com.miniproject.eventastic.ticket.entity.Ticket;
 import com.miniproject.eventastic.ticket.service.TicketService;
 import com.miniproject.eventastic.ticketType.entity.TicketType;
 import com.miniproject.eventastic.ticketType.service.TicketTypeService;
-import com.miniproject.eventastic.trx.metadata.Payment;
 import com.miniproject.eventastic.trx.entity.Trx;
 import com.miniproject.eventastic.trx.entity.dto.TrxPurchaseRequestDto;
+import com.miniproject.eventastic.trx.metadata.Payment;
 import com.miniproject.eventastic.trx.repository.PaymentRepository;
 import com.miniproject.eventastic.trx.repository.TrxRepository;
 import com.miniproject.eventastic.trx.service.TrxService;
@@ -60,7 +57,6 @@ public class TrxServiceImpl implements TrxService {
   private final PointsWalletService pointsWalletService;
   private final VoucherService voucherService;
   private final UsersService usersService;
-  private final EventRepository eventRepository;
   private final TicketService ticketService;
   private final AttendeeService attendeeService;
   private final PointsTrxService pointsTrxService;
@@ -115,7 +111,7 @@ public class TrxServiceImpl implements TrxService {
 
   // * utilities
   // Event
-  public Event validateAndRetrieveEvent(Long eventId) {
+  private Event validateAndRetrieveEvent(Long eventId) {
     Event event = eventService.getEventById(eventId);
     if (event == null) {
       throw new EventNotFoundException("Event not found!");
@@ -127,7 +123,7 @@ public class TrxServiceImpl implements TrxService {
   }
 
   // TicketType
-  public TicketType validateAndRetrieveTicketType(Long ticketTypeId) {
+  private TicketType validateAndRetrieveTicketType(Long ticketTypeId) {
     TicketType ticketType = ticketTypeService.getTicketTypeById(ticketTypeId);
     if (ticketType == null) {
       throw new TicketTypeNotFoundException("This ticket type does not exist!");
@@ -139,7 +135,8 @@ public class TrxServiceImpl implements TrxService {
   }
 
   // Trx = requestDto, loggedUser, event, ticketType
-  public Trx createTransaction(TrxPurchaseRequestDto requestDto, Users loggedUser, Event event, TicketType ticketType) {
+  private Trx createTransaction(TrxPurchaseRequestDto requestDto, Users loggedUser, Event event,
+      TicketType ticketType) {
     Trx trx = new Trx();
     trx.setUser(loggedUser);
     trx.setEvent(event);
@@ -155,13 +152,13 @@ public class TrxServiceImpl implements TrxService {
   }
 
   // BigDecimal calcInitialPrice = ticketType,
-  public BigDecimal calculateInitialAmount(TicketType ticketType, Integer qty) {
+  private BigDecimal calculateInitialAmount(TicketType ticketType, Integer qty) {
     return ticketType.getPrice().multiply(BigDecimal.valueOf(qty).stripTrailingZeros().setScale(0,
         RoundingMode.HALF_UP));
   }
 
   // Set<Tickets> generate and save tickets
-  public Set<Ticket> generateAndSaveTickets(Users loggedUser, TicketType ticketType, Integer qty) {
+  private Set<Ticket> generateAndSaveTickets(Users loggedUser, TicketType ticketType, Integer qty) {
     Set<Ticket> ticketSet = new LinkedHashSet<>();
     for (int i = 0; i < qty; i++) {
       Ticket ticket = ticketService.generateTicket(loggedUser, ticketType);
@@ -172,16 +169,16 @@ public class TrxServiceImpl implements TrxService {
   }
 
   // decrement avail seats
-  public void decrementAvailableSeat(Event event, TicketType ticketType, Integer qty) {
+  private void decrementAvailableSeat(Event event, TicketType ticketType, Integer qty) {
     event.setAvailableSeat(event.getAvailableSeat() - qty);
-    eventRepository.save(event);
+    eventService.saveEvent(event);
 
     ticketType.setAvailableSeat(event.getAvailableSeat() - qty);
     ticketTypeService.saveTicketType(ticketType);
   }
 
-  // processPointsUsage calls applypoints and returns PointsTrx so that we could set trx to it
-  public PointsTrx usePoints(TrxPurchaseRequestDto requestDto, Trx trx) {
+  // processPointsUsage calls apply points and returns PointsTrx so that we could set trx to it
+  private PointsTrx usePoints(TrxPurchaseRequestDto requestDto, Trx trx) {
     PointsTrx pointsTrx = new PointsTrx();
     if (requestDto.getUsingPoints()) {
       PointsWallet pointsWallet = pointsWalletService.getPointsWallet(trx.getUser());
@@ -196,7 +193,7 @@ public class TrxServiceImpl implements TrxService {
   }
 
   // apply points
-  public PointsTrx applyPoints(Trx trx, PointsWallet pointsWallet) {
+  private PointsTrx applyPoints(Trx trx, PointsWallet pointsWallet) {
     BigDecimal points = BigDecimal.valueOf(pointsWallet.getPoints());
     BigDecimal price = trx.getInitialAmount();
 
@@ -227,8 +224,8 @@ public class TrxServiceImpl implements TrxService {
     return pointsTrx;
   }
 
-  // processVVoucherUsage -> applyvoucher
-  public void useVoucher(TrxPurchaseRequestDto requestDto, Trx trx) {
+  // processVoucherUsage -> apply voucher
+  private void useVoucher(TrxPurchaseRequestDto requestDto, Trx trx) {
     if (requestDto.getVoucherCode() != null) {
       Voucher voucher = voucherService.getVoucher(requestDto.getVoucherCode());
       if (voucher == null) {
@@ -245,8 +242,8 @@ public class TrxServiceImpl implements TrxService {
     }
   }
 
-  // applyvoucher
-  public void applyVoucher(Trx trx, Voucher voucher) {
+  // apply voucher
+  private void applyVoucher(Trx trx, Voucher voucher) {
     Users user = trx.getUser();
     Users awardee = voucher.getAwardee();
     if (awardee == null || awardee.equals(user)) {

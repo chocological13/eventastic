@@ -1,12 +1,16 @@
 package com.miniproject.eventastic.users.service.impl;
 
 import com.miniproject.eventastic.exceptions.image.ImageNotFoundException;
+import com.miniproject.eventastic.exceptions.trx.OrganizerWalletNotFound;
 import com.miniproject.eventastic.exceptions.trx.PointsTrxNotFoundException;
 import com.miniproject.eventastic.image.entity.Image;
 import com.miniproject.eventastic.image.entity.dto.ImageUploadRequestDto;
 import com.miniproject.eventastic.image.service.CloudinaryService;
 import com.miniproject.eventastic.image.service.ImageService;
-import com.miniproject.eventastic.organizerWallet.entity.dto.OrganizerWalletDto;
+import com.miniproject.eventastic.organizerWallet.entity.OrganizerWallet;
+import com.miniproject.eventastic.organizerWallet.entity.dto.InitOrganizerWalletDto;
+import com.miniproject.eventastic.organizerWallet.entity.dto.OrganizerWalletDisplayDto;
+import com.miniproject.eventastic.organizerWallet.service.OrganizerWalletService;
 import com.miniproject.eventastic.pointsTrx.entity.PointsTrx;
 import com.miniproject.eventastic.pointsTrx.service.PointsTrxService;
 import com.miniproject.eventastic.pointsWallet.entity.PointsWallet;
@@ -34,6 +38,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -55,6 +60,7 @@ public class UsersServiceImpl implements UsersService {
   private final CloudinaryService cloudinaryService;
   private final ImageService imageService;
   private final PointsTrxService pointsTrxService;
+  private final OrganizerWalletService organizerWalletService;
 
   @Override
   public List<UserProfileDto> getAllUsers() {
@@ -129,7 +135,7 @@ public class UsersServiceImpl implements UsersService {
     response.setPointsWallet(new PointsWalletResponseDto(newUser.getPointsWallet()));
     response.setIsOrganizer(newUser.getIsOrganizer());
     response.setOrganizerWallet(newUser.getOrganizerWallet() == null ? null :
-        new OrganizerWalletDto(newUser.getOrganizerWallet()));
+        new InitOrganizerWalletDto(newUser.getOrganizerWallet()));
 
     return response;
   }
@@ -248,6 +254,22 @@ public class UsersServiceImpl implements UsersService {
       throw new PointsTrxNotFoundException("No history of points usage is found!");
     } else {
       return pointsTrxes;
+    }
+  }
+
+  @Override
+  public OrganizerWalletDisplayDto getWalletDisplay() {
+    Users organizer = getCurrentUser();
+    OrganizerWallet organizerWallet;
+    if (!organizer.getIsOrganizer()) {
+      throw new AccessDeniedException("Only organizers can access this wallet");
+    } else {
+      organizerWallet = organizerWalletService.getWalletByOrganizer(organizer);
+      if (organizerWallet == null) {
+        throw new OrganizerWalletNotFound("Wallet not found! Or are you an impostor..");
+      } else {
+        return new OrganizerWalletDisplayDto(organizerWallet);
+      }
     }
   }
 

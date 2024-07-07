@@ -1,6 +1,5 @@
 package com.miniproject.eventastic.organizerWalletTrx.service.impl;
 
-import com.miniproject.eventastic.event.entity.Event;
 import com.miniproject.eventastic.exceptions.trx.OrganizerWalletNotFound;
 import com.miniproject.eventastic.organizerWallet.entity.OrganizerWallet;
 import com.miniproject.eventastic.organizerWallet.service.OrganizerWalletService;
@@ -52,6 +51,7 @@ public class OrganizerWalletTrxServiceImpl implements OrganizerWalletTrxService 
       payout.setServiceFee(serviceFee);
       payout.setTrx(trx);
       payout.setTrxType("Payout");
+      payout.setDescription("Payout for transaction of " + trx.getEvent().getTitle());
       payout.setOrganizerWallet(organizerWallet);
       payout.setAmount(payoutAmount);
       organizerWalletTrxRepository.save(payout);

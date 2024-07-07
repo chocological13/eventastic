@@ -58,6 +58,9 @@ public class OrganizerWalletTrx implements Comparable<OrganizerWalletTrx> {
   @JoinColumn(name = "trx_id")
   private Trx trx;
 
+  @Column(name = "description", length = Integer.MAX_VALUE)
+  private String description;
+
   @NotNull
   @Column(name = "amount", nullable = false)
   private BigDecimal amount;
