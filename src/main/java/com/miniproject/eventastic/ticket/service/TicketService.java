@@ -3,7 +3,6 @@ package com.miniproject.eventastic.ticket.service;
 import com.miniproject.eventastic.ticket.entity.Ticket;
 import com.miniproject.eventastic.ticketType.entity.TicketType;
 import com.miniproject.eventastic.users.entity.Users;
-import java.util.List;
 import java.util.Set;
 
 public interface TicketService {

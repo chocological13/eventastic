@@ -2,7 +2,10 @@ package com.miniproject.eventastic.trx.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.miniproject.eventastic.attendee.service.AttendeeService;
 import com.miniproject.eventastic.event.entity.Event;
@@ -26,7 +29,6 @@ import com.miniproject.eventastic.trx.entity.dto.TrxPurchaseRequestDto;
 import com.miniproject.eventastic.trx.metadata.Payment;
 import com.miniproject.eventastic.trx.repository.PaymentRepository;
 import com.miniproject.eventastic.trx.repository.TrxRepository;
-import com.miniproject.eventastic.trx.service.TrxService;
 import com.miniproject.eventastic.users.entity.Users;
 import com.miniproject.eventastic.users.service.UsersService;
 import com.miniproject.eventastic.voucher.entity.Voucher;
@@ -35,7 +37,6 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;

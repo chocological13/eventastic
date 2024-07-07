@@ -15,7 +15,6 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
-import java.math.BigDecimal;
 import java.time.Instant;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,7 +27,12 @@ import org.hibernate.annotations.ColumnDefault;
     @Index(name = "idx_points_trx_points_wallet_id", columnList = "points_wallet_id"),
     @Index(name = "idx_points_trx_trx_id", columnList = "trx_id")
 })
-public class PointsTrx {
+public class PointsTrx implements Comparable<PointsTrx> {
+
+  @Override
+  public int compareTo(PointsTrx o) {
+    return o.getCreatedAt().compareTo(this.getCreatedAt());
+  }
 
   @Id
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "points_trx_id_gen")

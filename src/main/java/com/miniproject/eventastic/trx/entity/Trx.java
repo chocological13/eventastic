@@ -1,11 +1,10 @@
 package com.miniproject.eventastic.trx.entity;
 
-import com.miniproject.eventastic.attendee.entity.Attendee;
 import com.miniproject.eventastic.event.entity.Event;
-import com.miniproject.eventastic.trx.metadata.Payment;
 import com.miniproject.eventastic.pointsWallet.entity.PointsWallet;
 import com.miniproject.eventastic.ticket.entity.Ticket;
 import com.miniproject.eventastic.ticketType.entity.TicketType;
+import com.miniproject.eventastic.trx.metadata.Payment;
 import com.miniproject.eventastic.users.entity.Users;
 import com.miniproject.eventastic.voucher.entity.Voucher;
 import jakarta.persistence.CascadeType;
@@ -41,7 +40,12 @@ import org.hibernate.annotations.ColumnDefault;
     @Index(name = "idx_trx_points_id", columnList = "points_id"),
     @Index(name = "idx_trx_voucher_id", columnList = "voucher_id")
 })
-public class Trx {
+public class Trx implements Comparable<Trx> {
+
+  @Override
+  public int compareTo(Trx o) {
+    return o.getTrxDate().compareTo(this.getTrxDate());
+  }
 
   @Id
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "trx_id_gen")

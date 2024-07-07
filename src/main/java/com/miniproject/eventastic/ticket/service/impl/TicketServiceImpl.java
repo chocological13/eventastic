@@ -1,13 +1,11 @@
 package com.miniproject.eventastic.ticket.service.impl;
 
-import com.miniproject.eventastic.exceptions.trx.TicketNotFoundException;
 import com.miniproject.eventastic.ticket.entity.Ticket;
 import com.miniproject.eventastic.ticket.repository.TicketRepository;
 import com.miniproject.eventastic.ticket.service.TicketService;
 import com.miniproject.eventastic.ticketType.entity.TicketType;
 import com.miniproject.eventastic.users.entity.Users;
 import java.time.Instant;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;

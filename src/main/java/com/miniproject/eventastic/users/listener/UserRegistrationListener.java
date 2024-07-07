@@ -4,7 +4,6 @@ package com.miniproject.eventastic.users.listener;
 import com.miniproject.eventastic.pointsTrx.entity.PointsTrx;
 import com.miniproject.eventastic.pointsTrx.service.PointsTrxService;
 import com.miniproject.eventastic.pointsWallet.entity.PointsWallet;
-import com.miniproject.eventastic.pointsWallet.repository.PointsWalletRepository;
 import com.miniproject.eventastic.pointsWallet.service.PointsWalletService;
 import com.miniproject.eventastic.referralCodeUsage.entity.ReferralCodeUsage;
 import com.miniproject.eventastic.referralCodeUsage.entity.composite.ReferralCodeUsageId;
