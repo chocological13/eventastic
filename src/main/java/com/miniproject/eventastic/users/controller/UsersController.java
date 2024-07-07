@@ -1,11 +1,14 @@
 package com.miniproject.eventastic.users.controller;
 
 import com.miniproject.eventastic.exceptions.image.ImageNotFoundException;
+import com.miniproject.eventastic.exceptions.trx.PointsTrxNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.TicketNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.VoucherNotFoundException;
 import com.miniproject.eventastic.image.entity.Image;
 import com.miniproject.eventastic.image.entity.dto.ImageUploadRequestDto;
 import com.miniproject.eventastic.image.entity.dto.ImageUploadResponseDto;
+import com.miniproject.eventastic.pointsTrx.entity.PointsTrx;
+import com.miniproject.eventastic.pointsTrx.entity.dto.PointsTrxDto;
 import com.miniproject.eventastic.pointsWallet.entity.dto.PointsWalletResponseDto;
 import com.miniproject.eventastic.referralCodeUsage.entity.dto.ReferralCodeUsageSummaryDto;
 import com.miniproject.eventastic.responses.Response;
@@ -23,6 +26,7 @@ import com.miniproject.eventastic.voucher.entity.dto.create.CreateVoucherRespons
 import com.miniproject.eventastic.voucher.service.VoucherService;
 import com.miniproject.eventastic.voucher.service.impl.VoucherServiceImpl;
 import jakarta.validation.Valid;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -86,6 +90,18 @@ public class UsersController {
         usersService.getCurrentUser().getFullName();
     return Response.successfulResponse(HttpStatus.FOUND.value(), "Showing Points Wallet for: " + currentUser,
         new PointsWalletResponseDto(usersService.getUsersPointsWallet()));
+  }
+
+  @GetMapping("/me/points/history")
+  public ResponseEntity<Response<Set<PointsTrxDto>>> getPointsUsageHistory() {
+    Set<PointsTrxDto> pointsTrxDtos = new LinkedHashSet<>();
+    try {
+      Set<PointsTrx> pointsTrxes = usersService.getPointsTrx();
+      pointsTrxDtos = pointsTrxes.stream().map(PointsTrxDto::new).collect(Collectors.toSet());
+    } catch (PointsTrxNotFoundException e) {
+      Response.failedResponse(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
+    }
+    return Response.successfulResponse(HttpStatus.FOUND.value(), "Displayimng points usage history..", pointsTrxDtos);
   }
 
   // * Get logged-in user's vouchers

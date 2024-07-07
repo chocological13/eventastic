@@ -1,14 +1,16 @@
 package com.miniproject.eventastic.users.service.impl;
 
 import com.miniproject.eventastic.exceptions.image.ImageNotFoundException;
+import com.miniproject.eventastic.exceptions.trx.PointsTrxNotFoundException;
 import com.miniproject.eventastic.image.entity.Image;
 import com.miniproject.eventastic.image.entity.dto.ImageUploadRequestDto;
 import com.miniproject.eventastic.image.service.CloudinaryService;
 import com.miniproject.eventastic.image.service.ImageService;
+import com.miniproject.eventastic.pointsTrx.entity.PointsTrx;
+import com.miniproject.eventastic.pointsTrx.service.PointsTrxService;
 import com.miniproject.eventastic.pointsWallet.entity.PointsWallet;
 import com.miniproject.eventastic.pointsWallet.entity.dto.PointsWalletResponseDto;
 import com.miniproject.eventastic.pointsWallet.service.impl.PointsWalletService;
-import com.miniproject.eventastic.referralCodeUsage.entity.ReferralCodeUsage;
 import com.miniproject.eventastic.referralCodeUsage.entity.dto.ReferralCodeUsageSummaryDto;
 import com.miniproject.eventastic.referralCodeUsage.entity.dto.ReferralCodeUseCountDto;
 import com.miniproject.eventastic.referralCodeUsage.entity.dto.ReferralCodeUsersDto;
@@ -23,6 +25,7 @@ import com.miniproject.eventastic.users.repository.UsersRepository;
 import com.miniproject.eventastic.users.service.UsersService;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -50,6 +53,7 @@ public class UsersServiceImpl implements UsersService {
   private final PointsWalletService pointsWalletService;
   private final CloudinaryService cloudinaryService;
   private final ImageService imageService;
+  private final PointsTrxService pointsTrxService;
 
   @Override
   public List<UserProfileDto> getAllUsers() {
@@ -162,12 +166,7 @@ public class UsersServiceImpl implements UsersService {
   }
 
 
-  // refcode related
-  @Override
-  public void saveRefCode(ReferralCodeUsage usage) {
-    referralCodeUsageService.saveReferralCodeUsage(usage);
-  }
-
+  // ref code related
   @Override
   public Users getUserByOwnedCode(String ownedCode) {
     return usersRepository.findByOwnedRefCode(ownedCode).orElse(null);
@@ -233,6 +232,17 @@ public class UsersServiceImpl implements UsersService {
     } catch (Exception e) {
       e.printStackTrace();
       return null;
+    }
+  }
+
+  @Override
+  public Set<PointsTrx> getPointsTrx() {
+    PointsWallet pointsWallet = getUsersPointsWallet();
+    Set<PointsTrx> pointsTrxes = pointsTrxService.getPointsTrx(pointsWallet);
+    if (pointsTrxes.isEmpty()) {
+      throw new PointsTrxNotFoundException("No history of points usage is found!");
+    } else {
+      return pointsTrxes;
     }
   }
 
