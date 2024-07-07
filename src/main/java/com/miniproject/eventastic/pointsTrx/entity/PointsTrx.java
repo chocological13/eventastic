@@ -11,10 +11,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
-import java.math.BigDecimal;
 import java.time.Instant;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,7 +27,12 @@ import org.hibernate.annotations.ColumnDefault;
     @Index(name = "idx_points_trx_points_wallet_id", columnList = "points_wallet_id"),
     @Index(name = "idx_points_trx_trx_id", columnList = "trx_id")
 })
-public class PointsTrx {
+public class PointsTrx implements Comparable<PointsTrx> {
+
+  @Override
+  public int compareTo(PointsTrx o) {
+    return o.getCreatedAt().compareTo(this.getCreatedAt());
+  }
 
   @Id
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "points_trx_id_gen")
@@ -44,19 +49,24 @@ public class PointsTrx {
   @JoinColumn(name = "trx_id")
   private Trx trx;
 
-  @Column(name = "points")
-  private BigDecimal points;
+  @NotNull
+  @Column(name = "points", nullable = false)
+  private Integer points;
 
   @Column(name = "description", length = Integer.MAX_VALUE)
   private String description;
+
   @ColumnDefault("CURRENT_TIMESTAMP")
   @Column(name = "created_at")
   private Instant createdAt;
 
-/*
- TODO [Reverse Engineering] create field to map the 'points_trx_type' column
- Available actions: Define target Java type | Uncomment as is | Remove column mapping
-    @Column(name = "points_trx_type", columnDefinition = "points_trx_type not null")
-    private Object pointsTrxType;
-*/
+  @Column(name = "trx_type", length = Integer.MAX_VALUE)
+  private String trxType;
+
+  @PrePersist
+  private void prePersist() {
+    trxType = points > 0 ? "Addition" : "Deduction";
+    createdAt = Instant.now();
+  }
+
 }

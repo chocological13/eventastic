@@ -6,6 +6,7 @@ import com.miniproject.eventastic.ticket.service.TicketService;
 import com.miniproject.eventastic.ticketType.entity.TicketType;
 import com.miniproject.eventastic.users.entity.Users;
 import java.time.Instant;
+import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -32,5 +33,10 @@ public class TicketServiceImpl implements TicketService {
     ticket.setIssuedAt(Instant.now());
     ticketRepository.save(ticket);
     return ticket;
+  }
+
+  @Override
+  public Set<Ticket> findTicketsByUser(Users user) {
+    return ticketRepository.findByUser(user);
   }
 }

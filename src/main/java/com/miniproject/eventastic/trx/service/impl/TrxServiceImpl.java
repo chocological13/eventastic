@@ -12,9 +12,12 @@ import com.miniproject.eventastic.exceptions.trx.InsufficientPointsException;
 import com.miniproject.eventastic.exceptions.trx.NotAwardeeException;
 import com.miniproject.eventastic.exceptions.trx.PaymentMethodNotFound;
 import com.miniproject.eventastic.exceptions.trx.SeatUnavailableException;
+import com.miniproject.eventastic.exceptions.trx.TicketNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.TicketTypeNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.VoucherInvalidException;
 import com.miniproject.eventastic.exceptions.trx.VoucherNotFoundException;
+import com.miniproject.eventastic.pointsTrx.entity.PointsTrx;
+import com.miniproject.eventastic.pointsTrx.service.PointsTrxService;
 import com.miniproject.eventastic.pointsWallet.entity.PointsWallet;
 import com.miniproject.eventastic.pointsWallet.service.PointsWalletService;
 import com.miniproject.eventastic.ticket.entity.Ticket;
@@ -57,6 +60,7 @@ public class TrxServiceImpl implements TrxService {
   private final EventRepository eventRepository;
   private final TicketService ticketService;
   private final AttendeeService attendeeService;
+  private final PointsTrxService pointsTrxService;
 
 
   @Override
@@ -74,7 +78,7 @@ public class TrxServiceImpl implements TrxService {
     // * get trx
     Trx trx = createTransaction(requestDto, loggedUser, event, ticketType);
 
-    usePoints(requestDto, trx);
+    PointsTrx pointsTrx = usePoints(requestDto, trx);
     useVoucher(requestDto, trx);
     setPaymentMethod(requestDto, trx);
 
@@ -85,7 +89,21 @@ public class TrxServiceImpl implements TrxService {
     // set attendee for this purchase
     setAttendee(loggedUser, event, requestDto.getQty());
 
+    // set trx to PointsTrx
+    pointsTrx.setTrx(trx);
+
     return trx;
+  }
+
+  @Override
+  public Set<Ticket> getUserTickets() {
+    Users loggedUser = usersService.getCurrentUser();
+    Set<Ticket> ticketSet = ticketService.findTicketsByUser(loggedUser);
+    if (ticketSet.isEmpty()) {
+      throw new TicketNotFoundException("You have not purchased anything as of late :(");
+    } else {
+      return ticketSet;
+    }
   }
 
   // * utilities
@@ -155,35 +173,51 @@ public class TrxServiceImpl implements TrxService {
     ticketTypeService.saveTicketType(ticketType);
   }
 
-  // processPointsUsage calls applypoints
-  public void usePoints(TrxPurchaseRequestDto requestDto, Trx trx) {
+  // processPointsUsage calls applypoints and returns PointsTrx so that we could set trx to it
+  public PointsTrx usePoints(TrxPurchaseRequestDto requestDto, Trx trx) {
+    PointsTrx pointsTrx = new PointsTrx();
     if (requestDto.getUsingPoints()) {
       PointsWallet pointsWallet = pointsWalletService.getPointsWallet(trx.getUser());
       if (pointsWallet.getPoints() <= 0) {
         throw new InsufficientPointsException("Insufficient points to be used :(");
       } else {
-        applyPoints(trx, pointsWallet);
+        pointsTrx = applyPoints(trx, pointsWallet);
       }
       trx.setPointsWallet(pointsWallet);
     }
+    return pointsTrx;
   }
 
   // apply points
-  public void applyPoints(Trx trx, PointsWallet pointsWallet) {
+  public PointsTrx applyPoints(Trx trx, PointsWallet pointsWallet) {
     BigDecimal points = BigDecimal.valueOf(pointsWallet.getPoints());
     BigDecimal price = trx.getInitialAmount();
 
+    // init points trx
+    PointsTrx pointsTrx = new PointsTrx();
+    pointsTrx.setPointsWallet(pointsWallet);
+    pointsTrx.setDescription("Points used to purchase tickets to " + trx.getEvent().getTitle());
+
     if (points.compareTo(price) < 0) {
-      trx.setTotalAmount(trx.getInitialAmount().subtract(BigDecimal.valueOf(pointsWallet.getPoints())));
+      int pointsUsed = pointsWallet.getPoints(); // use all points available
+      trx.setTotalAmount(trx.getInitialAmount().subtract(BigDecimal.valueOf(pointsUsed)));
       pointsWallet.setPoints(0);
+      pointsTrx.setPoints(- pointsUsed);
     } else if (points.compareTo(price) > 0) {
+
+      /* if points amount is more than the price, it can be used to cover all the cost
+      resulting in free transaction */
+
       int endPoints = points.subtract(price).setScale(0, RoundingMode.HALF_UP).intValue();
       trx.setTotalAmount(BigDecimal.ZERO);
       pointsWallet.setPoints(endPoints);
+      pointsTrx.setPoints(- price.intValue());
     } else {
       throw new InsufficientPointsException("Insufficient points to be used !!");
     }
     pointsWalletService.savePointsWallet(pointsWallet);
+    pointsTrxService.savePointsTrx(pointsTrx);
+    return pointsTrx;
   }
 
   // processVVoucherUsage -> applyvoucher
