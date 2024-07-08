@@ -1,5 +1,8 @@
 package com.miniproject.eventastic.event.service.impl;
 
+import com.miniproject.eventastic.attendee.entity.Attendee;
+import com.miniproject.eventastic.attendee.entity.AttendeeId;
+import com.miniproject.eventastic.attendee.service.AttendeeService;
 import com.miniproject.eventastic.event.metadata.Category;
 import com.miniproject.eventastic.event.entity.Event;
 import com.miniproject.eventastic.event.entity.dto.EventResponseDto;
@@ -12,8 +15,12 @@ import com.miniproject.eventastic.exceptions.event.CategoryNotFoundException;
 import com.miniproject.eventastic.exceptions.event.DuplicateEventException;
 import com.miniproject.eventastic.exceptions.event.EventNotFoundException;
 import com.miniproject.eventastic.exceptions.image.ImageNotFoundException;
+import com.miniproject.eventastic.exceptions.user.AttendeeNotFoundException;
 import com.miniproject.eventastic.image.entity.Image;
 import com.miniproject.eventastic.image.service.ImageService;
+import com.miniproject.eventastic.review.entity.Review;
+import com.miniproject.eventastic.review.entity.dto.ReviewSubmitRequestDto;
+import com.miniproject.eventastic.review.service.ReviewService;
 import com.miniproject.eventastic.ticketType.entity.TicketType;
 import com.miniproject.eventastic.ticketType.entity.dto.create.CreateTicketTypeRequestDto;
 import com.miniproject.eventastic.ticketType.service.TicketTypeService;
@@ -51,6 +58,8 @@ public class EventServiceImpl implements EventService {
   private final UsersService usersService;
   private final ImageService imageService;
   private final CategoryRepository categoryRepository;
+  private final ReviewService reviewService;
+  private final AttendeeService attendeeService;
 
   @Override
   public void saveEvent(Event event) {
@@ -181,7 +190,12 @@ public class EventServiceImpl implements EventService {
 
   @Override
   public Event getEventById(Long eventId) {
-    return eventRepository.findById(eventId).orElse(null);
+    Optional<Event> event = eventRepository.findById(eventId);
+    if (event.isPresent()) {
+      return event.get();
+    } else {
+      throw new EventNotFoundException("Event not found, please enter a valid ID");
+    }
   }
 
 
@@ -247,6 +261,26 @@ public class EventServiceImpl implements EventService {
   @Override
   public Category getCategoryById(Long eventId) {
     return categoryRepository.findById(eventId).orElse(null);
+  }
+
+  @Override
+  public Review submitReview(Long eventId, ReviewSubmitRequestDto requestDto) {
+    Users reviewer = usersService.getCurrentUser();
+    Event event = getEventById(eventId);
+    Attendee attendee = attendeeService.findAttendee(new AttendeeId(reviewer.getId(), eventId)).orElse(null);
+
+    if (attendee == null) {
+      throw new AttendeeNotFoundException("Attendee not found");
+    }
+
+    Review review = new Review();
+    review.setReviewer(reviewer);
+    review.setOrganizer(event.getOrganizer());
+    review.setEvent(event);
+    review.setReview(requestDto.getReviewMsg());
+    review.setRating(requestDto.getRating());
+    reviewService.saveReview(review);
+    return review;
   }
 
 }

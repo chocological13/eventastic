@@ -7,7 +7,11 @@ import com.miniproject.eventastic.event.entity.dto.updateEvent.UpdateEventReques
 import com.miniproject.eventastic.event.service.EventService;
 import com.miniproject.eventastic.exceptions.event.DuplicateEventException;
 import com.miniproject.eventastic.exceptions.event.EventNotFoundException;
+import com.miniproject.eventastic.exceptions.user.AttendeeNotFoundException;
 import com.miniproject.eventastic.responses.Response;
+import com.miniproject.eventastic.review.entity.Review;
+import com.miniproject.eventastic.review.entity.dto.ReviewSubmitRequestDto;
+import com.miniproject.eventastic.review.entity.dto.ReviewSubmitResponseDto;
 import com.miniproject.eventastic.voucher.entity.Voucher;
 import com.miniproject.eventastic.voucher.entity.dto.create.CreateVoucherResponseDto;
 import com.miniproject.eventastic.voucher.service.VoucherService;
@@ -121,6 +125,18 @@ public class EventController {
       eventService.deleteEvent(eventId);
       return Response.successfulResponse(HttpStatus.OK.value(), "Event successfully deleted!", null);
     } catch (EventNotFoundException e) {
+      return Response.failedResponse(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
+    }
+  }
+
+  @PostMapping("/{eventId}/reviews")
+  public ResponseEntity<Response<ReviewSubmitResponseDto>> submitReview(@PathVariable Long eventId,
+      @RequestBody ReviewSubmitRequestDto requestDto) {
+    try {
+      Review review = eventService.submitReview(eventId, requestDto);
+      return Response.successfulResponse(HttpStatus.CREATED.value(), "Review posted!",
+          new ReviewSubmitResponseDto(review));
+    } catch (EventNotFoundException | AttendeeNotFoundException e) {
       return Response.failedResponse(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
     }
   }

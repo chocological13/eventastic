@@ -2,7 +2,7 @@ package com.miniproject.eventastic.event.entity;
 
 import com.miniproject.eventastic.event.metadata.Category;
 import com.miniproject.eventastic.image.entity.Image;
-import com.miniproject.eventastic.toHandle.Review;
+import com.miniproject.eventastic.review.entity.Review;
 import com.miniproject.eventastic.ticketType.entity.TicketType;
 import com.miniproject.eventastic.trx.entity.Trx;
 import com.miniproject.eventastic.users.entity.Users;

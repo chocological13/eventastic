@@ -35,7 +35,7 @@ public class TrxPurchaseResponseDto {
     this.ticketType = new TrxTicketTypeResponseDto(trx.getTicketType());
     this.ticketQty = trx.getQty();
     this.initialPrice = trx.getInitialAmount();
-    this.voucher = new TrxVoucherResponseDto(trx.getVoucher());
+    this.voucher = trx.getVoucher() != null ? new TrxVoucherResponseDto(trx.getVoucher()) : null;
     this.usingPoints = requestDto.getUsingPoints();
     this.totalPrice = trx.getTotalAmount();
     this.isPaid = trx.getIsPaid();

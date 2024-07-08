@@ -48,6 +48,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 @Data
+@Transactional
 public class TrxServiceImpl implements TrxService {
 
   private final TrxRepository trxRepository;
@@ -79,8 +80,18 @@ public class TrxServiceImpl implements TrxService {
     Trx trx = createTransaction(requestDto, loggedUser, event, ticketType);
 
     PointsTrx pointsTrx = usePoints(requestDto, trx);
-    useVoucher(requestDto, trx);
+    BigDecimal discount = useVoucher(requestDto, trx);
     setPaymentMethod(requestDto, trx);
+
+    // total amount
+    BigDecimal points = BigDecimal.ZERO;
+    if (pointsTrx != null) {
+      points = BigDecimal.valueOf(pointsTrx.getPoints());
+    }
+    BigDecimal initAmount = calculateInitialAmount(ticketType, requestDto.getQty());
+    BigDecimal deduction = points.add(discount);
+    BigDecimal totalAmount = initAmount.subtract(deduction);
+    trx.setTotalAmount(totalAmount);
 
     trx.setTrxDate(Instant.now());
     trx.setIsPaid(true);
@@ -90,7 +101,7 @@ public class TrxServiceImpl implements TrxService {
     setAttendee(loggedUser, event, requestDto.getQty());
 
     // set trx to PointsTrx
-    pointsTrx.setTrx(trx);
+    if (pointsTrx != null) pointsTrx.setTrx(trx);
 
     // send payout to organizer
     organizerWalletTrxService.sendPayout(trx);
@@ -188,6 +199,8 @@ public class TrxServiceImpl implements TrxService {
         pointsTrx = applyPoints(trx, pointsWallet);
       }
       trx.setPointsWallet(pointsWallet);
+    } else {
+      return null;
     }
     return pointsTrx;
   }
@@ -200,11 +213,11 @@ public class TrxServiceImpl implements TrxService {
     // init points trx
     PointsTrx pointsTrx = new PointsTrx();
     pointsTrx.setPointsWallet(pointsWallet);
+    pointsTrx.setTrxType("Deduction");
     pointsTrx.setDescription("Points used to purchase tickets to " + trx.getEvent().getTitle());
 
     if (points.compareTo(price) < 0) {
       int pointsUsed = pointsWallet.getPoints(); // use all points available
-      trx.setTotalAmount(trx.getInitialAmount().subtract(BigDecimal.valueOf(pointsUsed)));
       pointsWallet.setPoints(0);
       pointsTrx.setPoints(- pointsUsed);
     } else if (points.compareTo(price) > 0) {
@@ -215,7 +228,7 @@ public class TrxServiceImpl implements TrxService {
       int endPoints = points.subtract(price).setScale(0, RoundingMode.HALF_UP).intValue();
       trx.setTotalAmount(BigDecimal.ZERO);
       pointsWallet.setPoints(endPoints);
-      pointsTrx.setPoints(- price.intValue());
+      pointsTrx.setPoints(price.intValue());
     } else {
       throw new InsufficientPointsException("Insufficient points to be used !!");
     }
@@ -225,8 +238,9 @@ public class TrxServiceImpl implements TrxService {
   }
 
   // processVoucherUsage -> apply voucher
-  private void useVoucher(TrxPurchaseRequestDto requestDto, Trx trx) {
-    if (requestDto.getVoucherCode() != null) {
+  private BigDecimal useVoucher(TrxPurchaseRequestDto requestDto, Trx trx) {
+    BigDecimal discount = BigDecimal.ZERO;
+    if (!requestDto.getVoucherCode().isEmpty()) {
       Voucher voucher = voucherService.getVoucher(requestDto.getVoucherCode());
       if (voucher == null) {
         throw new VoucherNotFoundException("This voucher does not exist!");
@@ -238,24 +252,27 @@ public class TrxServiceImpl implements TrxService {
         throw new VoucherInvalidException("Voucher has been all used up!");
       }
       trx.setVoucher(voucher);
-      applyVoucher(trx, voucher);
+      discount = applyVoucher(trx, voucher);
     }
+    return discount;
   }
 
   // apply voucher
-  private void applyVoucher(Trx trx, Voucher voucher) {
+  private BigDecimal applyVoucher(Trx trx, Voucher voucher) {
+    BigDecimal discount;
     Users user = trx.getUser();
     Users awardee = voucher.getAwardee();
     if (awardee == null || awardee.equals(user)) {
-      BigDecimal discount = trx.getInitialAmount()
+      discount = trx.getInitialAmount()
           .multiply(BigDecimal.valueOf(voucher.getPercentDiscount()).divide(BigDecimal.valueOf(100)));
 
-      trx.setTotalAmount(trx.getInitialAmount().subtract(discount).setScale(2, RoundingMode.HALF_UP));
+//      trx.setTotalAmount(trx.getInitialAmount().subtract(discount).setScale(2, RoundingMode.HALF_UP));
       voucher.setUseLimit(voucher.getUseLimit() - 1);
       voucherService.saveVoucher(voucher);
     } else {
       throw new NotAwardeeException("This voucher was not meant for you >:C");
     }
+    return discount;
   }
 
   // set payment method

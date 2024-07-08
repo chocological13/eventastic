@@ -1,71 +1,121 @@
-//package com.miniproject.eventastic.event.service.impl;
-//
-//import static org.junit.jupiter.api.Assertions.assertEquals;
-//import static org.junit.jupiter.api.Assertions.assertFalse;
-//import static org.junit.jupiter.api.Assertions.assertThrows;
-//import static org.junit.jupiter.api.Assertions.assertTrue;
-//import static org.mockito.BDDMockito.then;
-//import static org.mockito.Mockito.*;
-//
-//import com.miniproject.eventastic.event.controller.EventController;
-//import com.miniproject.eventastic.event.entity.Event;
-//import com.miniproject.eventastic.event.entity.Event.Category;
-//import com.miniproject.eventastic.event.entity.dto.EventResponseDto;
-//import com.miniproject.eventastic.event.entity.dto.createEvent.CreateEventRequestDto;
-//import com.miniproject.eventastic.event.entity.dto.updateEvent.UpdateEventRequestDto;
-//import com.miniproject.eventastic.event.repository.EventRepository;
-//import com.miniproject.eventastic.event.service.EventService;
-//import com.miniproject.eventastic.exceptions.event.EventNotFoundException;
-//import com.miniproject.eventastic.image.entity.Image;
-//import com.miniproject.eventastic.image.repository.ImageRepository;
-//import com.miniproject.eventastic.ticketType.repository.TicketTypeRepository;
-//import com.miniproject.eventastic.users.entity.Users;
-//import com.miniproject.eventastic.users.service.UsersService;
-//import java.time.Instant;
-//import java.time.LocalDate;
-//import java.time.LocalTime;
-//import java.util.Optional;
-//import org.junit.jupiter.api.BeforeEach;
-//import org.junit.jupiter.api.Test;
-//import org.mockito.InjectMocks;
-//import org.mockito.Mock;
-//import org.mockito.MockitoAnnotations;
-//import org.springframework.boot.test.context.SpringBootTest;
-//import org.springframework.security.access.AccessDeniedException;
-//import org.springframework.security.core.userdetails.User;
-//
-//@SpringBootTest
-//public class EventServiceTest {
-//
-//  // create a mock implementation of EventRepository
-//  @Mock
-//  private EventRepository eventRepository;
-//
-//  @Mock
-//  private TicketTypeRepository ticketTypeRepository;
-//
-//  @Mock
-//  private UsersService usersService;
-//
-//  @Mock
-//  private ImageRepository imageRepository;
-//
-//  // tells eventService to use the mock repository
-//  @InjectMocks
-//  private EventService eventService = new EventServiceImpl(eventRepository, ticketTypeRepository, usersService, imageRepository);
-//
-//  private Users eventOrganizer;
-//
-//  // before each test, run this. init mock objects
-//  @BeforeEach
-//  public void setUp() {
-//    MockitoAnnotations.openMocks(this);
-//    eventService = new EventServiceImpl(eventRepository, ticketTypeRepository, usersService, imageRepository);
-//    eventOrganizer = new Users();
-//    eventOrganizer.setId(1L);
-//    eventOrganizer.setUsername("Organizer");
-//  }
-//
+package com.miniproject.eventastic.event.service.impl;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import com.miniproject.eventastic.attendee.entity.Attendee;
+import com.miniproject.eventastic.attendee.entity.AttendeeId;
+import com.miniproject.eventastic.attendee.service.AttendeeService;
+import com.miniproject.eventastic.event.entity.Event;
+import com.miniproject.eventastic.event.repository.CategoryRepository;
+import com.miniproject.eventastic.event.repository.EventRepository;
+import com.miniproject.eventastic.event.service.EventService;
+import com.miniproject.eventastic.image.service.ImageService;
+import com.miniproject.eventastic.review.entity.Review;
+import com.miniproject.eventastic.review.entity.dto.ReviewSubmitRequestDto;
+import com.miniproject.eventastic.review.service.ReviewService;
+import com.miniproject.eventastic.ticketType.service.TicketTypeService;
+import com.miniproject.eventastic.users.entity.Users;
+import com.miniproject.eventastic.users.service.UsersService;
+import java.time.LocalDate;
+import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+
+@SpringBootTest
+public class EventServiceImplTest {
+
+  // create a mock implementation of EventRepository
+  @Mock
+  private EventRepository eventRepository;
+  @Mock
+  private TicketTypeService ticketTypeService;
+  @Mock
+  private UsersService usersService;
+  @Mock
+  private ImageService imageService;
+  @Mock
+  private CategoryRepository categoryRepository;
+  @Mock
+  private ReviewService reviewService;
+  @Mock
+  private AttendeeService attendeeService;
+  @Mock
+  private Authentication authentication;
+  @Mock
+  private SecurityContext securityContext;
+
+
+  // tells eventService to use the mock repository
+  @InjectMocks
+  private EventService eventService = new EventServiceImpl(eventRepository, ticketTypeService, usersService,
+      imageService, categoryRepository, reviewService, attendeeService);
+
+  private Users eventOrganizer;
+  private Users userAttendee;
+  private Event event;
+
+  // before each test, run this. init mock objects
+  @BeforeEach
+  public void setUp() {
+    MockitoAnnotations.openMocks(this);
+    eventService = new EventServiceImpl(eventRepository, ticketTypeService, usersService,
+        imageService, categoryRepository, reviewService, attendeeService);
+
+    eventOrganizer = new Users();
+    eventOrganizer.setId(1L);
+    eventOrganizer.setUsername("Organizer");
+
+    userAttendee = new Users();
+    userAttendee.setId(2L);
+    userAttendee.setUsername("Attendee");
+
+    event = new Event();
+    event.setId(1L);
+    event.setTitle("Existing Event");
+    event.setEventDate(LocalDate.now());
+    event.setOrganizer(eventOrganizer);
+    eventService.saveEvent(event);
+    when(eventRepository.findById(1L)).thenReturn(Optional.of(event));
+
+    SecurityContextHolder.setContext(securityContext);
+  }
+
+
+  @Test
+  public void testSubmitReview() {
+    Attendee attendee = new Attendee();
+    AttendeeId attendeeId = new AttendeeId();
+
+    attendeeId.setUserId(userAttendee.getId());
+    attendeeId.setEventId(event.getId());
+    attendee.setAttendedAt(event.getEventDate());
+
+    event.setOrganizer(eventOrganizer);
+    attendee.setEvent(event);
+    attendee.setUser(userAttendee);
+
+    ReviewSubmitRequestDto requestDto = new ReviewSubmitRequestDto();
+    requestDto.setReviewMsg("Great event!");
+    requestDto.setRating(5);
+
+    when(usersService.getCurrentUser()).thenReturn(userAttendee);
+    when(attendeeService.findAttendee(new AttendeeId(userAttendee.getId(), 1L))).thenReturn(Optional.of(attendee));
+
+    Review review = eventService.submitReview(event.getId(), requestDto);
+
+    assertNotNull(review);
+  }
+
 //  // Region - Tests for isDuplicateEvent
 //
 //  @Test
@@ -313,4 +363,4 @@
 //
 //    assertThrows(EventNotFoundException.class, () -> eventService.deleteEvent(1L));
 //  }
-//}
+}
