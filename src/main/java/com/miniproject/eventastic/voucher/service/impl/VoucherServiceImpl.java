@@ -80,6 +80,8 @@ public class VoucherServiceImpl implements VoucherService {
     return newVoucher;
   }
 
+
+
   @Override
   public List<Voucher> getAwardeesVouchers() {
     Users loggedInUser = usersService.getCurrentUser();

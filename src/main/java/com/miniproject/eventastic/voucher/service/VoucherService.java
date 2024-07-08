@@ -13,6 +13,7 @@ public interface VoucherService {
 
   Voucher createVoucher(CreateVoucherRequestDto createVoucherRequestDto) throws AccessDeniedException;
 
+
   List<Voucher> getAwardeesVouchers();
 
   List<Voucher> getEventVouchers(Long eventId);

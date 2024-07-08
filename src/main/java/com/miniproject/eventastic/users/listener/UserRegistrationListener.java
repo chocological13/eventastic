@@ -13,9 +13,13 @@ import com.miniproject.eventastic.referralCodeUsage.service.ReferralCodeUsageSer
 import com.miniproject.eventastic.users.entity.Users;
 import com.miniproject.eventastic.users.event.UserRegistrationEvent;
 import com.miniproject.eventastic.users.service.UsersService;
+import com.miniproject.eventastic.voucher.entity.Voucher;
+import com.miniproject.eventastic.voucher.service.VoucherService;
 import jakarta.transaction.Transactional;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalTime;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +37,7 @@ public class UserRegistrationListener {
   private final ReferralCodeUsageService referralCodeUsageService;
   private final PointsTrxService pointsTrxService;
   private final OrganizerWalletService organizerWalletService;
+  private final VoucherService voucherService;
 
   @EventListener
   @Transactional
@@ -83,6 +88,23 @@ public class UserRegistrationListener {
       pointsWallet.setAwardedAt(Instant.now());
       pointsWallet.setExpiresAt(Instant.now().plus(90, ChronoUnit.DAYS));
       pointsWalletService.savePointsWallet(pointsWallet);
+
+      // ** Give voucher to code owner
+      // time set up
+      ZonedDateTime endOfDay = ZonedDateTime.now().with(LocalTime.MAX);
+      Instant expiresAt = endOfDay.toInstant().plus(90, ChronoUnit.DAYS);
+      String code = "REF10" + UUID.randomUUID().toString().substring(0, 4);
+
+      // init voucher
+      Voucher newVoucher = new Voucher();
+      newVoucher.setCode(code);
+      newVoucher.setDescription("Your code was used! Enjoy the Voucher!");
+      newVoucher.setPercentDiscount(10);
+      newVoucher.setCreatedAt(Instant.now());
+      newVoucher.setExpiresAt(expiresAt);
+      newVoucher.setAwardee(owner);
+      newVoucher.setUseLimit(1);
+      voucherService.saveVoucher(newVoucher);
 
       // ** Log the usage of referral code
       ReferralCodeUsage usage = new ReferralCodeUsage(
