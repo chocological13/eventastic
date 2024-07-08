@@ -78,7 +78,7 @@ public class AuthServiceImpl implements AuthService {
       // * 1: authenticate user
       Authentication authentication = authenticationManager
           .authenticate(
-              new UsernamePasswordAuthenticationToken(loginRequestDto.getUsername(), loginRequestDto.getPassword()));
+              new UsernamePasswordAuthenticationToken(loginRequestDto.getEmail(), loginRequestDto.getPassword()));
       log.info("Authenticated user: {}", authentication);
 
       // * 2: store it in the security context

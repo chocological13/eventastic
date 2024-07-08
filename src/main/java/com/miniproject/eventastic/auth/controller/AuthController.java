@@ -47,7 +47,7 @@ public class AuthController {
   // > login
   @PostMapping("/login")
   public ResponseEntity<?> login(@RequestBody LoginRequestDto requestDto) {
-    log.info("Login request for user: " + requestDto.getUsername());
+    log.info("Login request for email: " + requestDto.getEmail());
     return authService.login(requestDto);
   }
 
