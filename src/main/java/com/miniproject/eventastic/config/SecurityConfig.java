@@ -1,6 +1,5 @@
 package com.miniproject.eventastic.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.miniproject.eventastic.auth.service.impl.UserDetailsServiceImpl;
 import com.miniproject.eventastic.exceptions.CustomAccessDeniedHandler;
 import com.miniproject.eventastic.exceptions.CustomAuthenticationEntryPoint;
@@ -12,10 +11,11 @@ import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletResponse;
 import java.security.KeyFactory;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
@@ -38,10 +38,7 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
-import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.access.AccessDeniedHandler;
-import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 
 @Configuration
 @EnableWebSecurity
@@ -49,7 +46,7 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 @RequiredArgsConstructor
 @Log
 public class SecurityConfig {
-//  private final EnvConfigurationProperties envConfigurationProperties;
+  private final EnvConfigurationProperties envConfigurationProperties;
   private final RsaKeyConfigProperties rsaKeyConfigProperties;
   private final UserDetailsServiceImpl userDetailsService;
   private final CorsConfigurationSourceImpl corsConfigurationSource;
@@ -71,16 +68,22 @@ public class SecurityConfig {
 
   // jwt encoder and decoder
   @Bean
-  public JwtEncoder jwtEncoder() {
+  public JwtEncoder jwtEncoder() throws Exception {
     var publicKey = rsaKeyConfigProperties.publicKey();
     var privateKey = rsaKeyConfigProperties.privateKey();
-//    if (envConfigurationProperties.equals("production")) {
-//      // TODO: parse public and private key from env variable into rsapublickey data type
-//      // publicKey = parsePublicKey(publicKeystring);
-//      // privateKey = parsePrivateKey(publicKeystring);
-//
-//      String publicKeyString = System.getenv()
-//    }
+    if (envConfigurationProperties.equals("production")) {
+      /*
+       TODO: parse public and private key from env variable into rsapublickey data type
+       publicKey = parsePublicKey(publicKeystring);
+       privateKey = parsePrivateKey(publicKeystring);
+      */
+
+      String publicKeyString = System.getenv("PUBLIC_KEY");
+      String privateKeyString = System.getenv("PRIVATE_KEY");
+
+      publicKey = (RSAPublicKey) parsePublicKey(publicKeyString);
+      privateKey = (RSAPrivateKey) parsePrivateKey(privateKeyString);
+    }
 
     // make RSA JWK
     JWK rsaJwk =
