@@ -3,14 +3,10 @@ package com.miniproject.eventastic.auth.service.impl;
 import com.miniproject.eventastic.auth.entity.UserAuth;
 import com.miniproject.eventastic.auth.entity.dto.login.LoginRequestDto;
 import com.miniproject.eventastic.auth.entity.dto.login.LoginResponseDto;
-import com.miniproject.eventastic.auth.helpers.UrlBuilder;
 import com.miniproject.eventastic.auth.repository.AuthRedisRepository;
 import com.miniproject.eventastic.auth.service.AuthService;
-import com.miniproject.eventastic.users.entity.Users;
-import com.miniproject.eventastic.users.repository.UsersRepository;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,7 +34,6 @@ public class AuthServiceImpl implements AuthService {
   private final AuthenticationManager authenticationManager;
   private final AuthRedisRepository authRedisRepository;
   private final JwtEncoder jwtEncoder;
-  private final UsersRepository usersRepository;
 
 
   @Override
@@ -78,7 +73,7 @@ public class AuthServiceImpl implements AuthService {
       // * 1: authenticate user
       Authentication authentication = authenticationManager
           .authenticate(
-              new UsernamePasswordAuthenticationToken(loginRequestDto.getEmail(), loginRequestDto.getPassword()));
+              new UsernamePasswordAuthenticationToken(loginRequestDto.getUsernameOrEmail(), loginRequestDto.getPassword()));
       log.info("Authenticated user: {}", authentication);
 
       // * 2: store it in the security context

@@ -39,6 +39,8 @@ import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.logout.HeaderWriterLogoutHandler;
+import org.springframework.security.web.header.writers.ClearSiteDataHeaderWriter;
 
 @Configuration
 @EnableWebSecurity
@@ -72,12 +74,6 @@ public class SecurityConfig {
     var publicKey = rsaKeyConfigProperties.publicKey();
     var privateKey = rsaKeyConfigProperties.privateKey();
     if (envConfigurationProperties.equals("production")) {
-      /*
-       TODO: parse public and private key from env variable into rsapublickey data type
-       publicKey = parsePublicKey(publicKeystring);
-       privateKey = parsePrivateKey(publicKeystring);
-      */
-
       String publicKeyString = System.getenv("PUBLIC_KEY");
       String privateKeyString = System.getenv("PRIVATE_KEY");
 
@@ -125,6 +121,8 @@ public class SecurityConfig {
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    // to clear site cookies, cache, storage
+    HeaderWriterLogoutHandler clearSiteData = new HeaderWriterLogoutHandler(new ClearSiteDataHeaderWriter());
     return http
         // * disables unused configs
         .csrf(AbstractHttpConfigurer::disable)
@@ -177,6 +175,7 @@ public class SecurityConfig {
         .httpBasic(Customizer.withDefaults())
         .formLogin(auth -> auth.failureHandler(new CustomAuthenticationFailureHandler()))//401
         .formLogin(Customizer.withDefaults())
+        .logout((logout) -> logout.addLogoutHandler(clearSiteData))
         .build();
   }
 
