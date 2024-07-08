@@ -7,8 +7,6 @@ import com.miniproject.eventastic.auth.entity.dto.resetPassword.ResetPasswordReq
 import com.miniproject.eventastic.auth.service.AuthService;
 import com.miniproject.eventastic.auth.service.ForgotPasswordService;
 import com.miniproject.eventastic.responses.Response;
-import com.miniproject.eventastic.users.entity.Users;
-import com.miniproject.eventastic.users.service.UsersService;
 import com.nimbusds.jose.JOSEException;
 import java.security.NoSuchAlgorithmException;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +30,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
   private final AuthService authService;
-  private final UsersService usersService;
   private final ForgotPasswordService forgotPasswordService;
 
   // > DEV: check who is currently logged in this session
@@ -47,7 +44,7 @@ public class AuthController {
   // > login
   @PostMapping("/login")
   public ResponseEntity<?> login(@RequestBody LoginRequestDto requestDto) {
-    log.info("Login request for email: " + requestDto.getEmail());
+    log.info("Login request for email: " + requestDto.getUsernameOrEmail());
     return authService.login(requestDto);
   }
 
