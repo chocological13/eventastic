@@ -125,6 +125,7 @@ public class SecurityConfig {
     // to clear site cookies, cache, storage
     HeaderWriterLogoutHandler clearSiteData = new HeaderWriterLogoutHandler(new ClearSiteDataHeaderWriter(Directive.ALL));
 
+
     return http
         // * disables unused configs
         .csrf(AbstractHttpConfigurer::disable)
