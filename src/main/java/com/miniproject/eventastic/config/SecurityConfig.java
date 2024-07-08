@@ -13,6 +13,12 @@ import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import java.security.KeyFactory;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.Base64;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
 import org.springframework.context.annotation.Bean;
@@ -43,7 +49,7 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 @RequiredArgsConstructor
 @Log
 public class SecurityConfig {
-
+//  private final EnvConfigurationProperties envConfigurationProperties;
   private final RsaKeyConfigProperties rsaKeyConfigProperties;
   private final UserDetailsServiceImpl userDetailsService;
   private final CorsConfigurationSourceImpl corsConfigurationSource;
@@ -66,15 +72,47 @@ public class SecurityConfig {
   // jwt encoder and decoder
   @Bean
   public JwtEncoder jwtEncoder() {
+    var publicKey = rsaKeyConfigProperties.publicKey();
+    var privateKey = rsaKeyConfigProperties.privateKey();
+//    if (envConfigurationProperties.equals("production")) {
+//      // TODO: parse public and private key from env variable into rsapublickey data type
+//      // publicKey = parsePublicKey(publicKeystring);
+//      // privateKey = parsePrivateKey(publicKeystring);
+//
+//      String publicKeyString = System.getenv()
+//    }
+
     // make RSA JWK
     JWK rsaJwk =
-        new RSAKey.Builder(rsaKeyConfigProperties.publicKey()).privateKey(rsaKeyConfigProperties.privateKey()).build();
+        new RSAKey.Builder(publicKey).privateKey(privateKey).build();
     // define JWK Set
     JWKSet jwkSet = new JWKSet(rsaJwk);
 
     // make JWK source and return the encoder
     JWKSource<SecurityContext> jwkSource = new ImmutableJWKSet<>(jwkSet);
     return new NimbusJwtEncoder(jwkSource);
+  }
+
+  private PublicKey parsePublicKey(String key) throws Exception {
+    String publicKeyPEM = key
+        .replace("-----BEGIN PUBLIC KEY-----", "")
+        .replace("-----END PUBLIC KEY-----", "")
+        .replaceAll("\\s+", "");
+    byte[] encoded = Base64.getDecoder().decode(publicKeyPEM);
+    KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+    X509EncodedKeySpec keySpec = new X509EncodedKeySpec(encoded);
+    return keyFactory.generatePublic(keySpec);
+  }
+
+  private PrivateKey parsePrivateKey(String key) throws Exception {
+    String privateKeyPEM = key
+        .replace("-----BEGIN PRIVATE KEY-----", "")
+        .replace("-----END PRIVATE KEY-----", "")
+        .replaceAll("\\s+", "");
+    byte[] encoded = Base64.getDecoder().decode(privateKeyPEM);
+    KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+    PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(encoded);
+    return keyFactory.generatePrivate(keySpec);
   }
 
   @Bean
