@@ -7,6 +7,7 @@ import com.miniproject.eventastic.event.entity.Event;
 import com.miniproject.eventastic.event.entity.dto.EventResponseDto;
 import com.miniproject.eventastic.event.entity.dto.createEvent.CreateEventRequestDto;
 import com.miniproject.eventastic.event.entity.dto.updateEvent.UpdateEventRequestDto;
+import com.miniproject.eventastic.event.event.EventCreatedEvent;
 import com.miniproject.eventastic.event.metadata.Category;
 import com.miniproject.eventastic.event.repository.CategoryRepository;
 import com.miniproject.eventastic.event.repository.EventRepository;
@@ -39,6 +40,7 @@ import java.util.Set;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -63,6 +65,7 @@ public class EventServiceImpl implements EventService {
   private final CategoryRepository categoryRepository;
   private final ReviewService reviewService;
   private final AttendeeService attendeeService;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Override
   public void saveEvent(Event event) {
@@ -78,77 +81,15 @@ public class EventServiceImpl implements EventService {
     }
 
     // extract user
-    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-    String organizerName = auth.getName();
-    Optional<Users> organizerOptional = Optional.ofNullable(usersService.getByUsername(organizerName));
+    Users organizer = usersService.getCurrentUser();
 
     // save event here, so we can set it to the ticket types
     Event createdEvent = requestDto.dtoToEvent(requestDto);
-    organizerOptional.ifPresent(createdEvent::setOrganizer);
+    createdEvent.setOrganizer(organizer);
     eventRepository.save(createdEvent);
 
-    // check for category
-    if (requestDto.getCategoryId() != null) {
-      Category category = getCategoryById(requestDto.getCategoryId());
-      if (category != null) {
-        createdEvent.setCategory(category);
-      } else {
-        throw new CategoryNotFoundException("Category not found, please enter another ID");
-      }
-    }
-
-    // check for image
-    if (requestDto.getImageId() != null) {
-      Image image = imageService.getImageById(requestDto.getImageId());
-      if (image != null) {
-        createdEvent.setImage(image);
-      } else {
-        throw new ImageNotFoundException("Image does not exist! Please enter a new ID.");
-      }
-    }
-
-    // init ticket type
-    Set<TicketTypeCreateRequestDto> ticketTypeCreateRequestDtos = requestDto.getTicketTypeCreateRequestDtos();
-    Set<TicketType> ticketTypes = new HashSet<>();
-
-    if (!createdEvent.getIsFree()) {
-      // map ticket type
-      for (TicketTypeCreateRequestDto ticketTypeCreateRequestDto : ticketTypeCreateRequestDtos) {
-        TicketType ticketType = TicketTypeCreateRequestDto.requestToTicketTypeEntity(ticketTypeCreateRequestDto);
-        ticketType.setEvent(createdEvent); // Associate with the created Event
-        ticketType.setAvailableSeat(ticketTypeCreateRequestDto.getSeatLimit());
-
-        ticketTypes.add(ticketType);
-        ticketTypeService.saveTicketType(ticketType);
-      }
-    } else {
-
-      // default ticket type if isFree is true
-      TicketType freeTicketType = new TicketType();
-      TicketTypeCreateRequestDto firstInSet = ticketTypeCreateRequestDtos.iterator().next();
-
-      freeTicketType.setName("Free Admission");
-      freeTicketType.setDescription("Free entry ticket");
-      freeTicketType.setPrice(BigDecimal.ZERO);
-      freeTicketType.setSeatLimit(firstInSet.getSeatLimit());
-      freeTicketType.setAvailableSeat(firstInSet.getSeatLimit());
-      freeTicketType.setEvent(createdEvent);
-
-      ticketTypes.add(freeTicketType);
-      ticketTypeService.saveTicketType(freeTicketType);
-    }
-
-    // update seat limit
-    int totalSeatLimit = ticketTypes.stream().mapToInt(TicketType::getSeatLimit).sum();
-    createdEvent.setSeatLimit(totalSeatLimit);
-    createdEvent.setAvailableSeat(totalSeatLimit);
-
-    // update save
-    // * Clearing and Adding to the Collection:
-    // This ensures that Hibernate correctly manages the state of the collection and avoids orphaned entities.
-    createdEvent.getTicketTypes().clear();
-    createdEvent.getTicketTypes().addAll(ticketTypes);
-    eventRepository.save(createdEvent);
+    // event listener
+    eventPublisher.publishEvent(new EventCreatedEvent(this, createdEvent, requestDto));
 
     return new EventResponseDto(createdEvent);
   }

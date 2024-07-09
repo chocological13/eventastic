@@ -1,4 +1,4 @@
-package com.miniproject.eventastic.users.listener;
+package com.miniproject.eventastic.users.event.listener;
 
 
 import com.miniproject.eventastic.organizerWallet.entity.OrganizerWallet;

@@ -139,8 +139,6 @@ public class SecurityConfig {
           auth.requestMatchers("/api/v1/users/register/**").permitAll();
           auth.requestMatchers("/api/v1/events").permitAll();
           auth.requestMatchers(HttpMethod.GET, "/api/v1/events/{eventId}/reviews").permitAll();
-          // ! TODO: dev purposes, delete when not used
-
           // ! TODO: add roles related authorizations
 //          // * event management - only organizer
           auth.requestMatchers("/api/v1/events/create/**").hasAuthority("SCOPE_ROLE_ORGANIZER");
