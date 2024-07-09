@@ -39,6 +39,3 @@ public-key.pem
 ### env ###
 .env.properties
 *.env
-
-### not yet done ###
-docker-compose.text

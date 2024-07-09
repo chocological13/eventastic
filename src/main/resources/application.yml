@@ -1,0 +1,48 @@
+spring:
+  application:
+    name: eventastic
+  config:
+    import: optional:.env.properties
+  datasource:
+    url: ${PGURL}
+    username: ${PGUSER}
+    password: ${PGPASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      allow-pool-suspension: true
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
+      database: 0
+      ssl:
+        enabled: true
+      timeout: 60000
+    jdbc:
+      repositories:
+        enabled: false
+
+application:
+  env: ${ENV}
+
+rsa:
+  private-key: ${PRIVATE_KEY}
+  public-key: ${PUBLIC_KEY}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+
+# Uncomment for debug logging
+# logging:
+#   level:
+#     org.springframework: DEBUG
+#     org.hibernate: DEBUG
