@@ -271,6 +271,11 @@ public class EventServiceImpl implements EventService {
     return review;
   }
 
+  @Override
+  public Set<Review> getEventReviews(Long eventId) {
+    return reviewService.getReviewsByEventId(eventId);
+  }
+
   // Region - utilities for update event
   // * get logged-in user and verify identity as organizer that created the event
   private boolean verifyOrganizer(Event event) {

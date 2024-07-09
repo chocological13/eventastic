@@ -7,17 +7,21 @@ import com.miniproject.eventastic.event.entity.dto.updateEvent.UpdateEventReques
 import com.miniproject.eventastic.event.service.EventService;
 import com.miniproject.eventastic.exceptions.event.DuplicateEventException;
 import com.miniproject.eventastic.exceptions.event.EventNotFoundException;
+import com.miniproject.eventastic.exceptions.trx.TicketTypeNotFoundException;
 import com.miniproject.eventastic.exceptions.user.AttendeeNotFoundException;
 import com.miniproject.eventastic.responses.Response;
 import com.miniproject.eventastic.review.entity.Review;
 import com.miniproject.eventastic.review.entity.dto.ReviewSubmitRequestDto;
 import com.miniproject.eventastic.review.entity.dto.ReviewSubmitResponseDto;
+import com.miniproject.eventastic.ticketType.entity.TicketType;
 import com.miniproject.eventastic.voucher.entity.Voucher;
 import com.miniproject.eventastic.voucher.entity.dto.create.CreateVoucherResponseDto;
 import com.miniproject.eventastic.voucher.service.VoucherService;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -48,7 +52,8 @@ public class EventController {
       log.info("Attempting to create event: {} on date: {}", requestDto.getTitle(), requestDto.getEventDate());
 
       EventResponseDto responseDto = eventService.createEvent(requestDto);
-      log.info("Event created successfully: {} by organizer: {} on date: {}", responseDto.getTitle(), responseDto.getOrganizer(), responseDto.getEventDate());
+      log.info("Event created successfully: {} by organizer: {} on date: {}", responseDto.getTitle(),
+          responseDto.getOrganizer(), responseDto.getEventDate());
       return Response.successfulResponse(HttpStatus.CREATED.value(), "Event successfully created!", responseDto);
 
     } catch (DuplicateEventException e) {
@@ -75,8 +80,10 @@ public class EventController {
         return Response.failedResponse(HttpStatus.NOT_FOUND.value(), "Event not found!", null);
       }
       List<Voucher> eventVoucher = voucherService.getEventVouchers(eventId);
-      List<CreateVoucherResponseDto> createVoucherResponseDtos = eventVoucher.stream().map(CreateVoucherResponseDto::new).toList();
-      return Response.successfulResponse(HttpStatus.FOUND.value(), "Displaying vouchers for " + existingEvent.getTitle(),
+      List<CreateVoucherResponseDto> createVoucherResponseDtos = eventVoucher.stream()
+          .map(CreateVoucherResponseDto::new).toList();
+      return Response.successfulResponse(HttpStatus.FOUND.value(),
+          "Displaying vouchers for " + existingEvent.getTitle(),
           createVoucherResponseDtos);
     } catch (EventNotFoundException e) {
       return Response.failedResponse(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
@@ -108,7 +115,8 @@ public class EventController {
   }
 
   @PutMapping("/{eventId}/update")
-  public ResponseEntity<Response<EventResponseDto>> updateEvent(@PathVariable Long eventId, @Valid @RequestBody UpdateEventRequestDto requestDto) {
+  public ResponseEntity<Response<EventResponseDto>> updateEvent(@PathVariable Long eventId,
+      @Valid @RequestBody UpdateEventRequestDto requestDto) {
     try {
       log.info("Attempting to update event: {}", eventId);
       EventResponseDto responseDto = eventService.updateEvent(eventId, requestDto);
@@ -137,6 +145,19 @@ public class EventController {
       return Response.successfulResponse(HttpStatus.CREATED.value(), "Review posted!",
           new ReviewSubmitResponseDto(review));
     } catch (EventNotFoundException | AttendeeNotFoundException e) {
+      return Response.failedResponse(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
+    }
+  }
+
+  @GetMapping("/{eventId}/reviews")
+  public ResponseEntity<Response<Set<ReviewSubmitResponseDto>>> getReviews(@PathVariable Long eventId) {
+    try {
+      Set<Review> reviewSet = eventService.getEventReviews(eventId);
+      Set<ReviewSubmitResponseDto> responseDtoSet = reviewSet.stream()
+          .map(ReviewSubmitResponseDto::new)
+          .collect(Collectors.toSet());
+      return Response.successfulResponse(HttpStatus.FOUND.value(), "Displaying reviews for event..", responseDtoSet);
+    } catch (TicketTypeNotFoundException e) {
       return Response.failedResponse(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
     }
   }

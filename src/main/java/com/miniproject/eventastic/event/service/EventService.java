@@ -7,6 +7,7 @@ import com.miniproject.eventastic.event.entity.dto.createEvent.CreateEventReques
 import com.miniproject.eventastic.event.entity.dto.updateEvent.UpdateEventRequestDto;
 import com.miniproject.eventastic.review.entity.Review;
 import com.miniproject.eventastic.review.entity.dto.ReviewSubmitRequestDto;
+import java.util.Set;
 import org.springframework.data.domain.Page;
 
 public interface EventService {
@@ -32,4 +33,7 @@ public interface EventService {
 
   // review
   Review submitReview(Long eventId, ReviewSubmitRequestDto requestDto);
+
+  // display event's review
+  Set<Review> getEventReviews(Long eventId);
 }

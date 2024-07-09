@@ -23,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -137,6 +138,7 @@ public class SecurityConfig {
           auth.requestMatchers("/api/v1/auth/**").permitAll();
           auth.requestMatchers("/api/v1/users/register/**").permitAll();
           auth.requestMatchers("/api/v1/events").permitAll();
+          auth.requestMatchers(HttpMethod.GET, "/api/v1/events/{eventId}/reviews").permitAll();
           // ! TODO: dev purposes, delete when not used
 
           // ! TODO: add roles related authorizations
