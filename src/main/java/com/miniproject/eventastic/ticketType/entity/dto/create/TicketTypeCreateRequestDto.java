@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateTicketTypeRequestDto {
+public class TicketTypeCreateRequestDto {
 
   @NotEmpty
   private String name;
@@ -24,23 +24,23 @@ public class CreateTicketTypeRequestDto {
   @NotNull
   private Integer seatLimit;
 
-  public CreateTicketTypeRequestDto(TicketType ticketType) {
+  public TicketTypeCreateRequestDto(TicketType ticketType) {
     this.name = ticketType.getName();
     this.description = ticketType.getDescription();
     this.price = ticketType.getPrice();
     this.seatLimit = ticketType.getSeatLimit();
   }
 
-  public static CreateTicketTypeRequestDto toTicketTypeRequestDto(TicketType ticketType) {
-    return new CreateTicketTypeRequestDto(ticketType);
+  public static TicketTypeCreateRequestDto toTicketTypeRequestDto(TicketType ticketType) {
+    return new TicketTypeCreateRequestDto(ticketType);
   }
 
-  public static TicketType requestToTicketTypeEntity(CreateTicketTypeRequestDto createTicketTypeRequestDto) {
+  public static TicketType requestToTicketTypeEntity(TicketTypeCreateRequestDto ticketTypeCreateRequestDto) {
     TicketType ticketType = new TicketType();
-    ticketType.setName(createTicketTypeRequestDto.getName());
-    ticketType.setDescription(createTicketTypeRequestDto.getDescription());
-    ticketType.setPrice(createTicketTypeRequestDto.getPrice());
-    ticketType.setSeatLimit(createTicketTypeRequestDto.getSeatLimit());
+    ticketType.setName(ticketTypeCreateRequestDto.getName());
+    ticketType.setDescription(ticketTypeCreateRequestDto.getDescription());
+    ticketType.setPrice(ticketTypeCreateRequestDto.getPrice());
+    ticketType.setSeatLimit(ticketTypeCreateRequestDto.getSeatLimit());
     return ticketType;
   }
 }

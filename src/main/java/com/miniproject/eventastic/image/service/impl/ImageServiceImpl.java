@@ -1,5 +1,6 @@
 package com.miniproject.eventastic.image.service.impl;
 
+import com.miniproject.eventastic.exceptions.image.ImageNotFoundException;
 import com.miniproject.eventastic.image.entity.Image;
 import com.miniproject.eventastic.image.entity.dto.ImageUploadRequestDto;
 import com.miniproject.eventastic.image.entity.dto.ImageUploadResponseDto;
@@ -65,6 +66,6 @@ public class ImageServiceImpl implements ImageService {
 
   @Override
   public Image getImageById(Long imageId) {
-    return imageRepository.findById(imageId).orElse(null);
+    return imageRepository.findById(imageId).orElseThrow(() -> new ImageNotFoundException("Image not found"));
   }
 }

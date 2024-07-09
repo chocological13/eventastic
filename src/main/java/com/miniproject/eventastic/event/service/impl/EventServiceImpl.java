@@ -3,11 +3,11 @@ package com.miniproject.eventastic.event.service.impl;
 import com.miniproject.eventastic.attendee.entity.Attendee;
 import com.miniproject.eventastic.attendee.entity.AttendeeId;
 import com.miniproject.eventastic.attendee.service.AttendeeService;
-import com.miniproject.eventastic.event.metadata.Category;
 import com.miniproject.eventastic.event.entity.Event;
 import com.miniproject.eventastic.event.entity.dto.EventResponseDto;
 import com.miniproject.eventastic.event.entity.dto.createEvent.CreateEventRequestDto;
 import com.miniproject.eventastic.event.entity.dto.updateEvent.UpdateEventRequestDto;
+import com.miniproject.eventastic.event.metadata.Category;
 import com.miniproject.eventastic.event.repository.CategoryRepository;
 import com.miniproject.eventastic.event.repository.EventRepository;
 import com.miniproject.eventastic.event.service.EventService;
@@ -15,6 +15,7 @@ import com.miniproject.eventastic.exceptions.event.CategoryNotFoundException;
 import com.miniproject.eventastic.exceptions.event.DuplicateEventException;
 import com.miniproject.eventastic.exceptions.event.EventNotFoundException;
 import com.miniproject.eventastic.exceptions.image.ImageNotFoundException;
+import com.miniproject.eventastic.exceptions.trx.TicketTypeNotFoundException;
 import com.miniproject.eventastic.exceptions.user.AttendeeNotFoundException;
 import com.miniproject.eventastic.image.entity.Image;
 import com.miniproject.eventastic.image.service.ImageService;
@@ -22,7 +23,8 @@ import com.miniproject.eventastic.review.entity.Review;
 import com.miniproject.eventastic.review.entity.dto.ReviewSubmitRequestDto;
 import com.miniproject.eventastic.review.service.ReviewService;
 import com.miniproject.eventastic.ticketType.entity.TicketType;
-import com.miniproject.eventastic.ticketType.entity.dto.create.CreateTicketTypeRequestDto;
+import com.miniproject.eventastic.ticketType.entity.dto.create.TicketTypeCreateRequestDto;
+import com.miniproject.eventastic.ticketType.entity.dto.update.TicketTypeUpdateRequestDto;
 import com.miniproject.eventastic.ticketType.service.TicketTypeService;
 import com.miniproject.eventastic.users.entity.Users;
 import com.miniproject.eventastic.users.service.UsersService;
@@ -41,6 +43,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
@@ -105,15 +108,15 @@ public class EventServiceImpl implements EventService {
     }
 
     // init ticket type
-    Set<CreateTicketTypeRequestDto> createTicketTypeRequestDtos = requestDto.getCreateTicketTypeRequestDtos();
+    Set<TicketTypeCreateRequestDto> ticketTypeCreateRequestDtos = requestDto.getTicketTypeCreateRequestDtos();
     Set<TicketType> ticketTypes = new HashSet<>();
 
     if (!createdEvent.getIsFree()) {
       // map ticket type
-      for (CreateTicketTypeRequestDto createTicketTypeRequestDto : createTicketTypeRequestDtos) {
-        TicketType ticketType = CreateTicketTypeRequestDto.requestToTicketTypeEntity(createTicketTypeRequestDto);
+      for (TicketTypeCreateRequestDto ticketTypeCreateRequestDto : ticketTypeCreateRequestDtos) {
+        TicketType ticketType = TicketTypeCreateRequestDto.requestToTicketTypeEntity(ticketTypeCreateRequestDto);
         ticketType.setEvent(createdEvent); // Associate with the created Event
-        ticketType.setAvailableSeat(createTicketTypeRequestDto.getSeatLimit());
+        ticketType.setAvailableSeat(ticketTypeCreateRequestDto.getSeatLimit());
 
         ticketTypes.add(ticketType);
         ticketTypeService.saveTicketType(ticketType);
@@ -122,7 +125,7 @@ public class EventServiceImpl implements EventService {
 
       // default ticket type if isFree is true
       TicketType freeTicketType = new TicketType();
-      CreateTicketTypeRequestDto firstInSet = createTicketTypeRequestDtos.iterator().next();
+      TicketTypeCreateRequestDto firstInSet = ticketTypeCreateRequestDtos.iterator().next();
 
       freeTicketType.setName("Free Admission");
       freeTicketType.setDescription("Free entry ticket");
@@ -155,7 +158,7 @@ public class EventServiceImpl implements EventService {
       String order, String direction) {
 
     // sort direction, by default ascending
-    Sort.Direction sortDirection = Sort.Direction.fromString(order == null ? "asc" : direction);
+    Direction sortDirection = Direction.fromString(order == null ? "asc" : direction);
     // sort order, by default eventDate
     Sort sortOrder = Sort.by(sortDirection, order == null ? "eventDate" : order);
     // init pageable
@@ -198,64 +201,49 @@ public class EventServiceImpl implements EventService {
     }
   }
 
-
-  @Override
-  public Boolean isDuplicateEvent(CreateEventRequestDto checkDuplicate) {
-    String title = checkDuplicate.getTitle();
-    String location = checkDuplicate.getLocation();
-    LocalDate eventDate = checkDuplicate.getEventDate();
-    LocalTime startTime = checkDuplicate.getStartTime();
-    Optional<Event> checkEvent = eventRepository.findByTitleAndLocationAndEventDateAndStartTime(title, location, eventDate, startTime);
-    return checkEvent.isPresent();
-  }
-
   @Override
   public EventResponseDto updateEvent(Long eventId, UpdateEventRequestDto requestDto) {
-    // get logged in user
-    Users loggedUser = usersService.getCurrentUser();
-
-    // verify event organizer with logged-in user
-    Optional<Event> optionalEvent = eventRepository.findById(eventId);
-    if (optionalEvent.isEmpty()) {
-      throw new EventNotFoundException("Event not found");
-    }
-    if (loggedUser != optionalEvent.get().getOrganizer()) {
-      throw new AccessDeniedException("You do not have permission to update this event");
-    }
+    // get existing event
+    Event existingEvent = eventRepository.findById(eventId)
+        .orElseThrow(() -> new EventNotFoundException("Event not found, please enter a valid ID"));
 
     // update event
-    UpdateEventRequestDto dto = new UpdateEventRequestDto();
-    Event updatedEvent = dto.dtoToEvent(optionalEvent.get(), requestDto);
+    updateEventDetails(existingEvent, requestDto);
 
     // check for image
-    if (requestDto.getImageId() != null) {
-      Image image = imageService.getImageById(requestDto.getImageId());
-      if (image != null) {
-        updatedEvent.setImage(image);
-      }
-    }
+    setImage(existingEvent, requestDto);
 
+    // update ticket type
+    if (requestDto.getTicketTypeUpdates() != null) {
+      Set<TicketType> existingTicketTypes = existingEvent.getTicketTypes();
+      for (TicketTypeUpdateRequestDto dtoTicketType : requestDto.getTicketTypeUpdates()) {
+        TicketType ticketType;
+        if (dtoTicketType.getTicketTypeId() != null) {
+          ticketType = existingTicketTypes.stream()
+              .filter(tt -> tt.getId().equals(dtoTicketType.getTicketTypeId()))
+              .findFirst()
+              .orElse(new TicketType());
+          updateExistingTicketType(ticketType, dtoTicketType);
+          existingTicketTypes.add(ticketType);
+        } else {
+          throw new TicketTypeNotFoundException("Ticket Type not found!");
+        }
+      }
+      existingEvent.setTicketTypes(existingTicketTypes);
+    }
     // save event
-    eventRepository.save(updatedEvent);
-    return new EventResponseDto(updatedEvent);
+    eventRepository.save(existingEvent);
+    return new EventResponseDto(existingEvent);
   }
 
   @Override
   public void deleteEvent(Long eventId) {
-    // get logged in user
-    Users loggedUser = usersService.getCurrentUser();
-
-    // verify event organizer with logged-in user
-    Optional<Event> optionalEvent = eventRepository.findById(eventId);
-    if (optionalEvent.isEmpty()) {
-      throw new EventNotFoundException("Event not found");
+    Event eventToDelete = eventRepository.findById(eventId)
+        .orElseThrow(() -> new EventNotFoundException("Event not found, please enter a valid ID"));
+    // verify if the logged-in user is the organizer for this event
+    if (verifyOrganizer(eventToDelete)) {
+      eventToDelete.setDeletedAt(Instant.now());
     }
-    if (loggedUser != optionalEvent.get().getOrganizer()) {
-      throw new AccessDeniedException("You do not have permission to update this event");
-    }
-
-    Event eventToDelete = optionalEvent.get();
-    eventToDelete.setDeletedAt(Instant.now());
   }
 
   @Override
@@ -281,6 +269,57 @@ public class EventServiceImpl implements EventService {
     review.setRating(requestDto.getRating());
     reviewService.saveReview(review);
     return review;
+  }
+
+  // Region - utilities for update event
+  // * get logged-in user and verify identity as organizer that created the event
+  private boolean verifyOrganizer(Event event) {
+    Users loggedUser = usersService.getCurrentUser();
+    if (loggedUser != event.getOrganizer()) {
+      throw new AccessDeniedException("You do not have permission to update this event");
+    }
+    return true;
+  }
+
+  private void updateEventDetails(Event event, UpdateEventRequestDto requestDto) {
+    if (verifyOrganizer(event)) {
+      UpdateEventRequestDto dto = new UpdateEventRequestDto();
+      dto.dtoToEvent(event, requestDto);
+    }
+  }
+
+  private void setImage(Event event, UpdateEventRequestDto requestDto) {
+    if (requestDto.getImageId() != null) {
+      Image image = imageService.getImageById(requestDto.getImageId());
+      if (image != null) {
+        event.setImage(image);
+      }
+    }
+  }
+
+  private void updateExistingTicketType (TicketType ticketType, TicketTypeUpdateRequestDto ticketTypeUpdateRequestDto) {
+    if (ticketTypeUpdateRequestDto.getDescription() != null) {
+      ticketType.setDescription(ticketTypeUpdateRequestDto.getDescription());
+    }
+    if (ticketTypeUpdateRequestDto.getPrice() != null) {
+      ticketType.setPrice(ticketTypeUpdateRequestDto.getPrice());
+    }
+    if (ticketTypeUpdateRequestDto.getSeatLimit() != null) {
+      ticketType.setSeatLimit(ticketTypeUpdateRequestDto.getSeatLimit());
+      ticketType.setAvailableSeat(ticketTypeUpdateRequestDto.getSeatLimit());
+    }
+    ticketTypeService.saveTicketType(ticketType);
+  }
+
+  // Region - utilities
+  private Boolean isDuplicateEvent(CreateEventRequestDto checkDuplicate) {
+    String title = checkDuplicate.getTitle();
+    String location = checkDuplicate.getLocation();
+    LocalDate eventDate = checkDuplicate.getEventDate();
+    LocalTime startTime = checkDuplicate.getStartTime();
+    Optional<Event> checkEvent = eventRepository.findByTitleAndLocationAndEventDateAndStartTime(title, location,
+        eventDate, startTime);
+    return checkEvent.isPresent();
   }
 
 }

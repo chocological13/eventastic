@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateTicketTypeResponseDto {
+public class TicketTypeCreateResponseDto {
 
   private Long id;
   private String name;
@@ -18,7 +18,7 @@ public class CreateTicketTypeResponseDto {
   private Integer seatLimit;
   private Integer availableSeat;
 
-  public CreateTicketTypeResponseDto(TicketType ticketType) {
+  public TicketTypeCreateResponseDto(TicketType ticketType) {
     this.id = ticketType.getId();
     this.name = ticketType.getName();
     this.description = ticketType.getDescription();
@@ -27,18 +27,18 @@ public class CreateTicketTypeResponseDto {
     this.availableSeat = ticketType.getAvailableSeat();
   }
 
-  public CreateTicketTypeResponseDto toDto(TicketType ticketType) {
-    return new CreateTicketTypeResponseDto(ticketType);
+  public TicketTypeCreateResponseDto toDto(TicketType ticketType) {
+    return new TicketTypeCreateResponseDto(ticketType);
   }
 
-  public TicketType toTicketTypeEntity(CreateTicketTypeResponseDto createTicketTypeResponseDto) {
+  public TicketType toTicketTypeEntity(TicketTypeCreateResponseDto ticketTypeCreateResponseDto) {
     TicketType ticketType = new TicketType();
-    ticketType.setId(createTicketTypeResponseDto.getId());
-    ticketType.setName(createTicketTypeResponseDto.getName());
-    ticketType.setDescription(createTicketTypeResponseDto.getDescription());
-    ticketType.setPrice(createTicketTypeResponseDto.getPrice());
-    ticketType.setSeatLimit(createTicketTypeResponseDto.getSeatLimit());
-    ticketType.setAvailableSeat(createTicketTypeResponseDto.getAvailableSeat());
+    ticketType.setId(ticketTypeCreateResponseDto.getId());
+    ticketType.setName(ticketTypeCreateResponseDto.getName());
+    ticketType.setDescription(ticketTypeCreateResponseDto.getDescription());
+    ticketType.setPrice(ticketTypeCreateResponseDto.getPrice());
+    ticketType.setSeatLimit(ticketTypeCreateResponseDto.getSeatLimit());
+    ticketType.setAvailableSeat(ticketTypeCreateResponseDto.getAvailableSeat());
     return ticketType;
   }
 }

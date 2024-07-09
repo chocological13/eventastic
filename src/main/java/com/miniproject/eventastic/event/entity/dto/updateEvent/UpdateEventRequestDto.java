@@ -1,10 +1,12 @@
 package com.miniproject.eventastic.event.entity.dto.updateEvent;
 
 import com.miniproject.eventastic.event.entity.Event;
+import com.miniproject.eventastic.ticketType.entity.dto.update.TicketTypeUpdateRequestDto;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Optional;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,6 +25,7 @@ public class UpdateEventRequestDto {
   private LocalDate eventDate;
   private LocalTime startTime;
   private LocalTime endTime;
+  private Set<TicketTypeUpdateRequestDto> ticketTypeUpdates;
 
   public Event dtoToEvent(Event event, UpdateEventRequestDto updateDto) {
     event.setTitle(Optional.ofNullable(title).orElse(updateDto.getTitle()));
