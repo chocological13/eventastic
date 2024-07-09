@@ -1,4 +1,4 @@
-package com.miniproject.eventastic.event.event;
+package com.miniproject.eventastic.event.event.EventCreated;
 
 import com.miniproject.eventastic.event.entity.Event;
 import com.miniproject.eventastic.event.entity.dto.createEvent.CreateEventRequestDto;
@@ -15,13 +15,5 @@ public class EventCreatedEvent extends ApplicationEvent {
     super(source);
     this.event = event;
     this.requestDto = requestDto;
-  }
-
-  public Event getEvent() {
-    return event;
-  }
-
-  public CreateEventRequestDto getRequestDto() {
-    return requestDto;
   }
 }

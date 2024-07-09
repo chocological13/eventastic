@@ -1,8 +1,8 @@
-package com.miniproject.eventastic.event.event.listener;
+package com.miniproject.eventastic.event.event.EventCreated.listener;
 
 import com.miniproject.eventastic.event.entity.Event;
 import com.miniproject.eventastic.event.entity.dto.createEvent.CreateEventRequestDto;
-import com.miniproject.eventastic.event.event.EventCreatedEvent;
+import com.miniproject.eventastic.event.event.EventCreated.EventCreatedEvent;
 import com.miniproject.eventastic.event.metadata.Category;
 import com.miniproject.eventastic.event.repository.CategoryRepository;
 import com.miniproject.eventastic.event.repository.EventRepository;

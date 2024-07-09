@@ -7,16 +7,14 @@ import com.miniproject.eventastic.event.entity.Event;
 import com.miniproject.eventastic.event.entity.dto.EventResponseDto;
 import com.miniproject.eventastic.event.entity.dto.createEvent.CreateEventRequestDto;
 import com.miniproject.eventastic.event.entity.dto.updateEvent.UpdateEventRequestDto;
-import com.miniproject.eventastic.event.event.EventCreatedEvent;
+import com.miniproject.eventastic.event.event.EventCreated.EventCreatedEvent;
+import com.miniproject.eventastic.event.event.EventUpdated.EventUpdatedEvent;
 import com.miniproject.eventastic.event.metadata.Category;
 import com.miniproject.eventastic.event.repository.CategoryRepository;
 import com.miniproject.eventastic.event.repository.EventRepository;
 import com.miniproject.eventastic.event.service.EventService;
-import com.miniproject.eventastic.exceptions.event.CategoryNotFoundException;
 import com.miniproject.eventastic.exceptions.event.DuplicateEventException;
 import com.miniproject.eventastic.exceptions.event.EventNotFoundException;
-import com.miniproject.eventastic.exceptions.image.ImageNotFoundException;
-import com.miniproject.eventastic.exceptions.trx.TicketTypeNotFoundException;
 import com.miniproject.eventastic.exceptions.user.AttendeeNotFoundException;
 import com.miniproject.eventastic.image.entity.Image;
 import com.miniproject.eventastic.image.service.ImageService;
@@ -24,17 +22,14 @@ import com.miniproject.eventastic.review.entity.Review;
 import com.miniproject.eventastic.review.entity.dto.ReviewSubmitRequestDto;
 import com.miniproject.eventastic.review.service.ReviewService;
 import com.miniproject.eventastic.ticketType.entity.TicketType;
-import com.miniproject.eventastic.ticketType.entity.dto.create.TicketTypeCreateRequestDto;
 import com.miniproject.eventastic.ticketType.entity.dto.update.TicketTypeUpdateRequestDto;
 import com.miniproject.eventastic.ticketType.service.TicketTypeService;
 import com.miniproject.eventastic.users.entity.Users;
 import com.miniproject.eventastic.users.service.UsersService;
 import jakarta.transaction.Transactional;
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import lombok.Data;
@@ -48,8 +43,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -148,30 +141,11 @@ public class EventServiceImpl implements EventService {
     Event existingEvent = eventRepository.findById(eventId)
         .orElseThrow(() -> new EventNotFoundException("Event not found, please enter a valid ID"));
 
-    // update event
-    updateEventDetails(existingEvent, requestDto);
-
-    // check for image
-    setImage(existingEvent, requestDto);
-
-    // update ticket type
-    if (requestDto.getTicketTypeUpdates() != null) {
-      Set<TicketType> existingTicketTypes = existingEvent.getTicketTypes();
-      for (TicketTypeUpdateRequestDto dtoTicketType : requestDto.getTicketTypeUpdates()) {
-        TicketType ticketType;
-        if (dtoTicketType.getTicketTypeId() != null) {
-          ticketType = existingTicketTypes.stream()
-              .filter(tt -> tt.getId().equals(dtoTicketType.getTicketTypeId()))
-              .findFirst()
-              .orElse(new TicketType());
-          updateExistingTicketType(ticketType, dtoTicketType);
-          existingTicketTypes.add(ticketType);
-        } else {
-          throw new TicketTypeNotFoundException("Ticket Type not found!");
-        }
-      }
-      existingEvent.setTicketTypes(existingTicketTypes);
+    // verify organizer
+    if (verifyOrganizer(existingEvent)) {
+      eventPublisher.publishEvent(new EventUpdatedEvent(this, existingEvent, requestDto));
     }
+
     // save event
     eventRepository.save(existingEvent);
     return new EventResponseDto(existingEvent);
@@ -217,46 +191,6 @@ public class EventServiceImpl implements EventService {
     return reviewService.getReviewsByEventId(eventId);
   }
 
-  // Region - utilities for update event
-  // * get logged-in user and verify identity as organizer that created the event
-  private boolean verifyOrganizer(Event event) {
-    Users loggedUser = usersService.getCurrentUser();
-    if (loggedUser != event.getOrganizer()) {
-      throw new AccessDeniedException("You do not have permission to update this event");
-    }
-    return true;
-  }
-
-  private void updateEventDetails(Event event, UpdateEventRequestDto requestDto) {
-    if (verifyOrganizer(event)) {
-      UpdateEventRequestDto dto = new UpdateEventRequestDto();
-      dto.dtoToEvent(event, requestDto);
-    }
-  }
-
-  private void setImage(Event event, UpdateEventRequestDto requestDto) {
-    if (requestDto.getImageId() != null) {
-      Image image = imageService.getImageById(requestDto.getImageId());
-      if (image != null) {
-        event.setImage(image);
-      }
-    }
-  }
-
-  private void updateExistingTicketType (TicketType ticketType, TicketTypeUpdateRequestDto ticketTypeUpdateRequestDto) {
-    if (ticketTypeUpdateRequestDto.getDescription() != null) {
-      ticketType.setDescription(ticketTypeUpdateRequestDto.getDescription());
-    }
-    if (ticketTypeUpdateRequestDto.getPrice() != null) {
-      ticketType.setPrice(ticketTypeUpdateRequestDto.getPrice());
-    }
-    if (ticketTypeUpdateRequestDto.getSeatLimit() != null) {
-      ticketType.setSeatLimit(ticketTypeUpdateRequestDto.getSeatLimit());
-      ticketType.setAvailableSeat(ticketTypeUpdateRequestDto.getSeatLimit());
-    }
-    ticketTypeService.saveTicketType(ticketType);
-  }
-
   // Region - utilities
   private Boolean isDuplicateEvent(CreateEventRequestDto checkDuplicate) {
     String title = checkDuplicate.getTitle();
@@ -266,6 +200,15 @@ public class EventServiceImpl implements EventService {
     Optional<Event> checkEvent = eventRepository.findByTitleAndLocationAndEventDateAndStartTime(title, location,
         eventDate, startTime);
     return checkEvent.isPresent();
+  }
+
+  // * get logged-in user and verify identity as organizer that created the event
+  private boolean verifyOrganizer(Event event) {
+    Users loggedUser = usersService.getCurrentUser();
+    if (loggedUser != event.getOrganizer()) {
+      throw new AccessDeniedException("You do not have permission to update this event");
+    }
+    return true;
   }
 
 }
