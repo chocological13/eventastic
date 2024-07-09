@@ -28,6 +28,7 @@ import com.miniproject.eventastic.users.entity.dto.userManagement.ProfileUpdateR
 import com.miniproject.eventastic.users.event.UserRegistrationEvent;
 import com.miniproject.eventastic.users.repository.UsersRepository;
 import com.miniproject.eventastic.users.service.UsersService;
+import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -49,6 +50,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 @Data
 @Slf4j
+@Transactional
 public class UsersServiceImpl implements UsersService {
 
   private final UsersRepository usersRepository;
@@ -104,6 +106,7 @@ public class UsersServiceImpl implements UsersService {
 
   @SneakyThrows
   @Override
+  @Transactional
   public RegisterResponseDto register(RegisterRequestDto requestDto) {
     // init new user and the dto
     Users newUser = new Users();
