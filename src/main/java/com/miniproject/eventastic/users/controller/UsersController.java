@@ -58,7 +58,7 @@ public class UsersController {
   public ResponseEntity<Response<List<UserProfileDto>>> getAllUsers() {
     try {
       List<UserProfileDto> users = usersService.getAllUsers();
-      return Response.successfulResponse(HttpStatus.FOUND.value(), "Displaying all users..", users);
+      return Response.successfulResponse(HttpStatus.OK.value(), "Displaying all users..", users);
     } catch (EmptyResultDataAccessException e) {
       return Response.failedResponse(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
     }
@@ -78,9 +78,9 @@ public class UsersController {
   public ResponseEntity<Response<UserProfileDto>> getUserProfile() {
     UserProfileDto userProfile = usersService.getProfile();
     if (userProfile != null) {
-      return Response.successfulResponse(HttpStatus.FOUND.value(), HttpStatus.FOUND.getReasonPhrase(), userProfile);
+      return Response.successfulResponse(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), userProfile);
     } else {
-      return Response.failedResponse("There is no user profile");
+      return Response.failedResponse(HttpStatus.NOT_FOUND.value(), "There is no user profile", null);
     }
   }
 
@@ -89,7 +89,7 @@ public class UsersController {
   public ResponseEntity<Response<PointsWalletResponseDto>> getUsersPointsWallet() {
     String currentUser =
         usersService.getCurrentUser().getFullName();
-    return Response.successfulResponse(HttpStatus.FOUND.value(), "Showing Points Wallet for: " + currentUser,
+    return Response.successfulResponse(HttpStatus.OK.value(), "Showing Points Wallet for: " + currentUser,
         new PointsWalletResponseDto(usersService.getUsersPointsWallet()));
   }
 
@@ -102,7 +102,7 @@ public class UsersController {
     } catch (PointsTrxNotFoundException e) {
       Response.failedResponse(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
     }
-    return Response.successfulResponse(HttpStatus.FOUND.value(), "Displayimng points usage history..", pointsTrxDtos);
+    return Response.successfulResponse(HttpStatus.OK.value(), "Displayimng points usage history..", pointsTrxDtos);
   }
 
   // * Get logged-in user's vouchers
@@ -113,7 +113,7 @@ public class UsersController {
       List<CreateVoucherResponseDto> responseDtos = voucherList.stream()
           .map(CreateVoucherResponseDto::new)
           .toList();
-      return Response.successfulResponse(HttpStatus.FOUND.value(), "Displaying your vouchers..", responseDtos);
+      return Response.successfulResponse(HttpStatus.OK.value(), "Displaying your vouchers..", responseDtos);
     } catch (VoucherNotFoundException e) {
       return Response.failedResponse(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
     }
@@ -150,7 +150,7 @@ public class UsersController {
   public ResponseEntity<Response<Set<TrxIssuedTicketDto>>> getPurchasedTickets() {
     try {
       Set<Ticket> ticketSet = trxService.getUserTickets();
-      return Response.successfulResponse(HttpStatus.FOUND.value(), "Displaying your tickets..",
+      return Response.successfulResponse(HttpStatus.OK.value(), "Displaying your tickets..",
           ticketSet.stream().map(TrxIssuedTicketDto::new).collect(Collectors.toSet()));
     } catch (TicketNotFoundException e) {
       return Response.failedResponse(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
@@ -161,7 +161,7 @@ public class UsersController {
   @GetMapping("/organizer/wallet")
   public ResponseEntity<Response<OrganizerWalletDisplayDto>> getOrganizerWallet() {
     try {
-      return Response.successfulResponse(HttpStatus.FOUND.value(), "Displaying your wallet..",
+      return Response.successfulResponse(HttpStatus.OK.value(), "Displaying your wallet..",
           usersService.getWalletDisplay());
     } catch (AccessDeniedException e) {
       return Response.failedResponse(HttpStatus.FORBIDDEN.value(), e.getMessage(), null);

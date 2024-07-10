@@ -66,6 +66,7 @@ public class PointsTrx implements Comparable<PointsTrx> {
   @PrePersist
   private void prePersist() {
     createdAt = Instant.now();
+    trxType = points > 0 ? "Addition" : "Deduction";
   }
 
 }

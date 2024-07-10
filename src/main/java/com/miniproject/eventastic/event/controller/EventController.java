@@ -5,8 +5,10 @@ import com.miniproject.eventastic.event.entity.dto.EventResponseDto;
 import com.miniproject.eventastic.event.entity.dto.createEvent.CreateEventRequestDto;
 import com.miniproject.eventastic.event.entity.dto.updateEvent.UpdateEventRequestDto;
 import com.miniproject.eventastic.event.service.EventService;
+import com.miniproject.eventastic.exceptions.event.CategoryNotFoundException;
 import com.miniproject.eventastic.exceptions.event.DuplicateEventException;
 import com.miniproject.eventastic.exceptions.event.EventNotFoundException;
+import com.miniproject.eventastic.exceptions.image.ImageNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.TicketTypeNotFoundException;
 import com.miniproject.eventastic.exceptions.user.AttendeeNotFoundException;
 import com.miniproject.eventastic.responses.Response;
@@ -27,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -56,19 +59,20 @@ public class EventController {
           responseDto.getOrganizer(), responseDto.getEventDate());
       return Response.successfulResponse(HttpStatus.CREATED.value(), "Event successfully created!", responseDto);
 
-    } catch (DuplicateEventException e) {
+    } catch (DuplicateEventException | CategoryNotFoundException | ImageNotFoundException e) {
       return Response.failedResponse(HttpStatus.CONFLICT.value(), e.getMessage(), null);
     }
   }
 
   @GetMapping("/{eventId}")
   public ResponseEntity<Response<EventResponseDto>> getEvent(@PathVariable Long eventId) {
-    Event existingEvent = eventService.getEventById(eventId);
-    if (existingEvent == null) {
-      return Response.failedResponse(HttpStatus.NOT_FOUND.value(), "Event not found!", null);
+    try {
+      Event existingEvent = eventService.getEventById(eventId);
+      EventResponseDto responseDto = new EventResponseDto(existingEvent);
+      return Response.successfulResponse(HttpStatus.OK.value(), "Event successfully retrieved!", responseDto);
+    } catch (EventNotFoundException e) {
+      return Response.failedResponse(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
     }
-    EventResponseDto responseDto = new EventResponseDto(existingEvent);
-    return Response.successfulResponse(HttpStatus.OK.value(), "Event successfully retrieved!", responseDto);
   }
 
   // * Display available vouchers for event
@@ -76,13 +80,10 @@ public class EventController {
   public ResponseEntity<Response<List<CreateVoucherResponseDto>>> getVouchers(@PathVariable Long eventId) {
     try {
       Event existingEvent = eventService.getEventById(eventId);
-      if (existingEvent == null) {
-        return Response.failedResponse(HttpStatus.NOT_FOUND.value(), "Event not found!", null);
-      }
       List<Voucher> eventVoucher = voucherService.getEventVouchers(eventId);
       List<CreateVoucherResponseDto> createVoucherResponseDtos = eventVoucher.stream()
           .map(CreateVoucherResponseDto::new).toList();
-      return Response.successfulResponse(HttpStatus.FOUND.value(),
+      return Response.successfulResponse(HttpStatus.OK.value(),
           "Displaying vouchers for " + existingEvent.getTitle(),
           createVoucherResponseDtos);
     } catch (EventNotFoundException e) {
@@ -121,7 +122,7 @@ public class EventController {
       log.info("Attempting to update event: {}", eventId);
       EventResponseDto responseDto = eventService.updateEvent(eventId, requestDto);
       return Response.successfulResponse(HttpStatus.OK.value(), "Event successfully updated!", responseDto);
-    } catch (EventNotFoundException e) {
+    } catch (EventNotFoundException | AccessDeniedException | CategoryNotFoundException | ImageNotFoundException e) {
       return Response.failedResponse(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
     }
   }
@@ -156,7 +157,7 @@ public class EventController {
       Set<ReviewSubmitResponseDto> responseDtoSet = reviewSet.stream()
           .map(ReviewSubmitResponseDto::new)
           .collect(Collectors.toSet());
-      return Response.successfulResponse(HttpStatus.FOUND.value(), "Displaying reviews for event..", responseDtoSet);
+      return Response.successfulResponse(HttpStatus.OK.value(), "Displaying reviews for event..", responseDtoSet);
     } catch (TicketTypeNotFoundException e) {
       return Response.failedResponse(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
     }

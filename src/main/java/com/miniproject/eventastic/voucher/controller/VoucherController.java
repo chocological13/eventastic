@@ -38,7 +38,7 @@ public class VoucherController {
       List<CreateVoucherResponseDto> responseDtos = voucherList.stream()
           .map(CreateVoucherResponseDto::new)
           .toList();
-      return Response.successfulResponse(HttpStatus.FOUND.value(), "Displaying vouchers available for all users",
+      return Response.successfulResponse(HttpStatus.OK.value(), "Displaying vouchers available for all users",
           responseDtos);
     } catch (VoucherNotFoundException e) {
       return Response.failedResponse(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);

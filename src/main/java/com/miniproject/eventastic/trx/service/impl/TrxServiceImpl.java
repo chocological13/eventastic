@@ -86,7 +86,7 @@ public class TrxServiceImpl implements TrxService {
     // total amount
     BigDecimal points = BigDecimal.ZERO;
     if (pointsTrx != null) {
-      points = BigDecimal.valueOf(pointsTrx.getPoints());
+      points = BigDecimal.valueOf(- pointsTrx.getPoints());
     }
     BigDecimal initAmount = calculateInitialAmount(ticketType, requestDto.getQty());
     BigDecimal deduction = points.add(discount);
@@ -213,7 +213,6 @@ public class TrxServiceImpl implements TrxService {
     // init points trx
     PointsTrx pointsTrx = new PointsTrx();
     pointsTrx.setPointsWallet(pointsWallet);
-    pointsTrx.setTrxType("Deduction");
     pointsTrx.setDescription("Points used to purchase tickets to " + trx.getEvent().getTitle());
 
     if (points.compareTo(price) < 0) {

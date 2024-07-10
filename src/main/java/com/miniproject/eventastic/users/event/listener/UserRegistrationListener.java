@@ -95,7 +95,6 @@ public class UserRegistrationListener {
       PointsTrx pointsTrx = new PointsTrx();
       pointsTrx.setPointsWallet(ownerPointsWallet);
       pointsTrx.setPoints(pointsReward);
-      pointsTrx.setTrxType("Addition");
       pointsTrx.setDescription("Referral code usage by new user");
       pointsTrxService.savePointsTrx(pointsTrx);
 
