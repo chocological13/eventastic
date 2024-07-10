@@ -6,7 +6,7 @@ import com.miniproject.eventastic.event.event.EventUpdated.EventUpdatedEvent;
 import com.miniproject.eventastic.event.service.EventService;
 import com.miniproject.eventastic.exceptions.trx.TicketNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.TicketTypeNotFoundException;
-import com.miniproject.eventastic.image.entity.Image;
+import com.miniproject.eventastic.image.entity.ImageUserAvatar;
 import com.miniproject.eventastic.image.service.ImageService;
 import com.miniproject.eventastic.ticketType.entity.TicketType;
 import com.miniproject.eventastic.ticketType.entity.dto.update.TicketTypeUpdateRequestDto;
@@ -49,9 +49,9 @@ public class EventUpdatedListener {
 
   private void setImage(Event updatedEvent, UpdateEventRequestDto requestDto) {
     if (requestDto.getImageId() != null) {
-      Image image = imageService.getImageById(requestDto.getImageId());
-      if (image != null) {
-        updatedEvent.setImage(image);
+      ImageUserAvatar imageUserAvatar = imageService.getImageById(requestDto.getImageId());
+      if (imageUserAvatar != null) {
+        updatedEvent.setImageUserAvatar(imageUserAvatar);
       }
     }
   }

@@ -48,7 +48,8 @@ public class ImageServiceImpl implements ImageService {
       validateUploadRequest(requestDto);
 
       String imageName = requestDto.getFileName();
-      String imageUrl = cloudinaryService.uploadFile(requestDto.getFile(), "eventastic/" + user.getId().toString());
+      String imageUrl = cloudinaryService.uploadFile(requestDto.getFile(),
+          "eventastic/users/" + user.getId().toString());
 
       ImageUserAvatar imageUserAvatar = new ImageUserAvatar();
       imageUserAvatar.setImageName(imageName);
@@ -72,7 +73,8 @@ public class ImageServiceImpl implements ImageService {
       validateUploadRequest(requestDto);
 
       String imageName = requestDto.getFileName();
-      String imageUrl = cloudinaryService.uploadFile(requestDto.getFile(), "eventastic/" + event.getId().toString());
+      String imageUrl = cloudinaryService.uploadFile(requestDto.getFile(),
+          "eventastic/events" + event.getId().toString());
 
       ImageEvent imageEvent = new ImageEvent();
       imageEvent.setImageName(imageName);

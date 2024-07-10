@@ -16,13 +16,12 @@ import com.miniproject.eventastic.event.service.EventService;
 import com.miniproject.eventastic.exceptions.event.DuplicateEventException;
 import com.miniproject.eventastic.exceptions.event.EventNotFoundException;
 import com.miniproject.eventastic.exceptions.user.AttendeeNotFoundException;
-import com.miniproject.eventastic.image.entity.Image;
+import com.miniproject.eventastic.image.entity.ImageEvent;
+import com.miniproject.eventastic.image.entity.dto.ImageUploadRequestDto;
 import com.miniproject.eventastic.image.service.ImageService;
 import com.miniproject.eventastic.review.entity.Review;
 import com.miniproject.eventastic.review.entity.dto.ReviewSubmitRequestDto;
 import com.miniproject.eventastic.review.service.ReviewService;
-import com.miniproject.eventastic.ticketType.entity.TicketType;
-import com.miniproject.eventastic.ticketType.entity.dto.update.TicketTypeUpdateRequestDto;
 import com.miniproject.eventastic.ticketType.service.TicketTypeService;
 import com.miniproject.eventastic.users.entity.Users;
 import com.miniproject.eventastic.users.service.UsersService;
@@ -142,9 +141,8 @@ public class EventServiceImpl implements EventService {
         .orElseThrow(() -> new EventNotFoundException("Event not found, please enter a valid ID"));
 
     // verify organizer
-    if (verifyOrganizer(existingEvent)) {
-      eventPublisher.publishEvent(new EventUpdatedEvent(this, existingEvent, requestDto));
-    }
+    verifyOrganizer(existingEvent);
+    eventPublisher.publishEvent(new EventUpdatedEvent(this, existingEvent, requestDto));
 
     // save event
     eventRepository.save(existingEvent);
@@ -156,9 +154,9 @@ public class EventServiceImpl implements EventService {
     Event eventToDelete = eventRepository.findById(eventId)
         .orElseThrow(() -> new EventNotFoundException("Event not found, please enter a valid ID"));
     // verify if the logged-in user is the organizer for this event
-    if (verifyOrganizer(eventToDelete)) {
-      eventToDelete.setDeletedAt(Instant.now());
-    }
+    verifyOrganizer(eventToDelete);
+    eventToDelete.setDeletedAt(Instant.now());
+
   }
 
   @Override
@@ -191,6 +189,14 @@ public class EventServiceImpl implements EventService {
     return reviewService.getReviewsByEventId(eventId);
   }
 
+  @Override
+  public ImageEvent uploadEventImage(Long eventId, ImageUploadRequestDto requestDto) {
+    Event event = getEventById(eventId);
+    verifyOrganizer(event);
+    return
+  imageService.uploadEventImage(requestDto, event);
+  }
+
   // Region - utilities
   private Boolean isDuplicateEvent(CreateEventRequestDto checkDuplicate) {
     String title = checkDuplicate.getTitle();
@@ -203,12 +209,11 @@ public class EventServiceImpl implements EventService {
   }
 
   // * get logged-in user and verify identity as organizer that created the event
-  private boolean verifyOrganizer(Event event) {
+  private void verifyOrganizer(Event event) {
     Users loggedUser = usersService.getCurrentUser();
     if (loggedUser != event.getOrganizer()) {
       throw new AccessDeniedException("You do not have permission to update this event");
     }
-    return true;
   }
 
 }

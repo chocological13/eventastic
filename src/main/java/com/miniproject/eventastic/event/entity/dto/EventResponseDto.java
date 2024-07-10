@@ -1,7 +1,7 @@
 package com.miniproject.eventastic.event.entity.dto;
 
 import com.miniproject.eventastic.event.entity.Event;
-import com.miniproject.eventastic.image.entity.dto.eventImage.EventImageResponseDto;
+import com.miniproject.eventastic.image.entity.dto.eventImage.AvatarResponseDto;
 import com.miniproject.eventastic.ticketType.entity.dto.create.TicketTypeCreateResponseDto;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -23,7 +23,7 @@ public class EventResponseDto {
   private String description;
   private String location;
   private String venue;
-  private EventImageResponseDto image;
+  private AvatarResponseDto image;
   private LocalDate eventDate;
   private LocalTime startTime;
   private LocalTime endTime;
@@ -45,7 +45,7 @@ public class EventResponseDto {
     this.category = event.getCategory().getName();
     this.location = event.getLocation();
     this.venue = event.getVenue();
-    this.image = new EventImageResponseDto(event.getImage());
+    this.image = new AvatarResponseDto(event.getImageUserAvatar());
     this.eventDate = event.getEventDate();
     this.startTime = event.getStartTime();
     this.endTime = event.getEndTime();
