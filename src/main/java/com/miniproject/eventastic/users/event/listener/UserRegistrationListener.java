@@ -58,7 +58,7 @@ public class UserRegistrationListener {
 
     // * Process referral code and update in points trx if used
     String refCodeUsed = event.getUser().getRefCodeUsed();
-    useRefCode(user, pointsWallet, refCodeUsed);
+    useRefCode(user, refCodeUsed);
   }
 
   public void initOrganizerWallet(Users user) {
@@ -78,31 +78,46 @@ public class UserRegistrationListener {
     return pointsWallet;
   }
 
-  public void useRefCode(Users user, PointsWallet pointsWallet, String refCodeUsed) {
+  public void useRefCode(Users user, String refCodeUsed) {
     Users owner = usersService.getUserByOwnedCode(refCodeUsed);
     if (owner != null) {
-      // ** Add points to the new user's wallet
+      // ** Add points to the code owner's wallet
       Integer pointsReward = 10000;
 
-      pointsWallet.setPoints(pointsWallet.getPoints() + pointsReward);
-      pointsWallet.setAwardedAt(Instant.now());
-      pointsWallet.setExpiresAt(Instant.now().plus(90, ChronoUnit.DAYS));
-      pointsWalletService.savePointsWallet(pointsWallet);
+      PointsWallet ownerPointsWallet = pointsWalletService.getPointsWallet(owner);
 
-      // ** Give voucher to code owner
+      ownerPointsWallet.setPoints(ownerPointsWallet.getPoints() + pointsReward);
+      ownerPointsWallet.setAwardedAt(Instant.now());
+      ownerPointsWallet.setExpiresAt(Instant.now().plus(90, ChronoUnit.DAYS));
+      pointsWalletService.savePointsWallet(ownerPointsWallet);
+
+      // update in points trx
+      PointsTrx pointsTrx = new PointsTrx();
+      pointsTrx.setPointsWallet(ownerPointsWallet);
+      pointsTrx.setPoints(pointsReward);
+      pointsTrx.setTrxType("Addition");
+      pointsTrx.setDescription("Referral code usage by new user");
+      pointsTrxService.savePointsTrx(pointsTrx);
+
+      // ** Give voucher to user of the code
       // time set up
       ZonedDateTime endOfDay = ZonedDateTime.now().with(LocalTime.MAX);
       Instant expiresAt = endOfDay.toInstant().plus(90, ChronoUnit.DAYS);
       String code = "REF10" + UUID.randomUUID().toString().substring(0, 4);
 
+      // check if code exists and regenerate code until it isn't in database
+      while (voucherService.getVoucher(code) != null) {
+        code = "REF10" + UUID.randomUUID().toString().substring(0, 4);
+      }
+
       // init voucher
       Voucher newVoucher = new Voucher();
       newVoucher.setCode(code);
-      newVoucher.setDescription("Your code was used! Enjoy the Voucher!");
+      newVoucher.setDescription("Thank you for using " + owner.getUsername() + "'s referral code!");
       newVoucher.setPercentDiscount(10);
       newVoucher.setCreatedAt(Instant.now());
       newVoucher.setExpiresAt(expiresAt);
-      newVoucher.setAwardee(owner);
+      newVoucher.setAwardee(user);
       newVoucher.setUseLimit(1);
       voucherService.saveVoucher(newVoucher);
 
@@ -114,14 +129,6 @@ public class UserRegistrationListener {
           Instant.now()
       );
       referralCodeUsageService.saveReferralCodeUsage(usage);
-
-      // update in points trx
-      PointsTrx pointsTrx = new PointsTrx();
-      pointsTrx.setPointsWallet(pointsWallet);
-      pointsTrx.setPoints(pointsReward);
-      pointsTrx.setTrxType("Addition");
-      pointsTrx.setDescription("Points reward for using " + owner.getUsername() + "'s referral code");
-      pointsTrxService.savePointsTrx(pointsTrx);
 
       log.info("Referral code from user {} was used by new user {}", owner.getUsername(), user.getUsername());
     } else {
