@@ -102,7 +102,7 @@ public class EventController {
       @RequestParam(required = false) String direction
   ) {
     Page<EventResponseDto> eventPage = eventService.getEvents(page, size, title, category, location, order, direction);
-    return Response.responseMapper(HttpStatus.FOUND.value(), "Displaying events..", eventPage);
+    return Response.responseMapper(HttpStatus.OK.value(), "Displaying events..", eventPage);
   }
 
   @GetMapping("/upcoming")
