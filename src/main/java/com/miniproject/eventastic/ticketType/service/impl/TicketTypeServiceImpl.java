@@ -1,5 +1,6 @@
 package com.miniproject.eventastic.ticketType.service.impl;
 
+import com.miniproject.eventastic.exceptions.trx.TicketTypeNotFoundException;
 import com.miniproject.eventastic.ticketType.entity.TicketType;
 import com.miniproject.eventastic.ticketType.repository.TicketTypeRepository;
 import com.miniproject.eventastic.ticketType.service.TicketTypeService;
@@ -19,7 +20,7 @@ public class TicketTypeServiceImpl implements TicketTypeService {
 
   @Override
   public TicketType getTicketTypeById(Long id) {
-    return ticketTypeRepository.findById(id).orElse(null);
+    return ticketTypeRepository.findById(id).orElseThrow(() -> new TicketTypeNotFoundException("This ticket type does not exist"));
   }
 
 
