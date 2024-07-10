@@ -15,7 +15,6 @@ import com.miniproject.eventastic.responses.Response;
 import com.miniproject.eventastic.review.entity.Review;
 import com.miniproject.eventastic.review.entity.dto.ReviewSubmitRequestDto;
 import com.miniproject.eventastic.review.entity.dto.ReviewSubmitResponseDto;
-import com.miniproject.eventastic.ticketType.entity.TicketType;
 import com.miniproject.eventastic.voucher.entity.Voucher;
 import com.miniproject.eventastic.voucher.entity.dto.create.CreateVoucherResponseDto;
 import com.miniproject.eventastic.voucher.service.VoucherService;

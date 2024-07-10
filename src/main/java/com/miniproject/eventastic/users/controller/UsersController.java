@@ -1,7 +1,7 @@
 package com.miniproject.eventastic.users.controller;
 
 import com.miniproject.eventastic.exceptions.image.ImageNotFoundException;
-import com.miniproject.eventastic.exceptions.trx.OrganizerWalletNotFound;
+import com.miniproject.eventastic.exceptions.trx.OrganizerWalletNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.PointsTrxNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.TicketNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.VoucherNotFoundException;
@@ -165,7 +165,7 @@ public class UsersController {
           usersService.getWalletDisplay());
     } catch (AccessDeniedException e) {
       return Response.failedResponse(HttpStatus.FORBIDDEN.value(), e.getMessage(), null);
-    } catch (OrganizerWalletNotFound e) {
+    } catch (OrganizerWalletNotFoundException e) {
       return Response.failedResponse(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
     }
   }

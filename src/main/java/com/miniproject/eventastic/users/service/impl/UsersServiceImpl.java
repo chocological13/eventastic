@@ -1,7 +1,7 @@
 package com.miniproject.eventastic.users.service.impl;
 
 import com.miniproject.eventastic.exceptions.image.ImageNotFoundException;
-import com.miniproject.eventastic.exceptions.trx.OrganizerWalletNotFound;
+import com.miniproject.eventastic.exceptions.trx.OrganizerWalletNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.PointsTrxNotFoundException;
 import com.miniproject.eventastic.image.entity.Image;
 import com.miniproject.eventastic.image.entity.dto.ImageUploadRequestDto;
@@ -244,7 +244,7 @@ public class UsersServiceImpl implements UsersService {
 
       return image;
     } catch (Exception e) {
-      e.printStackTrace();
+      log.error(e.getMessage());
       return null;
     }
   }
@@ -269,7 +269,7 @@ public class UsersServiceImpl implements UsersService {
     } else {
       organizerWallet = organizerWalletService.getWalletByOrganizer(organizer);
       if (organizerWallet == null) {
-        throw new OrganizerWalletNotFound("Wallet not found! Or are you an impostor..");
+        throw new OrganizerWalletNotFoundException("Wallet not found! Or are you an impostor..");
       } else {
         return new OrganizerWalletDisplayDto(organizerWallet);
       }

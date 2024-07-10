@@ -45,7 +45,7 @@ public class UserRegistrationListener {
     Users user = event.getUser();
 
     // * init points wallet
-    PointsWallet pointsWallet = initPointsWallet(user);
+    initPointsWallet(user);
 
     // * init org wallet if org
     if (user.getIsOrganizer())
@@ -69,13 +69,12 @@ public class UserRegistrationListener {
     user.setOrganizerWallet(organizerWallet);
   }
 
-  public PointsWallet initPointsWallet(Users user) {
+  public void initPointsWallet(Users user) {
     PointsWallet pointsWallet = new PointsWallet();
     pointsWallet.setUser(user);
     pointsWallet.setPoints(0);
     pointsWalletService.savePointsWallet(pointsWallet);
     user.setPointsWallet(pointsWallet);
-    return pointsWallet;
   }
 
   public void useRefCode(Users user, String refCodeUsed) {

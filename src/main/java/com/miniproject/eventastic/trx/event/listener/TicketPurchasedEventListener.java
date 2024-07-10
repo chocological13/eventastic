@@ -8,7 +8,7 @@ import com.miniproject.eventastic.event.service.EventService;
 import com.miniproject.eventastic.exceptions.event.EventEndedException;
 import com.miniproject.eventastic.exceptions.trx.InsufficientPointsException;
 import com.miniproject.eventastic.exceptions.trx.NotAwardeeException;
-import com.miniproject.eventastic.exceptions.trx.PaymentMethodNotFound;
+import com.miniproject.eventastic.exceptions.trx.PaymentMethodNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.SeatUnavailableException;
 import com.miniproject.eventastic.exceptions.trx.VoucherInvalidException;
 import com.miniproject.eventastic.exceptions.trx.VoucherNotFoundException;
@@ -217,7 +217,7 @@ public class TicketPurchasedEventListener {
     Users awardee = voucher.getAwardee();
     if (awardee == null || awardee.equals(user)) {
       discount = trx.getInitialAmount()
-          .multiply(BigDecimal.valueOf(voucher.getPercentDiscount()).divide(BigDecimal.valueOf(100)));
+          .multiply(BigDecimal.valueOf(voucher.getPercentDiscount()).divide(BigDecimal.valueOf(100), RoundingMode.HALF_UP));
       voucher.setUseLimit(voucher.getUseLimit() - 1);
       voucherService.saveVoucher(voucher);
     } else {
@@ -229,7 +229,7 @@ public class TicketPurchasedEventListener {
   // set payment method
   private void setPaymentMethod(TrxPurchaseRequestDto requestDto, Trx trx) {
     Payment payment = paymentRepository.findById(requestDto.getPaymentId()).orElseThrow(() ->
-        new PaymentMethodNotFound("Please enter a valid method of payment!"));
+        new PaymentMethodNotFoundException("Please enter a valid method of payment!"));
     trx.setPayment(payment);
   }
 

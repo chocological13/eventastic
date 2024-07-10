@@ -1,6 +1,6 @@
 package com.miniproject.eventastic.organizerWalletTrx.service.impl;
 
-import com.miniproject.eventastic.exceptions.trx.OrganizerWalletNotFound;
+import com.miniproject.eventastic.exceptions.trx.OrganizerWalletNotFoundException;
 import com.miniproject.eventastic.organizerWallet.entity.OrganizerWallet;
 import com.miniproject.eventastic.organizerWallet.service.OrganizerWalletService;
 import com.miniproject.eventastic.organizerWalletTrx.entity.OrganizerWalletTrx;
@@ -30,7 +30,7 @@ public class OrganizerWalletTrxServiceImpl implements OrganizerWalletTrxService 
     Set<OrganizerWalletTrx> organizerWalletTrxes = organizerWalletTrxRepository.findByOrganizerWallet_Organizer(
         organizer);
     if (organizerWalletTrxes == null) {
-      throw new OrganizerWalletNotFound("Wallet not found!! Or are you an impostor??");
+      throw new OrganizerWalletNotFoundException("Wallet not found!! Or are you an impostor??");
     } else {
       return organizerWalletTrxes;
     }
@@ -42,7 +42,7 @@ public class OrganizerWalletTrxServiceImpl implements OrganizerWalletTrxService 
     OrganizerWallet organizerWallet = organizerWalletService.getWalletByOrganizer(organizer);
     OrganizerWalletTrx payout = new OrganizerWalletTrx();
     if (organizerWallet == null) {
-      throw new OrganizerWalletNotFound("Wallet not found!! Or are you an impostor??");
+      throw new OrganizerWalletNotFoundException("Wallet not found!! Or are you an impostor??");
     } else {
       BigDecimal serviceFee = BigDecimal.valueOf(0.02);
       BigDecimal totalAmount = trx.getTotalAmount();

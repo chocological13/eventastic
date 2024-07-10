@@ -75,7 +75,7 @@ public class SecurityConfig {
   public JwtEncoder jwtEncoder() throws Exception {
     var publicKey = rsaKeyConfigProperties.publicKey();
     var privateKey = rsaKeyConfigProperties.privateKey();
-    if (envConfigurationProperties.equals("production")) {
+    if (envConfigurationProperties.toString().equals("production")) {
       String publicKeyString = System.getenv("PUBLIC_KEY");
       String privateKeyString = System.getenv("PRIVATE_KEY");
 

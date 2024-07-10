@@ -14,7 +14,7 @@ public class TicketPurchasedEvent extends ApplicationEvent {
   private final TrxPurchaseRequestDto requestDto;
 
   public TicketPurchasedEvent(Object source, Users user, Trx trx, TrxPurchaseRequestDto requestDto) {
-    super(requestDto);
+    super(source);
     this.user = user;
     this.trx = trx;
     this.requestDto = requestDto;
