@@ -18,14 +18,18 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "image")
-public class Image {
+@Table(name = "image_user_avatar")
+public class ImageUserAvatar {
 
   @Id
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "image_id_gen")
   @SequenceGenerator(name = "image_id_gen", sequenceName = "image_id_seq", allocationSize = 1)
   @Column(name = "id", nullable = false)
   private Long id;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "user_id")
+  private Users user;
 
   @NotNull
   @Column(name = "image_name", nullable = false, length = Integer.MAX_VALUE)
@@ -34,9 +38,5 @@ public class Image {
   @NotNull
   @Column(name = "image_url", nullable = false, length = Integer.MAX_VALUE)
   private String imageUrl;
-
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "owner_id")
-  private Users owner;
 
 }

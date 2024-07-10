@@ -5,7 +5,7 @@ import com.miniproject.eventastic.exceptions.trx.OrganizerWalletNotFoundExceptio
 import com.miniproject.eventastic.exceptions.trx.PointsTrxNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.TicketNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.VoucherNotFoundException;
-import com.miniproject.eventastic.image.entity.Image;
+import com.miniproject.eventastic.image.entity.ImageUserAvatar;
 import com.miniproject.eventastic.image.entity.dto.ImageUploadRequestDto;
 import com.miniproject.eventastic.image.entity.dto.ImageUploadResponseDto;
 import com.miniproject.eventastic.organizerWallet.entity.dto.OrganizerWalletDisplayDto;
@@ -137,11 +137,12 @@ public class UsersController {
   // * upload image
   @PostMapping("/me/image/upload")
   public ResponseEntity<Response<ImageUploadResponseDto>> uploadImage(ImageUploadRequestDto requestDto) {
-    Image uploadedImage = usersService.uploadImage(requestDto);
-    if (uploadedImage == null) {
+    ImageUserAvatar uploadedImageUserAvatar = usersService.uploadAvatar(requestDto);
+    if (uploadedImageUserAvatar == null) {
       return ResponseEntity.noContent().build();
     } else {
-      return Response.successfulResponse(HttpStatus.OK.value(), "Image uploaded! :D", new ImageUploadResponseDto(uploadedImage));
+      return Response.successfulResponse(HttpStatus.OK.value(), "Image uploaded! :D", new ImageUploadResponseDto(
+          uploadedImageUserAvatar));
     }
   }
 

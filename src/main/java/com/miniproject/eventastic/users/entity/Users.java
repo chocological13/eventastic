@@ -1,6 +1,6 @@
 package com.miniproject.eventastic.users.entity;
 
-import com.miniproject.eventastic.image.entity.Image;
+import com.miniproject.eventastic.image.entity.ImageUserAvatar;
 import com.miniproject.eventastic.organizerWallet.entity.OrganizerWallet;
 import com.miniproject.eventastic.pointsWallet.entity.PointsWallet;
 import jakarta.persistence.CascadeType;
@@ -70,7 +70,7 @@ public class Users {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "avatar_id")
-  private Image avatar;
+  private ImageUserAvatar avatar;
 
   @Size(max = 50)
   @Column(name = "full_name", length = 50)

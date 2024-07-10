@@ -1,14 +1,22 @@
 package com.miniproject.eventastic.image.service;
 
-import com.miniproject.eventastic.image.entity.Image;
+import com.miniproject.eventastic.event.entity.Event;
+import com.miniproject.eventastic.image.entity.ImageEvent;
+import com.miniproject.eventastic.image.entity.ImageUserAvatar;
 import com.miniproject.eventastic.image.entity.dto.ImageUploadRequestDto;
-import com.miniproject.eventastic.image.entity.dto.ImageUploadResponseDto;
+import com.miniproject.eventastic.users.entity.Users;
 
 public interface ImageService {
 
-//  ImageUploadResponseDto uploadImage(ImageUploadRequestDto imageUploadRequestDto);
+  ImageUserAvatar uploadAvatar(ImageUploadRequestDto imageUploadRequestDto, Users user);
 
-  Image getImageById(Long imageId);
+  ImageUserAvatar getImageById(Long imageId);
 
-  void saveImage(Image image);
+  void saveAvatar(ImageUserAvatar imageUserAvatar);
+
+  // event
+  void saveEventImage(ImageEvent imageEvent);
+//  ImageEvent getEventImageById(Long imageId);
+
+  ImageEvent uploadEventImage(ImageUploadRequestDto imageUploadRequestDto, Event event);
 }

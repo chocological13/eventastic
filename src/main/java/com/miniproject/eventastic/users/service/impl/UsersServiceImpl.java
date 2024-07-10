@@ -3,7 +3,7 @@ package com.miniproject.eventastic.users.service.impl;
 import com.miniproject.eventastic.exceptions.image.ImageNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.OrganizerWalletNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.PointsTrxNotFoundException;
-import com.miniproject.eventastic.image.entity.Image;
+import com.miniproject.eventastic.image.entity.ImageUserAvatar;
 import com.miniproject.eventastic.image.entity.dto.ImageUploadRequestDto;
 import com.miniproject.eventastic.image.service.CloudinaryService;
 import com.miniproject.eventastic.image.service.ImageService;
@@ -166,11 +166,11 @@ public class UsersServiceImpl implements UsersService {
 
       // check for image
       if (requestDto.getAvatarId() != null) {
-        Image avatar = imageService.getImageById(requestDto.getAvatarId());
+        ImageUserAvatar avatar = imageService.getImageById(requestDto.getAvatarId());
         if (avatar != null) {
           existingUser.setAvatar(avatar);
         } else {
-          throw new ImageNotFoundException("Image doesn't exist in database. Please enter another imageId or upload a "
+          throw new ImageNotFoundException("ImageUserAvatar doesn't exist in database. Please enter another imageId or upload a "
                                            + "new image");
         }
       }
@@ -217,36 +217,9 @@ public class UsersServiceImpl implements UsersService {
   }
 
   @Override
-  public Image uploadImage(ImageUploadRequestDto requestDto) {
-    try {
-      if (requestDto.getFileName().isEmpty()) {
-        return null;
-      }
-      if (requestDto.getFile().isEmpty()) {
-        return null;
-      }
-
-      // Get the currently logged-in user
-      Users owner = getCurrentUser();
-
-      // Define the objects
-      String imageName = requestDto.getFileName();
-      String imageUrl = cloudinaryService.uploadFile(requestDto.getFile(), "eventastic");
-
-      Image image = new Image();
-      image.setImageName(imageName);
-      image.setImageUrl(imageUrl);
-      if (image.getImageUrl() == null) {
-        return null;
-      }
-      image.setOwner(owner);
-      imageService.saveImage(image);
-
-      return image;
-    } catch (Exception e) {
-      log.error(e.getMessage());
-      return null;
-    }
+  public ImageUserAvatar uploadAvatar(ImageUploadRequestDto requestDto) {
+    Users user = getCurrentUser();
+    return imageService.uploadAvatar(requestDto, user);
   }
 
   @Override

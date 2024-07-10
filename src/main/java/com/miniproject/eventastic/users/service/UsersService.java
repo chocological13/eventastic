@@ -1,7 +1,7 @@
 package com.miniproject.eventastic.users.service;
 
 import com.miniproject.eventastic.exceptions.image.ImageNotFoundException;
-import com.miniproject.eventastic.image.entity.Image;
+import com.miniproject.eventastic.image.entity.ImageUserAvatar;
 import com.miniproject.eventastic.image.entity.dto.ImageUploadRequestDto;
 import com.miniproject.eventastic.organizerWallet.entity.dto.OrganizerWalletDisplayDto;
 import com.miniproject.eventastic.pointsTrx.entity.PointsTrx;
@@ -49,7 +49,7 @@ public interface UsersService {
   PointsWallet getUsersPointsWallet();
 
   // uploading picture per user
-  Image uploadImage(ImageUploadRequestDto requestDto);
+  ImageUserAvatar uploadAvatar(ImageUploadRequestDto requestDto);
 
   // display history of points usage
   Set<PointsTrx> getPointsTrx();
