@@ -1,7 +1,7 @@
 package com.miniproject.eventastic.event.entity;
 
 import com.miniproject.eventastic.event.metadata.Category;
-import com.miniproject.eventastic.image.entity.Image;
+import com.miniproject.eventastic.image.entity.ImageUserAvatar;
 import com.miniproject.eventastic.review.entity.Review;
 import com.miniproject.eventastic.ticketType.entity.TicketType;
 import com.miniproject.eventastic.trx.entity.Trx;
@@ -109,7 +109,7 @@ public class Event {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "image_id")
-  private Image image;
+  private ImageUserAvatar imageUserAvatar;
 
   @OneToMany(mappedBy = "event")
   private Set<Review> reviews = new LinkedHashSet<>();

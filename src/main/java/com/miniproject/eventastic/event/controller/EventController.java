@@ -11,6 +11,9 @@ import com.miniproject.eventastic.exceptions.event.EventNotFoundException;
 import com.miniproject.eventastic.exceptions.image.ImageNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.TicketTypeNotFoundException;
 import com.miniproject.eventastic.exceptions.user.AttendeeNotFoundException;
+import com.miniproject.eventastic.image.entity.dto.ImageUploadRequestDto;
+import com.miniproject.eventastic.image.entity.dto.ImageUploadResponseDto;
+import com.miniproject.eventastic.image.entity.dto.eventImage.EventImageResponseDto;
 import com.miniproject.eventastic.responses.Response;
 import com.miniproject.eventastic.review.entity.Review;
 import com.miniproject.eventastic.review.entity.dto.ReviewSubmitRequestDto;
@@ -160,5 +163,12 @@ public class EventController {
     } catch (TicketTypeNotFoundException e) {
       return Response.failedResponse(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
     }
+  }
+
+  @PostMapping("/{eventId}/images/upload")
+  public ResponseEntity<Response<EventImageResponseDto>> uploadImage(@PathVariable Long eventId,
+      ImageUploadRequestDto requestDto) {
+      return Response.successfulResponse(HttpStatus.CREATED.value(), "Image for event uploaded!",
+          new EventImageResponseDto(eventService.uploadEventImage(eventId, requestDto)));
   }
 }

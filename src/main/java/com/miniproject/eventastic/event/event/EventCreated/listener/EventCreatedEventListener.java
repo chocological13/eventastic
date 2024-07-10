@@ -7,7 +7,7 @@ import com.miniproject.eventastic.event.metadata.Category;
 import com.miniproject.eventastic.event.repository.CategoryRepository;
 import com.miniproject.eventastic.event.repository.EventRepository;
 import com.miniproject.eventastic.exceptions.event.CategoryNotFoundException;
-import com.miniproject.eventastic.image.entity.Image;
+import com.miniproject.eventastic.image.entity.ImageUserAvatar;
 import com.miniproject.eventastic.image.service.ImageService;
 import com.miniproject.eventastic.ticketType.entity.TicketType;
 import com.miniproject.eventastic.ticketType.entity.dto.create.TicketTypeCreateRequestDto;
@@ -58,8 +58,8 @@ public class EventCreatedEventListener {
 
   private void setImage(Event createdEvent, CreateEventRequestDto requestDto) {
     if (requestDto.getImageId() != null) {
-      Image image = imageService.getImageById(requestDto.getImageId());
-      createdEvent.setImage(image);
+      ImageUserAvatar imageUserAvatar = imageService.getImageById(requestDto.getImageId());
+      createdEvent.setImageUserAvatar(imageUserAvatar);
     }
   }
 

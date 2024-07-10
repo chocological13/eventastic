@@ -226,11 +226,11 @@
 ////  @Test
 ////  public void testUpdateEvent_success() {
 ////
-////    // Image in Event
-////    Image image = new Image();
+////    // ImageUserAvatar in Event
+////    ImageUserAvatar image = new ImageUserAvatar();
 ////    image.setId(1L);
-////    // Image to update
-////    Image image2 = new Image();
+////    // ImageUserAvatar to update
+////    ImageUserAvatar image2 = new ImageUserAvatar();
 ////    image2.setId(2L);
 ////
 ////    // Prepare update request DTO
@@ -251,7 +251,7 @@
 ////    existingEvent.setLocation("123 Main St");
 ////    existingEvent.setCategory(Event.Category.WORKSHOP);
 ////    existingEvent.setVenue("Old Venue");
-////    existingEvent.setImage(image);
+////    existingEvent.setImageUserAvatar(image);
 ////    existingEvent.setEventDate(LocalDate.of(2024, 7, 14));
 ////    existingEvent.setStartTime(LocalTime.of(9, 0));
 ////    existingEvent.setEndTime(LocalTime.of(11, 0));
@@ -273,7 +273,7 @@
 ////    assertEquals("456 Another St", updatedEvent.getLocation());
 ////    assertEquals(Event.Category.CONFERENCE, updatedEvent.getCategory());
 ////    assertEquals("New Venue", updatedEvent.getVenue());
-////    assertEquals(image2, existingEvent.getImage());
+////    assertEquals(image2, existingEvent.getImageUserAvatar());
 ////    assertEquals(LocalDate.of(2024, 7, 15), updatedEvent.getEventDate());
 ////    assertEquals(LocalTime.of(10, 0), updatedEvent.getStartTime());
 ////    assertEquals(LocalTime.of(12, 0), updatedEvent.getEndTime());
