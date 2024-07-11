@@ -28,9 +28,9 @@ public class UserProfileDto {
     this.email = user.getEmail();
     this.isOrganizer = user.getIsOrganizer();
     this.fullName = user.getFullName();
-    this.avatar = new ImageUploadResponseDto(user.getAvatar());
-    this.bio = user.getBio();
-    this.birthday = user.getBirthday();
+    this.avatar = user.getAvatar() == null ? null : new ImageUploadResponseDto(user.getAvatar());
+    this.bio = user.getBio() == null ? null : user.getBio();
+    this.birthday = user.getBirthday() == null ? null : new Date(user.getBirthday().getTime());
     this.ownedRefCode = user.getOwnedRefCode();
   }
 

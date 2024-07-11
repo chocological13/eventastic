@@ -1,6 +1,8 @@
 package com.miniproject.eventastic.users.service.impl;
 
+import com.miniproject.eventastic.attendee.service.AttendeeService;
 import com.miniproject.eventastic.event.entity.Event;
+import com.miniproject.eventastic.event.entity.dto.EventResponseDto;
 import com.miniproject.eventastic.exceptions.image.ImageNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.OrganizerWalletNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.PointsTrxNotFoundException;
@@ -37,6 +39,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
@@ -61,6 +66,7 @@ public class UsersServiceImpl implements UsersService {
   private final ImageService imageService;
   private final PointsTrxService pointsTrxService;
   private final OrganizerWalletService organizerWalletService;
+  private final AttendeeService attendeeService;
 
   @Override
   public Users getCurrentUser() {
@@ -212,9 +218,12 @@ public class UsersServiceImpl implements UsersService {
   }
 
   @Override
-  public Set<Event> getUserEvents() {
-//    Set<Event> userEvents =
-    return null;
+  public Page<EventResponseDto> getAttendeeEvents(int page, int size) {
+    Users currentUser = getCurrentUser();
+    Long userId = currentUser.getId();
+    Pageable pageable = PageRequest.of(page, size);
+    Page<Event> eventsPage = attendeeService.findEventsByAttendee(userId, pageable);
+    return eventsPage.map(EventResponseDto::new);
   }
 
 }

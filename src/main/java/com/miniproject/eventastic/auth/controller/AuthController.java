@@ -69,7 +69,6 @@ public class AuthController {
     }
   }
 
-  // ! TODO: THIS!!!!!!
   // > reset password
   @PutMapping("/reset-password")
   public ResponseEntity<Response<Void>> resetPassword(@RequestParam String token,

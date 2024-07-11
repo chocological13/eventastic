@@ -1,6 +1,6 @@
 package com.miniproject.eventastic.users.service;
 
-import com.miniproject.eventastic.event.entity.Event;
+import com.miniproject.eventastic.event.entity.dto.EventResponseDto;
 import com.miniproject.eventastic.exceptions.image.ImageNotFoundException;
 import com.miniproject.eventastic.image.entity.ImageUserAvatar;
 import com.miniproject.eventastic.image.entity.dto.ImageUploadRequestDto;
@@ -14,6 +14,7 @@ import com.miniproject.eventastic.users.entity.dto.register.RegisterRequestDto;
 import com.miniproject.eventastic.users.entity.dto.register.RegisterResponseDto;
 import com.miniproject.eventastic.users.entity.dto.userManagement.ProfileUpdateRequestDTO;
 import java.util.Set;
+import org.springframework.data.domain.Page;
 
 public interface UsersService {
 
@@ -57,6 +58,6 @@ public interface UsersService {
   OrganizerWalletDisplayDto getWalletDisplay();
 
   // display events that the user is going to attend or have attended
-  Set<Event> getUserEvents();
+  Page<EventResponseDto> getAttendeeEvents(int page, int size);
 
 }

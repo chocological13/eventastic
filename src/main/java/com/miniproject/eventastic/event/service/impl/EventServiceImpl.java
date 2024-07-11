@@ -88,7 +88,7 @@ public class EventServiceImpl implements EventService {
 
   @Override
   public Page<EventResponseDto> getEvents(int page, int size, String title, String category, String location,
-      String order, String direction, String organizer) {
+      String organizer, String order, String direction) {
 
     // sort direction, by default ascending
     Direction sortDirection = Direction.fromString(order == null ? "asc" : direction);
@@ -195,6 +195,7 @@ public class EventServiceImpl implements EventService {
     return review;
   }
 
+  // TODO : give pagination to this
   @Override
   public Set<Review> getEventReviews(Long eventId) {
     return reviewService.getReviewsByEventId(eventId);

@@ -67,6 +67,7 @@ public class UserRegistrationListener {
     organizerWallet.setBalance(BigDecimal.ZERO);
     organizerWalletService.saveWallet(organizerWallet);
     user.setOrganizerWallet(organizerWallet);
+    usersService.saveUser(user);
   }
 
   public void initPointsWallet(Users user) {
@@ -75,6 +76,7 @@ public class UserRegistrationListener {
     pointsWallet.setPoints(0);
     pointsWalletService.savePointsWallet(pointsWallet);
     user.setPointsWallet(pointsWallet);
+    usersService.saveUser(user);
   }
 
   public void useRefCode(Users user, String refCodeUsed) {

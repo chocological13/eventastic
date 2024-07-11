@@ -18,8 +18,7 @@ public interface EventService {
 
   EventResponseDto createEvent(CreateEventRequestDto requestDto);
 
-  Page<EventResponseDto> getEvents(int page, int size, String title, String category, String location, String order,
-      String direction, String organizer);
+  Page<EventResponseDto> getEvents(int page, int size, String title, String category, String location, String organizer, String order, String direction);
 
   Page<EventResponseDto> getUpcomingEvents(int page, int size);
 
@@ -39,8 +38,10 @@ public interface EventService {
   Review submitReview(Long eventId, ReviewSubmitRequestDto requestDto);
 
   // display event's review
+  // TODO : give this pagination
   Set<Review> getEventReviews(Long eventId);
 
   // upload image for events
   ImageEvent uploadEventImage(Long eventId, ImageUploadRequestDto requestDto);
+
 }

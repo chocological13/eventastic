@@ -28,6 +28,7 @@ import com.miniproject.eventastic.voucher.service.VoucherService;
 import jakarta.validation.Valid;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +41,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -144,6 +146,14 @@ public class UsersController {
     } catch (TicketNotFoundException e) {
       return Response.failedResponse(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
     }
+  }
+
+  // * show list of events the user is an attendee to
+  @GetMapping("/me/events")
+  public ResponseEntity<Response<Map<String, Object>>> getAttendeeEvent(@RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "10") int size) {
+    return Response.responseMapper(HttpStatus.OK.value(), "Displaying events you are an attendee to..",
+        usersService.getAttendeeEvents(page, size));
   }
 
   // !! Organizer space
