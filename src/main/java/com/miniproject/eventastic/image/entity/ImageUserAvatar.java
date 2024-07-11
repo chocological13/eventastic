@@ -38,5 +38,4 @@ public class ImageUserAvatar {
   @NotNull
   @Column(name = "image_url", nullable = false, length = Integer.MAX_VALUE)
   private String imageUrl;
-
 }

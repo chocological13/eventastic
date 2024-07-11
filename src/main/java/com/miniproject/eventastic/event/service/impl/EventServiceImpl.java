@@ -88,7 +88,7 @@ public class EventServiceImpl implements EventService {
 
   @Override
   public Page<EventResponseDto> getEvents(int page, int size, String title, String category, String location,
-      String order, String direction) {
+      String order, String direction, String organizer) {
 
     // sort direction, by default ascending
     Direction sortDirection = Direction.fromString(order == null ? "asc" : direction);
@@ -108,6 +108,9 @@ public class EventServiceImpl implements EventService {
     }
     if (location != null) {
       specification = specification.and(EventSpecifications.hasLocation(location));
+    }
+    if (organizer != null) {
+      specification = specification.and(EventSpecifications.hasOrganizer(organizer));
     }
 
     Page<Event> eventsPage = eventRepository.findAll(specification, pageable);

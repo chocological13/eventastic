@@ -88,7 +88,7 @@ public class Response<T> {
       Page<EventResponseDto> eventPage) {
     if (eventPage != null) {
       Map<String, Object> response = new HashMap<>();
-      response.put("currentPage", eventPage.getNumber() + 1);
+      response.put("currentPage", eventPage.getNumber());
       response.put("totalPages", eventPage.getTotalPages());
       response.put("totalElements", eventPage.getTotalElements());
       response.put("events", eventPage.getContent());

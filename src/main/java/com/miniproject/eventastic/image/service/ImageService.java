@@ -10,7 +10,7 @@ public interface ImageService {
 
   ImageUserAvatar uploadAvatar(ImageUploadRequestDto imageUploadRequestDto, Users user);
 
-  ImageUserAvatar getImageById(Long imageId);
+  ImageUserAvatar getAvatarById(Long imageId);
 
   void saveAvatar(ImageUserAvatar imageUserAvatar);
 
@@ -19,4 +19,6 @@ public interface ImageService {
 //  ImageEvent getEventImageById(Long imageId);
 
   ImageEvent uploadEventImage(ImageUploadRequestDto imageUploadRequestDto, Event event);
+
+  ImageEvent getEventImageById(Long imageId);
 }

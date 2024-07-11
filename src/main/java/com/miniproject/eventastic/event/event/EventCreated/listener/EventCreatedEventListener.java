@@ -5,9 +5,8 @@ import com.miniproject.eventastic.event.entity.dto.createEvent.CreateEventReques
 import com.miniproject.eventastic.event.event.EventCreated.EventCreatedEvent;
 import com.miniproject.eventastic.event.metadata.Category;
 import com.miniproject.eventastic.event.repository.CategoryRepository;
-import com.miniproject.eventastic.event.repository.EventRepository;
 import com.miniproject.eventastic.exceptions.event.CategoryNotFoundException;
-import com.miniproject.eventastic.image.entity.ImageUserAvatar;
+import com.miniproject.eventastic.image.entity.ImageEvent;
 import com.miniproject.eventastic.image.service.ImageService;
 import com.miniproject.eventastic.ticketType.entity.TicketType;
 import com.miniproject.eventastic.ticketType.entity.dto.create.TicketTypeCreateRequestDto;
@@ -23,7 +22,6 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class EventCreatedEventListener {
 
-  private final EventRepository eventRepository;
   private final CategoryRepository categoryRepository;
   private final ImageService imageService;
   private final TicketTypeService ticketTypeService;
@@ -58,8 +56,8 @@ public class EventCreatedEventListener {
 
   private void setImage(Event createdEvent, CreateEventRequestDto requestDto) {
     if (requestDto.getImageId() != null) {
-      ImageUserAvatar imageUserAvatar = imageService.getImageById(requestDto.getImageId());
-      createdEvent.setImageUserAvatar(imageUserAvatar);
+      ImageEvent imageEvent = imageService.getEventImageById(requestDto.getImageId());
+      createdEvent.setEventImage(imageEvent);
     }
   }
 

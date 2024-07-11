@@ -27,7 +27,7 @@ public class RegisterResponseDto {
     this.username = newUser.getUsername();
     this.email = newUser.getEmail();
     this.ownedRefCode = newUser.getOwnedRefCode();
-    this.refCodeUsed = newUser.getRefCodeUsed();
+    this.refCodeUsed = newUser.getRefCodeUsed() == null ? "" : newUser.getRefCodeUsed();
     this.pointsWallet = new PointsWalletResponseDto(newUser.getPointsWallet());
     this.isOrganizer = newUser.getIsOrganizer();
     this.organizerWallet = newUser.getOrganizerWallet() == null ? null :

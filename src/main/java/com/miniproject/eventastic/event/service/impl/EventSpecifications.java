@@ -4,7 +4,6 @@ import com.miniproject.eventastic.event.entity.Event;
 import com.miniproject.eventastic.users.entity.Users;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
-import jakarta.persistence.criteria.Predicate;
 import java.time.LocalDate;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -28,6 +27,13 @@ public class EventSpecifications {
   public static Specification<Event> hasLocation(String location) {
     return ((root, query, criteriaBuilder) ->
         criteriaBuilder.like(criteriaBuilder.lower(root.get("location")), "%" + location.toLowerCase() + "%"));
+  }
+
+  public static Specification<Event> hasOrganizer(String organizer) {
+    return ((root, query, criteriaBuilder) -> {
+      Join<Event, Users> organizerJoin = root.join("organizer", JoinType.INNER);
+      return criteriaBuilder.equal(criteriaBuilder.lower(organizerJoin.get("username")), organizer.toLowerCase());
+    });
   }
 
   // Upcoming event filter

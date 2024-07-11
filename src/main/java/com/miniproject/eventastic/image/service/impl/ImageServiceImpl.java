@@ -37,7 +37,7 @@ public class ImageServiceImpl implements ImageService {
   }
 
   @Override
-  public ImageUserAvatar getImageById(Long imageId) {
+  public ImageUserAvatar getAvatarById(Long imageId) {
     return imageUserAvatarRepository.findById(imageId).orElseThrow(() -> new ImageNotFoundException("ImageUserAvatar not found"));
   }
 
@@ -89,6 +89,11 @@ public class ImageServiceImpl implements ImageService {
       log.error(e.getMessage());
       return null;
     }
+  }
+
+  @Override
+  public ImageEvent getEventImageById(Long imageId) {
+    return imageEventRepository.findById(imageId).orElseThrow(() -> new ImageNotFoundException("Image not found"));
   }
 
   private void validateUploadRequest(ImageUploadRequestDto requestDto) {
