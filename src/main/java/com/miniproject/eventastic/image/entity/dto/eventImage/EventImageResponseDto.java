@@ -1,7 +1,6 @@
 package com.miniproject.eventastic.image.entity.dto.eventImage;
 
 import com.miniproject.eventastic.image.entity.ImageEvent;
-import com.miniproject.eventastic.image.entity.ImageUserAvatar;
 import lombok.Data;
 
 @Data

@@ -12,7 +12,6 @@ import com.miniproject.eventastic.exceptions.image.ImageNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.TicketTypeNotFoundException;
 import com.miniproject.eventastic.exceptions.user.AttendeeNotFoundException;
 import com.miniproject.eventastic.image.entity.dto.ImageUploadRequestDto;
-import com.miniproject.eventastic.image.entity.dto.ImageUploadResponseDto;
 import com.miniproject.eventastic.image.entity.dto.eventImage.EventImageResponseDto;
 import com.miniproject.eventastic.responses.Response;
 import com.miniproject.eventastic.review.entity.Review;
@@ -115,6 +114,16 @@ public class EventController {
   ) {
     Page<EventResponseDto> eventPage = eventService.getUpcomingEvents(page, size);
     return Response.responseMapper(HttpStatus.OK.value(), "Listing upcoming events...", eventPage);
+  }
+
+  @GetMapping("organizer/{organizerId}")
+  public ResponseEntity<Response<Map<String, Object>>> getEventsByOrganizer(
+      @PathVariable Long organizerId,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "10") int size
+  ) {
+    Page<EventResponseDto> eventPage = eventService.getEventsByOrganizer(organizerId, page, size);
+    return Response.responseMapper(HttpStatus.OK.value(), "Displaying events...", eventPage);
   }
 
   @PutMapping("/{eventId}/update")

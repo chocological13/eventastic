@@ -1,6 +1,8 @@
 package com.miniproject.eventastic.event.service.impl;
 
 import com.miniproject.eventastic.event.entity.Event;
+import com.miniproject.eventastic.users.entity.Users;
+import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import java.time.LocalDate;
@@ -35,5 +37,13 @@ public class EventSpecifications {
       return criteriaBuilder.greaterThan(root.get("eventDate"), today);
     }
     );
+  }
+
+  // Organizer
+  public static Specification<Event> byOrganizerId(Long organizerId) {
+    return ((root, query, criteriaBuilder) -> {
+      Join<Event, Users> organizerJoin = root.join("organizer", JoinType.INNER);
+      return criteriaBuilder.equal(organizerJoin.get("id"), organizerId);
+    });
   }
 }

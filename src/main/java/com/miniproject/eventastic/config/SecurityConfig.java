@@ -137,8 +137,7 @@ public class SecurityConfig {
           auth.requestMatchers("/error/**").permitAll();
           auth.requestMatchers("/api/v1/auth/**").permitAll();
           auth.requestMatchers("/api/v1/users/register/**").permitAll();
-          auth.requestMatchers("/api/v1/events").permitAll();
-          auth.requestMatchers(HttpMethod.GET, "/api/v1/events/{eventId}/**").permitAll();
+          auth.requestMatchers(HttpMethod.GET, "/api/v1/events/**").permitAll();
           // ! TODO: add roles related authorizations
 //          // * event management - only organizer
           auth.requestMatchers("/api/v1/events/create/**").hasAuthority("SCOPE_ROLE_ORGANIZER");

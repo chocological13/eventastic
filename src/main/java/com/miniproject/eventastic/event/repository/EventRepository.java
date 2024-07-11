@@ -1,8 +1,10 @@
 package com.miniproject.eventastic.event.repository;
 
 import com.miniproject.eventastic.event.entity.Event;
+import com.miniproject.eventastic.users.entity.Users;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;

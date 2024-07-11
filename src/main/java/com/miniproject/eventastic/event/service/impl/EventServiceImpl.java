@@ -125,6 +125,14 @@ public class EventServiceImpl implements EventService {
   }
 
   @Override
+  public Page<EventResponseDto> getEventsByOrganizer(Long organizerId, int page, int size) {
+    Pageable pageable = PageRequest.of(page, size, Sort.by("eventDate").ascending());
+    Specification<Event> specification = EventSpecifications.byOrganizerId(organizerId);
+    Page<Event> eventsPage = eventRepository.findAll(specification, pageable);
+    return eventsPage.map(EventResponseDto::new);
+  }
+
+  @Override
   public Event getEventById(Long eventId) {
     Optional<Event> event = eventRepository.findById(eventId);
     if (event.isPresent()) {
@@ -193,8 +201,7 @@ public class EventServiceImpl implements EventService {
   public ImageEvent uploadEventImage(Long eventId, ImageUploadRequestDto requestDto) {
     Event event = getEventById(eventId);
     verifyOrganizer(event);
-    return
-  imageService.uploadEventImage(requestDto, event);
+    return imageService.uploadEventImage(requestDto, event);
   }
 
   // Region - utilities
