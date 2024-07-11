@@ -32,7 +32,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -52,17 +51,6 @@ public class UsersController {
   private final UsersService usersService;
   private final VoucherService voucherService;
   private final TrxService trxService;
-
-  // ! Get all
-  @GetMapping
-  public ResponseEntity<Response<List<UserProfileDto>>> getAllUsers() {
-    try {
-      List<UserProfileDto> users = usersService.getAllUsers();
-      return Response.successfulResponse(HttpStatus.OK.value(), "Displaying all users..", users);
-    } catch (EmptyResultDataAccessException e) {
-      return Response.failedResponse(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
-    }
-  }
 
   // * Register
   @PostMapping("/register")

@@ -1,5 +1,6 @@
 package com.miniproject.eventastic.users.service;
 
+import com.miniproject.eventastic.event.entity.Event;
 import com.miniproject.eventastic.exceptions.image.ImageNotFoundException;
 import com.miniproject.eventastic.image.entity.ImageUserAvatar;
 import com.miniproject.eventastic.image.entity.dto.ImageUploadRequestDto;
@@ -12,7 +13,6 @@ import com.miniproject.eventastic.users.entity.dto.profile.UserProfileDto;
 import com.miniproject.eventastic.users.entity.dto.register.RegisterRequestDto;
 import com.miniproject.eventastic.users.entity.dto.register.RegisterResponseDto;
 import com.miniproject.eventastic.users.entity.dto.userManagement.ProfileUpdateRequestDTO;
-import java.util.List;
 import java.util.Set;
 
 public interface UsersService {
@@ -30,7 +30,6 @@ public interface UsersService {
   UserProfileDto getProfile();
 
   // Getting Users
-  List<UserProfileDto> getAllUsers();
 
   Users getByUsername(String username);
 
@@ -55,7 +54,9 @@ public interface UsersService {
   Set<PointsTrx> getPointsTrx();
 
   // display organizer's wallet and payout history
-OrganizerWalletDisplayDto getWalletDisplay();
+  OrganizerWalletDisplayDto getWalletDisplay();
 
+  // display events that the user is going to attend or have attended
+  Set<Event> getUserEvents();
 
 }

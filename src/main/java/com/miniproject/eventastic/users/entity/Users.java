@@ -1,8 +1,14 @@
 package com.miniproject.eventastic.users.entity;
 
+import com.miniproject.eventastic.attendee.entity.Attendee;
+import com.miniproject.eventastic.event.entity.Event;
 import com.miniproject.eventastic.image.entity.ImageUserAvatar;
 import com.miniproject.eventastic.organizerWallet.entity.OrganizerWallet;
 import com.miniproject.eventastic.pointsWallet.entity.PointsWallet;
+import com.miniproject.eventastic.review.entity.Review;
+import com.miniproject.eventastic.ticket.entity.Ticket;
+import com.miniproject.eventastic.trx.entity.Trx;
+import com.miniproject.eventastic.voucher.entity.Voucher;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,6 +18,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
@@ -21,6 +28,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.time.Instant;
 import java.util.Date;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -55,7 +64,7 @@ public class Users {
 
   @ColumnDefault("false")
   @Column(name = "is_organizer")
-  private Boolean isOrganizer;
+  private Boolean isOrganizer = false;
 
   @ColumnDefault("CURRENT_TIMESTAMP")
   @Column(name = "created_at")
@@ -96,6 +105,27 @@ public class Users {
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "organizer_wallet_id")
   private OrganizerWallet organizerWallet;
+
+  @OneToMany(mappedBy = "user")
+  private Set<Attendee> attendees = new LinkedHashSet<>();
+
+  @OneToMany(mappedBy = "user")
+  private Set<ImageUserAvatar> imageUserAvatars = new LinkedHashSet<>();
+
+  @OneToMany(mappedBy = "reviewer")
+  private Set<Review> reviews = new LinkedHashSet<>();
+
+  @OneToMany(mappedBy = "user")
+  private Set<Ticket> tickets = new LinkedHashSet<>();
+
+  @OneToMany(mappedBy = "user")
+  private Set<Trx> trxes = new LinkedHashSet<>();
+
+  @OneToMany(mappedBy = "awardee")
+  private Set<Voucher> vouchers = new LinkedHashSet<>();
+
+  @OneToMany(mappedBy = "organizer")
+  private Set<Event> events = new LinkedHashSet<>();
 
 
   @PrePersist
