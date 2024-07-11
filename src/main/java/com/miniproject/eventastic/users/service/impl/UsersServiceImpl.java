@@ -1,20 +1,20 @@
 package com.miniproject.eventastic.users.service.impl;
 
+import com.miniproject.eventastic.event.entity.Event;
 import com.miniproject.eventastic.exceptions.image.ImageNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.OrganizerWalletNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.PointsTrxNotFoundException;
+import com.miniproject.eventastic.exceptions.user.UserNotFoundException;
 import com.miniproject.eventastic.image.entity.ImageUserAvatar;
 import com.miniproject.eventastic.image.entity.dto.ImageUploadRequestDto;
 import com.miniproject.eventastic.image.service.CloudinaryService;
 import com.miniproject.eventastic.image.service.ImageService;
 import com.miniproject.eventastic.organizerWallet.entity.OrganizerWallet;
-import com.miniproject.eventastic.organizerWallet.entity.dto.InitOrganizerWalletDto;
 import com.miniproject.eventastic.organizerWallet.entity.dto.OrganizerWalletDisplayDto;
 import com.miniproject.eventastic.organizerWallet.service.OrganizerWalletService;
 import com.miniproject.eventastic.pointsTrx.entity.PointsTrx;
 import com.miniproject.eventastic.pointsTrx.service.PointsTrxService;
 import com.miniproject.eventastic.pointsWallet.entity.PointsWallet;
-import com.miniproject.eventastic.pointsWallet.entity.dto.PointsWalletResponseDto;
 import com.miniproject.eventastic.pointsWallet.service.impl.PointsWalletService;
 import com.miniproject.eventastic.referralCodeUsage.entity.dto.ReferralCodeUsageSummaryDto;
 import com.miniproject.eventastic.referralCodeUsage.entity.dto.ReferralCodeUseCountDto;
@@ -32,13 +32,11 @@ import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
@@ -65,43 +63,34 @@ public class UsersServiceImpl implements UsersService {
   private final OrganizerWalletService organizerWalletService;
 
   @Override
-  public List<UserProfileDto> getAllUsers() {
-    List<Users> users = usersRepository.findAll();
-    if (users.isEmpty()) {
-      throw new EmptyResultDataAccessException("No users found", 1);
+  public Users getCurrentUser() {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    if (authentication == null) {
+      throw new AccessDeniedException("You must be logged in to access this resource");
     }
-    return users.stream()
-        .map(UserProfileDto::new)
-        .collect(Collectors.toList());
+    String username = authentication.getName();
+    return getByUsername(username);
   }
 
   @Override
+  @Transactional
   public UserProfileDto getProfile() {
-    // * get logged in user
-    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-    String username = auth.getName();
-
-    // * check
-    Optional<Users> user = usersRepository.findByUsername(username);
-    if (user.isPresent()) {
-      Users loggedUser = user.get();
-      UserProfileDto userProfileDto = new UserProfileDto();
-      return userProfileDto.toDto(loggedUser);
-    } else {
-      return null;
-    }
+    Users user = getCurrentUser();
+    return new UserProfileDto(user);
   }
 
   @Override
   public Users getByUsername(String username) {
     Optional<Users> usersOptional = usersRepository.findByUsername(username);
-    return usersOptional.orElse(null);
+    return usersOptional.orElseThrow(() -> new UserNotFoundException(
+        "User by username: " + username + " not found. Please ensure you've entered the correct username!"));
   }
 
   @Override
   public Users getById(Long id) {
     Optional<Users> usersOptional = usersRepository.findById(id);
-    return usersOptional.orElse(null);
+    return usersOptional.orElseThrow(() -> new UserNotFoundException(
+        "User by ID: " + id + " not found. Please ensure you've entered the correct ID!"));
   }
 
   @SneakyThrows
@@ -119,28 +108,7 @@ public class UsersServiceImpl implements UsersService {
     eventPublisher.publishEvent(new UserRegistrationEvent(this, newUser));
 
     log.info("Registered user: {}", newUser);
-    return responseBuilder(newUser);
-  }
-
-  public RegisterResponseDto responseBuilder(Users newUser) {
-    RegisterResponseDto response = new RegisterResponseDto();
-    response.setId(newUser.getId());
-    response.setUsername(newUser.getUsername());
-    response.setEmail(newUser.getEmail());
-    response.setOwnedRefCode(newUser.getOwnedRefCode());
-    if (newUser.getRefCodeUsed() != null) {
-      response.setRefCodeUsed(
-          "Successfully used referral code " + newUser.getRefCodeUsed() + " by user " + getUserByOwnedCode(
-              newUser.getRefCodeUsed()).getUsername());
-    } else {
-      response.setRefCodeUsed("No referral code used");
-    }
-    response.setPointsWallet(new PointsWalletResponseDto(newUser.getPointsWallet()));
-    response.setIsOrganizer(newUser.getIsOrganizer());
-    response.setOrganizerWallet(newUser.getOrganizerWallet() == null ? null :
-        new InitOrganizerWalletDto(newUser.getOrganizerWallet()));
-
-    return response;
+    return new RegisterResponseDto(newUser);
   }
 
   @Override
@@ -166,12 +134,13 @@ public class UsersServiceImpl implements UsersService {
 
       // check for image
       if (requestDto.getAvatarId() != null) {
-        ImageUserAvatar avatar = imageService.getImageById(requestDto.getAvatarId());
+        ImageUserAvatar avatar = imageService.getAvatarById(requestDto.getAvatarId());
         if (avatar != null) {
           existingUser.setAvatar(avatar);
         } else {
-          throw new ImageNotFoundException("ImageUserAvatar doesn't exist in database. Please enter another imageId or upload a "
-                                           + "new image");
+          throw new ImageNotFoundException(
+              "ImageUserAvatar doesn't exist in database. Please enter another imageId or upload a "
+              + "new image");
         }
       }
 
@@ -199,13 +168,6 @@ public class UsersServiceImpl implements UsersService {
     List<ReferralCodeUsersDto> usedBy = referralCodeUsageService.getReferralCodeUsers(codeOwner);
 
     return new ReferralCodeUsageSummaryDto(owner, usedBy);
-  }
-
-  @Override
-  public Users getCurrentUser() {
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    String username = authentication.getName();
-    return usersRepository.findByUsername(username).orElse(null);
   }
 
   @SneakyThrows
@@ -247,6 +209,12 @@ public class UsersServiceImpl implements UsersService {
         return new OrganizerWalletDisplayDto(organizerWallet);
       }
     }
+  }
+
+  @Override
+  public Set<Event> getUserEvents() {
+//    Set<Event> userEvents =
+    return null;
   }
 
 }
