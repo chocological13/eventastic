@@ -177,6 +177,6 @@ public class EventController {
   public ResponseEntity<Response<EventImageResponseDto>> uploadImage(@PathVariable Long eventId,
       ImageUploadRequestDto requestDto) {
       return Response.successfulResponse(HttpStatus.CREATED.value(), "Image for event uploaded!",
-          new EventImageResponseDto(eventService.uploadEventImage(eventId, requestDto)));
+          new EventImageResponseDto(eventService.uploadEventImage(requestDto)));
   }
 }

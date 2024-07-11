@@ -203,10 +203,12 @@ public class EventServiceImpl implements EventService {
   }
 
   @Override
-  public ImageEvent uploadEventImage(Long eventId, ImageUploadRequestDto requestDto) {
-    Event event = getEventById(eventId);
-    verifyOrganizer(event);
-    return imageService.uploadEventImage(requestDto, event);
+  public ImageEvent uploadEventImage(ImageUploadRequestDto requestDto) {
+    Users organizer = usersService.getCurrentUser();
+    if (!organizer.getIsOrganizer()) {
+      throw new AccessDeniedException("You do not have permission to upload an image for an event!");
+    }
+    return imageService.uploadEventImage(requestDto, organizer);
   }
 
   // Region - utilities

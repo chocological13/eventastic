@@ -1,6 +1,5 @@
 package com.miniproject.eventastic.image.service.impl;
 
-import com.miniproject.eventastic.event.entity.Event;
 import com.miniproject.eventastic.exceptions.image.ImageNotFoundException;
 import com.miniproject.eventastic.image.entity.ImageEvent;
 import com.miniproject.eventastic.image.entity.ImageUserAvatar;
@@ -68,18 +67,18 @@ public class ImageServiceImpl implements ImageService {
 
   @Override
   @Transactional
-  public ImageEvent uploadEventImage(ImageUploadRequestDto requestDto, Event event) {
+  public ImageEvent uploadEventImage(ImageUploadRequestDto requestDto, Users organizer) {
     try {
       validateUploadRequest(requestDto);
 
       String imageName = requestDto.getFileName();
       String imageUrl = cloudinaryService.uploadFile(requestDto.getFile(),
-          "eventastic/events" + event.getId().toString());
+          "eventastic/organizer" + organizer.getId().toString());
 
       ImageEvent imageEvent = new ImageEvent();
       imageEvent.setImageName(imageName);
       imageEvent.setImageUrl(imageUrl);
-      imageEvent.setEvent(event);
+      imageEvent.setOrganizer(organizer);
       if (imageEvent.getImageUrl() == null) {
         // Handle error appropriately
         return null;

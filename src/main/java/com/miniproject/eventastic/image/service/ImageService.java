@@ -1,6 +1,5 @@
 package com.miniproject.eventastic.image.service;
 
-import com.miniproject.eventastic.event.entity.Event;
 import com.miniproject.eventastic.image.entity.ImageEvent;
 import com.miniproject.eventastic.image.entity.ImageUserAvatar;
 import com.miniproject.eventastic.image.entity.dto.ImageUploadRequestDto;
@@ -18,7 +17,7 @@ public interface ImageService {
   void saveEventImage(ImageEvent imageEvent);
 //  ImageEvent getEventImageById(Long imageId);
 
-  ImageEvent uploadEventImage(ImageUploadRequestDto imageUploadRequestDto, Event event);
+  ImageEvent uploadEventImage(ImageUploadRequestDto imageUploadRequestDto, Users organizer);
 
   ImageEvent getEventImageById(Long imageId);
 }

@@ -42,6 +42,6 @@ public interface EventService {
   Page<ReviewSubmitResponseDto> getEventReviews(Long eventId, int page, int size);
 
   // upload image for events
-  ImageEvent uploadEventImage(Long eventId, ImageUploadRequestDto requestDto);
+  ImageEvent uploadEventImage(ImageUploadRequestDto requestDto);
 
 }

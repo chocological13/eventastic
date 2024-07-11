@@ -1,6 +1,6 @@
 package com.miniproject.eventastic.image.entity;
 
-import com.miniproject.eventastic.event.entity.Event;
+import com.miniproject.eventastic.users.entity.Users;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -36,13 +36,14 @@ public class ImageEvent {
 
   @NotNull
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
-  @JoinColumn(name = "event_id", nullable = false)
-  private Event event;
+  @JoinColumn(name = "organizer_id", nullable = false)
+  private Users organizer;
 
   @Column(name = "image_name", length = Integer.MAX_VALUE)
   private String imageName;
 
   @Column(name = "image_url", length = Integer.MAX_VALUE)
   private String imageUrl;
+
 
 }
