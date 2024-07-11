@@ -23,8 +23,6 @@ import com.miniproject.eventastic.voucher.service.VoucherService;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -164,13 +162,12 @@ public class EventController {
   }
 
   @GetMapping("/{eventId}/reviews")
-  public ResponseEntity<Response<Set<ReviewSubmitResponseDto>>> getReviews(@PathVariable Long eventId) {
+  public ResponseEntity<Response<Map<String, Object>>> getReviews(@PathVariable Long eventId,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "10") int size) {
     try {
-      Set<Review> reviewSet = eventService.getEventReviews(eventId);
-      Set<ReviewSubmitResponseDto> responseDtoSet = reviewSet.stream()
-          .map(ReviewSubmitResponseDto::new)
-          .collect(Collectors.toSet());
-      return Response.successfulResponse(HttpStatus.OK.value(), "Displaying reviews for event..", responseDtoSet);
+      Page<ReviewSubmitResponseDto> reviewSet = eventService.getEventReviews(eventId, page, size);
+      return Response.responseMapper(HttpStatus.OK.value(), "Displaying reviews for event..", reviewSet);
     } catch (TicketTypeNotFoundException e) {
       return Response.failedResponse(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
     }

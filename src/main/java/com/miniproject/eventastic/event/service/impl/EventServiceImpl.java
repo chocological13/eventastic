@@ -21,6 +21,7 @@ import com.miniproject.eventastic.image.entity.dto.ImageUploadRequestDto;
 import com.miniproject.eventastic.image.service.ImageService;
 import com.miniproject.eventastic.review.entity.Review;
 import com.miniproject.eventastic.review.entity.dto.ReviewSubmitRequestDto;
+import com.miniproject.eventastic.review.entity.dto.ReviewSubmitResponseDto;
 import com.miniproject.eventastic.review.service.ReviewService;
 import com.miniproject.eventastic.ticketType.service.TicketTypeService;
 import com.miniproject.eventastic.users.entity.Users;
@@ -30,7 +31,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Optional;
-import java.util.Set;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -197,8 +197,9 @@ public class EventServiceImpl implements EventService {
 
   // TODO : give pagination to this
   @Override
-  public Set<Review> getEventReviews(Long eventId) {
-    return reviewService.getReviewsByEventId(eventId);
+  public Page<ReviewSubmitResponseDto> getEventReviews(Long eventId, int page, int size) {
+    Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+    return reviewService.getReviewsByEventId(eventId, pageable);
   }
 
   @Override

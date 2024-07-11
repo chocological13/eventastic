@@ -9,7 +9,7 @@ import com.miniproject.eventastic.image.entity.ImageEvent;
 import com.miniproject.eventastic.image.entity.dto.ImageUploadRequestDto;
 import com.miniproject.eventastic.review.entity.Review;
 import com.miniproject.eventastic.review.entity.dto.ReviewSubmitRequestDto;
-import java.util.Set;
+import com.miniproject.eventastic.review.entity.dto.ReviewSubmitResponseDto;
 import org.springframework.data.domain.Page;
 
 public interface EventService {
@@ -39,7 +39,7 @@ public interface EventService {
 
   // display event's review
   // TODO : give this pagination
-  Set<Review> getEventReviews(Long eventId);
+  Page<ReviewSubmitResponseDto> getEventReviews(Long eventId, int page, int size);
 
   // upload image for events
   ImageEvent uploadEventImage(Long eventId, ImageUploadRequestDto requestDto);

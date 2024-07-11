@@ -1,6 +1,5 @@
 package com.miniproject.eventastic.responses;
 
-import com.miniproject.eventastic.event.entity.dto.EventResponseDto;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.Data;
@@ -85,16 +84,16 @@ public class Response<T> {
   // Region - Events Page
 
   public static ResponseEntity<Response<Map<String, Object>>> responseMapper(int statusCode, String message,
-      Page<EventResponseDto> eventPage) {
-    if (eventPage != null) {
+      Page<?> page) {
+    if (page != null) {
       Map<String, Object> response = new HashMap<>();
-      response.put("currentPage", eventPage.getNumber());
-      response.put("totalPages", eventPage.getTotalPages());
-      response.put("totalElements", eventPage.getTotalElements());
-      response.put("events", eventPage.getContent());
+      response.put("currentPage", page.getNumber());
+      response.put("totalPages", page.getTotalPages());
+      response.put("totalElements", page.getTotalElements());
+      response.put("events", page.getContent());
       return Response.successfulResponse(statusCode, message, response);
     } else {
-      return Response.failedResponse("No events found!");
+      return Response.failedResponse("No data found!");
     }
   }
 
