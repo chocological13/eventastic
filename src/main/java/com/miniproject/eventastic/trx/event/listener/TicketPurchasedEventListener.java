@@ -9,7 +9,9 @@ import com.miniproject.eventastic.exceptions.event.EventEndedException;
 import com.miniproject.eventastic.exceptions.trx.InsufficientPointsException;
 import com.miniproject.eventastic.exceptions.trx.NotAwardeeException;
 import com.miniproject.eventastic.exceptions.trx.PaymentMethodNotFoundException;
+import com.miniproject.eventastic.exceptions.trx.PointsWalletNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.SeatUnavailableException;
+import com.miniproject.eventastic.exceptions.trx.TicketTypeNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.VoucherInvalidException;
 import com.miniproject.eventastic.exceptions.trx.VoucherNotFoundException;
 import com.miniproject.eventastic.organizerWalletTrx.service.OrganizerWalletTrxService;
@@ -43,6 +45,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
+@Transactional
 public class TicketPurchasedEventListener {
 
   private final EventService eventService;
@@ -58,7 +61,9 @@ public class TicketPurchasedEventListener {
 
   @EventListener
   @Transactional
-  public void handleTicketPurchasedEvent(TicketPurchasedEvent event) {
+  public void handleTicketPurchasedEvent(TicketPurchasedEvent event) throws TicketTypeNotFoundException,
+      PointsWalletNotFoundException, InsufficientPointsException, VoucherNotFoundException, VoucherInvalidException,
+      SeatUnavailableException, NotAwardeeException, PaymentMethodNotFoundException {
     Users loggedUser = event.getUser();
     Trx trx = event.getTrx();
     TrxPurchaseRequestDto requestDto = event.getRequestDto();
@@ -98,7 +103,7 @@ public class TicketPurchasedEventListener {
     organizerWalletTrxService.sendPayout(trx);
   }
 
-  private Event validateAndRetrieveEvent(Long eventId) {
+  public Event validateAndRetrieveEvent(Long eventId) {
     Event event = eventService.getEventById(eventId);
     if (event.getEventDate().isBefore(LocalDate.now())) {
       throw new EventEndedException("Event has ended. Please choose another event.");
@@ -106,7 +111,8 @@ public class TicketPurchasedEventListener {
     return event;
   }
 
-  private TicketType validateAndRetrieveTicketType(Long ticketTypeId) {
+  public TicketType validateAndRetrieveTicketType(Long ticketTypeId) throws TicketTypeNotFoundException,
+      SeatUnavailableException {
     TicketType ticketType = ticketTypeService.getTicketTypeById(ticketTypeId);
     if (ticketType.getAvailableSeat() <= 0) {
       throw new SeatUnavailableException("Seat for this ticket type is sold out!");
@@ -114,7 +120,7 @@ public class TicketPurchasedEventListener {
     return ticketType;
   }
 
-  private void createTransaction(TrxPurchaseRequestDto requestDto, Users loggedUser, Event event,
+  public void createTransaction(TrxPurchaseRequestDto requestDto, Users loggedUser, Event event,
       TicketType ticketType, Trx trx) {
     trx.setUser(loggedUser);
     trx.setEvent(event);
@@ -128,12 +134,12 @@ public class TicketPurchasedEventListener {
     decrementAvailableSeat(event, ticketType, requestDto.getQty());
   }
 
-  private BigDecimal calculateInitialAmount(TicketType ticketType, int qty) {
+  public BigDecimal calculateInitialAmount(TicketType ticketType, int qty) {
     BigDecimal unitPrice = ticketType.getPrice();
     return unitPrice.multiply(BigDecimal.valueOf(qty)).stripTrailingZeros().setScale(0, RoundingMode.HALF_UP);
   }
 
-  private Set<Ticket> generateAndSaveTickets(Users loggedUser, TicketType ticketType, int qty) {
+  public Set<Ticket> generateAndSaveTickets(Users loggedUser, TicketType ticketType, int qty) {
     Set<Ticket> ticketSet = new LinkedHashSet<>();
     for (int i = 0; i < qty; i++) {
       Ticket ticket = ticketService.generateTicket(loggedUser, ticketType);
@@ -143,7 +149,7 @@ public class TicketPurchasedEventListener {
     return ticketSet;
   }
 
-  private void decrementAvailableSeat(Event event, TicketType ticketType, int qty) {
+  public void decrementAvailableSeat(Event event, TicketType ticketType, int qty) {
     event.setAvailableSeat(event.getAvailableSeat() - qty);
     eventService.saveEvent(event);
 
@@ -151,7 +157,8 @@ public class TicketPurchasedEventListener {
     ticketTypeService.saveTicketType(ticketType);
   }
 
-  private PointsTrx usePoints(TrxPurchaseRequestDto requestDto, Trx trx) {PointsTrx pointsTrx;
+  public PointsTrx usePoints(TrxPurchaseRequestDto requestDto, Trx trx) throws PointsWalletNotFoundException {
+    PointsTrx pointsTrx;
     if (requestDto.getUsingPoints()) {
       PointsWallet pointsWallet = pointsWalletService.getPointsWallet(trx.getUser());
       pointsTrx = applyPoints(trx, pointsWallet);
@@ -162,7 +169,7 @@ public class TicketPurchasedEventListener {
     return pointsTrx;
   }
 
-  private PointsTrx applyPoints(Trx trx, PointsWallet pointsWallet) {
+  public PointsTrx applyPoints(Trx trx, PointsWallet pointsWallet) throws InsufficientPointsException {
     BigDecimal points = BigDecimal.valueOf(pointsWallet.getPoints());
     BigDecimal price = trx.getInitialAmount();
 
@@ -192,7 +199,7 @@ public class TicketPurchasedEventListener {
     return pointsTrx;
   }
 
-  private BigDecimal useVoucher(TrxPurchaseRequestDto requestDto, Trx trx) {
+  public BigDecimal useVoucher(TrxPurchaseRequestDto requestDto, Trx trx) throws VoucherNotFoundException, VoucherInvalidException {
     BigDecimal discount = BigDecimal.ZERO;
     if (!requestDto.getVoucherCode().isEmpty()) {
       Voucher voucher = voucherService.getVoucher(requestDto.getVoucherCode());
@@ -211,7 +218,7 @@ public class TicketPurchasedEventListener {
     return discount;
   }
 
-  private BigDecimal applyVoucher(Trx trx, Voucher voucher) {
+  public BigDecimal applyVoucher(Trx trx, Voucher voucher) throws NotAwardeeException {
     BigDecimal discount;
     Users user = trx.getUser();
     Users awardee = voucher.getAwardee();
@@ -227,14 +234,14 @@ public class TicketPurchasedEventListener {
   }
 
   // set payment method
-  private void setPaymentMethod(TrxPurchaseRequestDto requestDto, Trx trx) {
+  public void setPaymentMethod(TrxPurchaseRequestDto requestDto, Trx trx) throws PaymentMethodNotFoundException {
     Payment payment = paymentRepository.findById(requestDto.getPaymentId()).orElseThrow(() ->
         new PaymentMethodNotFoundException("Please enter a valid method of payment!"));
     trx.setPayment(payment);
   }
 
   // attendee set up
-  private void setAttendee(Users user, Event event, Integer qty) {
+  public void setAttendee(Users user, Event event, Integer qty) {
     AttendeeId attendeeId = new AttendeeId(user.getId(), event.getId());
 
     // check if attendee exists

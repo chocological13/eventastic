@@ -57,10 +57,10 @@ public class UsersController {
   // * Register
   @PostMapping("/register")
   public ResponseEntity<Response<RegisterResponseDto>> registerUser(@Valid @RequestBody RegisterRequestDto requestDto) {
-    RegisterResponseDto response = usersService.register(requestDto);
-    return Response.successfulResponse(HttpStatus.CREATED.value(),
-        "Register successful!!",
-        response);
+      RegisterResponseDto response = usersService.register(requestDto);
+      return Response.successfulResponse(HttpStatus.CREATED.value(),
+          "Register successful!!",
+          response);
   }
 
   // * Get logged in user's profile

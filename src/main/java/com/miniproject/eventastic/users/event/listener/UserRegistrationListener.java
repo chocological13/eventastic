@@ -1,6 +1,8 @@
 package com.miniproject.eventastic.users.event.listener;
 
 
+import com.miniproject.eventastic.exceptions.trx.PointsWalletNotFoundException;
+import com.miniproject.eventastic.exceptions.user.UserNotFoundException;
 import com.miniproject.eventastic.organizerWallet.entity.OrganizerWallet;
 import com.miniproject.eventastic.organizerWallet.service.OrganizerWalletService;
 import com.miniproject.eventastic.pointsTrx.entity.PointsTrx;
@@ -30,7 +32,10 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 @Slf4j
+@Transactional
 public class UserRegistrationListener {
+
+  private final static int POINTS_REWARD = 10000;
 
   private final PointsWalletService pointsWalletService;
   private final UsersService usersService;
@@ -41,7 +46,7 @@ public class UserRegistrationListener {
 
   @EventListener
   @Transactional
-  public void handleUserRegistrationEvent(UserRegistrationEvent event) {
+  public void handleUserRegistrationEvent(UserRegistrationEvent event) throws UserNotFoundException {
     Users user = event.getUser();
 
     // * init points wallet
@@ -52,7 +57,7 @@ public class UserRegistrationListener {
       initOrganizerWallet(user);
 
     // * Generate and assign referral code
-    String ownedReferralCode = UUID.randomUUID().toString().substring(0, 7);
+    String ownedReferralCode = generateReferralCode();
     user.setOwnedRefCode(ownedReferralCode);
     usersService.saveUser(user);
 
@@ -67,7 +72,6 @@ public class UserRegistrationListener {
     organizerWallet.setBalance(BigDecimal.ZERO);
     organizerWalletService.saveWallet(organizerWallet);
     user.setOrganizerWallet(organizerWallet);
-    usersService.saveUser(user);
   }
 
   public void initPointsWallet(Users user) {
@@ -76,18 +80,30 @@ public class UserRegistrationListener {
     pointsWallet.setPoints(0);
     pointsWalletService.savePointsWallet(pointsWallet);
     user.setPointsWallet(pointsWallet);
-    usersService.saveUser(user);
   }
 
-  public void useRefCode(Users user, String refCodeUsed) {
+  public String generateReferralCode() {
+    String ownedReferralCode;
+    Users check = null;
+    do {
+      ownedReferralCode = UUID.randomUUID().toString().substring(0, 7);
+      try {
+        check = usersService.getUserByOwnedCode(ownedReferralCode);
+      } catch (UserNotFoundException e) {
+        log.info("Expected behavior, referral code is available");
+      }
+    } while (check != null);
+    return ownedReferralCode;
+  }
+
+  public void useRefCode(Users user, String refCodeUsed) throws UserNotFoundException, PointsWalletNotFoundException {
     Users owner = usersService.getUserByOwnedCode(refCodeUsed);
     if (owner != null) {
       // ** Add points to the code owner's wallet
-      Integer pointsReward = 10000;
 
       PointsWallet ownerPointsWallet = pointsWalletService.getPointsWallet(owner);
 
-      ownerPointsWallet.setPoints(ownerPointsWallet.getPoints() + pointsReward);
+      ownerPointsWallet.setPoints(ownerPointsWallet.getPoints() + POINTS_REWARD);
       ownerPointsWallet.setAwardedAt(Instant.now());
       ownerPointsWallet.setExpiresAt(Instant.now().plus(90, ChronoUnit.DAYS));
       pointsWalletService.savePointsWallet(ownerPointsWallet);
@@ -95,7 +111,7 @@ public class UserRegistrationListener {
       // update in points trx
       PointsTrx pointsTrx = new PointsTrx();
       pointsTrx.setPointsWallet(ownerPointsWallet);
-      pointsTrx.setPoints(pointsReward);
+      pointsTrx.setPoints(POINTS_REWARD);
       pointsTrx.setDescription("Referral code usage by new user");
       pointsTrxService.savePointsTrx(pointsTrx);
 

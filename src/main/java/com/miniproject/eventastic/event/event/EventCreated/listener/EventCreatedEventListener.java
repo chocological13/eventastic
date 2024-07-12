@@ -6,6 +6,7 @@ import com.miniproject.eventastic.event.event.EventCreated.EventCreatedEvent;
 import com.miniproject.eventastic.event.metadata.Category;
 import com.miniproject.eventastic.event.repository.CategoryRepository;
 import com.miniproject.eventastic.exceptions.event.CategoryNotFoundException;
+import com.miniproject.eventastic.exceptions.image.ImageNotFoundException;
 import com.miniproject.eventastic.image.entity.ImageEvent;
 import com.miniproject.eventastic.image.service.ImageService;
 import com.miniproject.eventastic.ticketType.entity.TicketType;
@@ -28,7 +29,7 @@ public class EventCreatedEventListener {
 
   @EventListener
   @Transactional
-  public void handleEventCreatedEvent(EventCreatedEvent event) {
+  public void handleEventCreatedEvent(EventCreatedEvent event) throws ImageNotFoundException, CategoryNotFoundException {
     Event createdEvent = event.getEvent();
     CreateEventRequestDto requestDto = event.getRequestDto();
 
@@ -47,14 +48,14 @@ public class EventCreatedEventListener {
   }
 
   // Region - utilities
-  private void setCategory(Event createdEvent, CreateEventRequestDto requestDto) {
+  private void setCategory(Event createdEvent, CreateEventRequestDto requestDto) throws CategoryNotFoundException {
     if (requestDto.getCategoryId() != null) {
       Category category = categoryRepository.findById(requestDto.getCategoryId()).orElseThrow(() -> new CategoryNotFoundException("Category not found, please enter another ID"));
       createdEvent.setCategory(category);
     }
   }
 
-  private void setImage(Event createdEvent, CreateEventRequestDto requestDto) {
+  private void setImage(Event createdEvent, CreateEventRequestDto requestDto) throws ImageNotFoundException {
     if (requestDto.getImageId() != null) {
       ImageEvent imageEvent = imageService.getEventImageById(requestDto.getImageId());
       createdEvent.setEventImage(imageEvent);

@@ -1,5 +1,6 @@
 package com.miniproject.eventastic.pointsTrx.service.impl;
 
+import com.miniproject.eventastic.exceptions.trx.PointsTrxNotFoundException;
 import com.miniproject.eventastic.pointsTrx.entity.PointsTrx;
 import com.miniproject.eventastic.pointsTrx.repository.PointsTrxRepository;
 import com.miniproject.eventastic.pointsTrx.service.PointsTrxService;
@@ -23,7 +24,11 @@ public class PointsTrxServiceImpl implements PointsTrxService {
 
   // call this in users
   @Override
-  public Set<PointsTrx> getPointsTrx(PointsWallet pointsWallet) {
-    return pointsTrxRepository.findByPointsWallet(pointsWallet);
+  public Set<PointsTrx> getPointsTrx(PointsWallet pointsWallet) throws PointsTrxNotFoundException {
+    Set<PointsTrx> pointsTrxes = pointsTrxRepository.findByPointsWallet(pointsWallet);
+    if (pointsTrxes == null) {
+      throw new PointsTrxNotFoundException("No PointsTrx found");
+    }
+    return pointsTrxes;
   }
 }

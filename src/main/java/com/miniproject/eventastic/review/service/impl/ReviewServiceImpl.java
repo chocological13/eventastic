@@ -24,7 +24,7 @@ public class ReviewServiceImpl implements ReviewService {
   }
 
   @Override
-  public Page<ReviewSubmitResponseDto> getReviewsByEventId(Long eventId, Pageable pageable) {
+  public Page<ReviewSubmitResponseDto> getReviewsByEventId(Long eventId, Pageable pageable) throws ReviewNotFoundException {
     Page<Review> reviews = reviewRepository.findByEventId(eventId, pageable);
     if (reviews == null) {
       throw new ReviewNotFoundException("This event has no reviews yet");

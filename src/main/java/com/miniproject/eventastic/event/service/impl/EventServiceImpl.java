@@ -13,9 +13,12 @@ import com.miniproject.eventastic.event.metadata.Category;
 import com.miniproject.eventastic.event.repository.CategoryRepository;
 import com.miniproject.eventastic.event.repository.EventRepository;
 import com.miniproject.eventastic.event.service.EventService;
-import com.miniproject.eventastic.exceptions.event.DuplicateEventException;
+import com.miniproject.eventastic.exceptions.event.CategoryNotFoundException;
 import com.miniproject.eventastic.exceptions.event.EventNotFoundException;
+import com.miniproject.eventastic.exceptions.event.ReviewNotFoundException;
+import com.miniproject.eventastic.exceptions.image.ImageNotFoundException;
 import com.miniproject.eventastic.exceptions.user.AttendeeNotFoundException;
+import com.miniproject.eventastic.exceptions.user.DuplicateCredentialsException;
 import com.miniproject.eventastic.image.entity.ImageEvent;
 import com.miniproject.eventastic.image.entity.dto.ImageUploadRequestDto;
 import com.miniproject.eventastic.image.service.ImageService;
@@ -66,14 +69,18 @@ public class EventServiceImpl implements EventService {
 
   @Override
   @Transactional
-  public EventResponseDto createEvent(CreateEventRequestDto requestDto) {
+  public EventResponseDto createEvent(CreateEventRequestDto requestDto) throws DuplicateCredentialsException,
+      AccessDeniedException, ImageNotFoundException, CategoryNotFoundException, EventNotFoundException {
     // check if there's a duplicate
     if (isDuplicateEvent(requestDto)) {
-      throw new DuplicateEventException("Event already exists. Please create another one.");
+      throw new DuplicateCredentialsException("Event already exists. Please create another one.");
     }
 
     // extract user
     Users organizer = usersService.getCurrentUser();
+    if (!organizer.getIsOrganizer()) {
+      throw new AccessDeniedException("You are not an organizer!");
+    }
 
     // save event here, so we can set it to the ticket types
     Event createdEvent = requestDto.dtoToEvent(requestDto);
@@ -88,7 +95,7 @@ public class EventServiceImpl implements EventService {
 
   @Override
   public Page<EventResponseDto> getEvents(int page, int size, String title, String category, String location,
-      String organizer, String order, String direction) {
+      String organizer, String order, String direction) throws EventNotFoundException {
 
     // sort direction, by default ascending
     Direction sortDirection = Direction.fromString(order == null ? "asc" : direction);
@@ -114,29 +121,38 @@ public class EventServiceImpl implements EventService {
     }
 
     Page<Event> eventsPage = eventRepository.findAll(specification, pageable);
+    if (!eventsPage.hasContent()) {
+      throw new EventNotFoundException("Event by that specification does not exist.");
+    }
     return eventsPage.map(EventResponseDto::new);
   }
 
   @Override
-  public Page<EventResponseDto> getUpcomingEvents(int page, int size) {
+  public Page<EventResponseDto> getUpcomingEvents(int page, int size) throws EventNotFoundException {
     Pageable pageable = PageRequest.of(page, size, Sort.by("eventDate").ascending());
 
     Specification<Event> specification = EventSpecifications.isUpcoming();
 
     Page<Event> eventsPage = eventRepository.findAll(specification, pageable);
+    if (!eventsPage.hasContent()) {
+      throw new EventNotFoundException("No upcoming events found.");
+    }
     return eventsPage.map(EventResponseDto::new);
   }
 
   @Override
-  public Page<EventResponseDto> getEventsByOrganizer(Long organizerId, int page, int size) {
+  public Page<EventResponseDto> getEventsByOrganizer(Long organizerId, int page, int size) throws EventNotFoundException {
     Pageable pageable = PageRequest.of(page, size, Sort.by("eventDate").ascending());
     Specification<Event> specification = EventSpecifications.byOrganizerId(organizerId);
     Page<Event> eventsPage = eventRepository.findAll(specification, pageable);
+    if (!eventsPage.hasContent()) {
+      throw new EventNotFoundException("Events by organizer does not exist.");
+    }
     return eventsPage.map(EventResponseDto::new);
   }
 
   @Override
-  public Event getEventById(Long eventId) {
+  public Event getEventById(Long eventId) throws EventNotFoundException {
     Optional<Event> event = eventRepository.findById(eventId);
     if (event.isPresent()) {
       return event.get();
@@ -146,7 +162,8 @@ public class EventServiceImpl implements EventService {
   }
 
   @Override
-  public EventResponseDto updateEvent(Long eventId, UpdateEventRequestDto requestDto) {
+  public EventResponseDto updateEvent(Long eventId, UpdateEventRequestDto requestDto) throws EventNotFoundException,
+      AccessDeniedException {
     // get existing event
     Event existingEvent = eventRepository.findById(eventId)
         .orElseThrow(() -> new EventNotFoundException("Event not found, please enter a valid ID"));
@@ -161,7 +178,7 @@ public class EventServiceImpl implements EventService {
   }
 
   @Override
-  public void deleteEvent(Long eventId) {
+  public void deleteEvent(Long eventId) throws EventNotFoundException, AccessDeniedException {
     Event eventToDelete = eventRepository.findById(eventId)
         .orElseThrow(() -> new EventNotFoundException("Event not found, please enter a valid ID"));
     // verify if the logged-in user is the organizer for this event
@@ -172,17 +189,18 @@ public class EventServiceImpl implements EventService {
 
   @Override
   public Category getCategoryById(Long eventId) {
-    return categoryRepository.findById(eventId).orElse(null);
+    return categoryRepository.findById(eventId).orElseThrow(() -> new EventNotFoundException("Event by ID: " + eventId + " does not exist."));
   }
 
   @Override
-  public Review submitReview(Long eventId, ReviewSubmitRequestDto requestDto) {
+  public Review submitReview(Long eventId, ReviewSubmitRequestDto requestDto) throws EventNotFoundException,
+      AccessDeniedException, AttendeeNotFoundException {
     Users reviewer = usersService.getCurrentUser();
     Event event = getEventById(eventId);
     Attendee attendee = attendeeService.findAttendee(new AttendeeId(reviewer.getId(), eventId)).orElse(null);
 
     if (attendee == null) {
-      throw new AttendeeNotFoundException("Attendee not found");
+      throw new AttendeeNotFoundException("You are not an attendee of this event!");
     }
 
     Review review = new Review();
@@ -197,13 +215,13 @@ public class EventServiceImpl implements EventService {
 
   // TODO : give pagination to this
   @Override
-  public Page<ReviewSubmitResponseDto> getEventReviews(Long eventId, int page, int size) {
+  public Page<ReviewSubmitResponseDto> getEventReviews(Long eventId, int page, int size) throws ReviewNotFoundException {
     Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
     return reviewService.getReviewsByEventId(eventId, pageable);
   }
 
   @Override
-  public ImageEvent uploadEventImage(ImageUploadRequestDto requestDto) {
+  public ImageEvent uploadEventImage(ImageUploadRequestDto requestDto) throws IllegalArgumentException, AccessDeniedException {
     Users organizer = usersService.getCurrentUser();
     if (!organizer.getIsOrganizer()) {
       throw new AccessDeniedException("You do not have permission to upload an image for an event!");
@@ -223,7 +241,7 @@ public class EventServiceImpl implements EventService {
   }
 
   // * get logged-in user and verify identity as organizer that created the event
-  private void verifyOrganizer(Event event) {
+  private void verifyOrganizer(Event event) throws AccessDeniedException {
     Users loggedUser = usersService.getCurrentUser();
     if (loggedUser != event.getOrganizer()) {
       throw new AccessDeniedException("You do not have permission to update this event");

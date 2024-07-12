@@ -26,18 +26,18 @@ public class OrganizerWalletTrxServiceImpl implements OrganizerWalletTrxService 
   }
 
   @Override
-  public Set<OrganizerWalletTrx> getByOrganizer(Users organizer) {
+  public Set<OrganizerWalletTrx> getByOrganizer(Users organizer) throws OrganizerWalletNotFoundException {
     Set<OrganizerWalletTrx> organizerWalletTrxes = organizerWalletTrxRepository.findByOrganizerWallet_Organizer(
         organizer);
     if (organizerWalletTrxes == null) {
-      throw new OrganizerWalletNotFoundException("Wallet not found!! Or are you an impostor??");
+      throw new OrganizerWalletNotFoundException("No transactions were made yet");
     } else {
       return organizerWalletTrxes;
     }
   }
 
   @Override
-  public void sendPayout(Trx trx) {
+  public void sendPayout(Trx trx) throws OrganizerWalletNotFoundException {
     Users organizer = trx.getEvent().getOrganizer();
     OrganizerWallet organizerWallet = organizerWalletService.getWalletByOrganizer(organizer);
     OrganizerWalletTrx payout = new OrganizerWalletTrx();

@@ -1,7 +1,7 @@
 package com.miniproject.eventastic.pointsWallet.service.impl;
 
+import com.miniproject.eventastic.exceptions.trx.PointsWalletNotFoundException;
 import com.miniproject.eventastic.pointsWallet.entity.PointsWallet;
-import com.miniproject.eventastic.pointsWallet.entity.dto.PointsWalletResponseDto;
 import com.miniproject.eventastic.pointsWallet.repository.PointsWalletRepository;
 import com.miniproject.eventastic.users.entity.Users;
 import java.time.Instant;
@@ -32,9 +32,8 @@ public class PointsWalletService implements com.miniproject.eventastic.pointsWal
   @Override
   public PointsWallet getPointsWallet(Users loggedInUser) {
     Optional<PointsWallet> walletOptional = pointsWalletRepository.findByUser(loggedInUser);
-    if (walletOptional.isPresent()) {
-      return walletOptional.get();
-    }
-    return null;
+    return walletOptional.orElseThrow(
+        () -> new PointsWalletNotFoundException("Points Wallet for user" + loggedInUser.getUsername() + " not "
+                                                + "found"));
   }
 }

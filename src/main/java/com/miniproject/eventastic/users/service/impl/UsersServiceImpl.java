@@ -3,10 +3,13 @@ package com.miniproject.eventastic.users.service.impl;
 import com.miniproject.eventastic.attendee.service.AttendeeService;
 import com.miniproject.eventastic.event.entity.Event;
 import com.miniproject.eventastic.event.entity.dto.EventResponseDto;
+import com.miniproject.eventastic.exceptions.event.EventNotFoundException;
 import com.miniproject.eventastic.exceptions.image.ImageNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.OrganizerWalletNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.PointsTrxNotFoundException;
+import com.miniproject.eventastic.exceptions.trx.PointsWalletNotFoundException;
 import com.miniproject.eventastic.exceptions.user.DuplicateCredentialsException;
+import com.miniproject.eventastic.exceptions.user.ReferralCodeUnusedException;
 import com.miniproject.eventastic.exceptions.user.UserNotFoundException;
 import com.miniproject.eventastic.image.entity.ImageUserAvatar;
 import com.miniproject.eventastic.image.entity.dto.ImageUploadRequestDto;
@@ -71,7 +74,7 @@ public class UsersServiceImpl implements UsersService {
   private final AttendeeService attendeeService;
 
   @Override
-  public Users getCurrentUser() {
+  public Users getCurrentUser() throws AccessDeniedException, UserNotFoundException {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     if (authentication == null) {
       throw new AccessDeniedException("You must be logged in to access this resource");
@@ -82,20 +85,20 @@ public class UsersServiceImpl implements UsersService {
 
   @Override
   @Transactional
-  public UserProfileDto getProfile() {
+  public UserProfileDto getProfile() throws UserNotFoundException, AccessDeniedException {
     Users user = getCurrentUser();
     return new UserProfileDto(user);
   }
 
   @Override
-  public Users getByUsername(String username) {
+  public Users getByUsername(String username) throws UserNotFoundException {
     Optional<Users> usersOptional = usersRepository.findByUsername(username);
     return usersOptional.orElseThrow(() -> new UserNotFoundException(
         "User by username: " + username + " not found. Please ensure you've entered the correct username!"));
   }
 
   @Override
-  public Users getById(Long id) {
+  public Users getById(Long id) throws UserNotFoundException {
     Optional<Users> usersOptional = usersRepository.findById(id);
     return usersOptional.orElseThrow(() -> new UserNotFoundException(
         "User by ID: " + id + " not found. Please ensure you've entered the correct ID!"));
@@ -104,7 +107,8 @@ public class UsersServiceImpl implements UsersService {
   @SneakyThrows
   @Override
   @Transactional
-  public RegisterResponseDto register(RegisterRequestDto requestDto) {
+  public RegisterResponseDto register(RegisterRequestDto requestDto)
+      throws UserNotFoundException, DuplicateCredentialsException, PointsWalletNotFoundException {
     // check credentials
     String username = requestDto.getUsername();
     String email = requestDto.getEmail();
@@ -140,46 +144,38 @@ public class UsersServiceImpl implements UsersService {
   }
 
   @Override
-  public void update(ProfileUpdateRequestDTO requestDto) throws ImageNotFoundException {
-    // get logged in user
-    String username = SecurityContextHolder.getContext().getAuthentication().getName();
-    Optional<Users> usersOptional = usersRepository.findByUsername(username);
-    if (usersOptional.isPresent()) {
-      Users existingUser = usersOptional.get();
-      ProfileUpdateRequestDTO update = new ProfileUpdateRequestDTO();
-      update.dtoToEntity(existingUser, requestDto);
+  public void update(ProfileUpdateRequestDTO requestDto)
+      throws ImageNotFoundException, UserNotFoundException, AccessDeniedException, DuplicateCredentialsException,
+      IllegalArgumentException {
+    Users existingUser = getCurrentUser();
+    ProfileUpdateRequestDTO update = new ProfileUpdateRequestDTO();
+    update.dtoToEntity(existingUser, requestDto);
 
-      // check for image
-      if (requestDto.getAvatarId() != null) {
-        ImageUserAvatar avatar = imageService.getAvatarById(requestDto.getAvatarId());
-        if (avatar != null) {
-          existingUser.setAvatar(avatar);
-        } else {
-          throw new ImageNotFoundException(
-              "ImageUserAvatar doesn't exist in database. Please enter another imageId or upload a "
-              + "new image");
-        }
+    // check for image
+    if (requestDto.getAvatarId() != null) {
+      ImageUserAvatar avatar = imageService.getAvatarById(requestDto.getAvatarId());
+      if (avatar != null) {
+        existingUser.setAvatar(avatar);
+      } else {
+        throw new ImageNotFoundException(
+            "ImageUserAvatar doesn't exist in database. Please enter another imageId or upload a "
+            + "new image");
       }
-
-      usersRepository.save(existingUser);
     }
+    usersRepository.save(existingUser);
   }
 
 
   // ref code related
   @Override
-  public Users getUserByOwnedCode(String ownedCode) {
+  public Users getUserByOwnedCode(String ownedCode) throws UserNotFoundException {
     return usersRepository.findByOwnedRefCode(ownedCode).orElseThrow(() -> new UserNotFoundException(
         "No code found, make sure you've entered the right referral code"));
   }
 
   @Override
-  public ReferralCodeUsageSummaryDto getCodeUsageSummary() {
-    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-    String username = auth.getName();
-
-    // get user
-    Users codeOwner = getByUsername(username);
+  public ReferralCodeUsageSummaryDto getCodeUsageSummary() throws UserNotFoundException, AccessDeniedException, ReferralCodeUnusedException {
+    Users codeOwner = getCurrentUser();
     log.info("CodeOwner: {}", codeOwner);
 
     ReferralCodeUseCountDto owner = referralCodeUsageService.getReferralCodeUseCount(codeOwner);
@@ -190,20 +186,20 @@ public class UsersServiceImpl implements UsersService {
 
   @SneakyThrows
   @Override
-  public PointsWallet getUsersPointsWallet() {
+  public PointsWallet getUsersPointsWallet() throws UserNotFoundException, AccessDeniedException, PointsWalletNotFoundException {
     // get currently logged-in user
     Users currentUser = getCurrentUser();
     return pointsWalletService.getPointsWallet(currentUser);
   }
 
   @Override
-  public ImageUserAvatar uploadAvatar(ImageUploadRequestDto requestDto) {
+  public ImageUserAvatar uploadAvatar(ImageUploadRequestDto requestDto) throws IllegalArgumentException {
     Users user = getCurrentUser();
     return imageService.uploadAvatar(requestDto, user);
   }
 
   @Override
-  public Set<PointsTrx> getPointsTrx() {
+  public Set<PointsTrx> getPointsTrx() throws PointsTrxNotFoundException {
     PointsWallet pointsWallet = getUsersPointsWallet();
     Set<PointsTrx> pointsTrxes = pointsTrxService.getPointsTrx(pointsWallet);
     if (pointsTrxes.isEmpty()) {
@@ -214,7 +210,8 @@ public class UsersServiceImpl implements UsersService {
   }
 
   @Override
-  public OrganizerWalletDisplayDto getWalletDisplay() {
+  public OrganizerWalletDisplayDto getWalletDisplay() throws UserNotFoundException, OrganizerWalletNotFoundException,
+      AccessDeniedException {
     Users organizer = getCurrentUser();
     OrganizerWallet organizerWallet;
     if (!organizer.getIsOrganizer()) {
@@ -230,7 +227,8 @@ public class UsersServiceImpl implements UsersService {
   }
 
   @Override
-  public Page<EventResponseDto> getAttendeeEvents(int page, int size) {
+  public Page<EventResponseDto> getAttendeeEvents(int page, int size) throws UserNotFoundException,
+      AccessDeniedException, EventNotFoundException {
     Users currentUser = getCurrentUser();
     Long userId = currentUser.getId();
     Pageable pageable = PageRequest.of(page, size);

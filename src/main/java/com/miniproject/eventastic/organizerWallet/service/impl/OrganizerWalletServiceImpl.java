@@ -21,7 +21,6 @@ public class OrganizerWalletServiceImpl implements OrganizerWalletService {
     organizerWalletRepository.save(organizerWallet);
   }
 
-  // TODO see if this is necessary
   @Override
   public OrganizerWallet getWalletByOrganizer(Users organizer) {
     OrganizerWallet orgWallet = organizerWalletRepository.findByOrganizer(organizer);

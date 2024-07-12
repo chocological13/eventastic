@@ -1,5 +1,6 @@
 package com.miniproject.eventastic.referralCodeUsage.service.impl;
 
+import com.miniproject.eventastic.exceptions.user.ReferralCodeUnusedException;
 import com.miniproject.eventastic.referralCodeUsage.entity.ReferralCodeUsage;
 import com.miniproject.eventastic.referralCodeUsage.entity.dto.ReferralCodeUseCountDto;
 import com.miniproject.eventastic.referralCodeUsage.entity.dto.ReferralCodeUsersDto;
@@ -22,13 +23,21 @@ public class ReferralCodeUsageServiceImpl implements ReferralCodeUsageService {
   }
 
   @Override
-  public ReferralCodeUseCountDto getReferralCodeUseCount(Users codeOwner) {
-    return referralCodeUsageRepository.countReferralCodeUsageWhereOwnerIs(codeOwner);
+  public ReferralCodeUseCountDto getReferralCodeUseCount(Users codeOwner) throws ReferralCodeUnusedException {
+    ReferralCodeUseCountDto dto = referralCodeUsageRepository.countReferralCodeUsageWhereOwnerIs(codeOwner);
+    if (dto == null) {
+      throw new ReferralCodeUnusedException("No referral code usage found");
+    }
+    return dto;
   }
 
   @Override
-  public List<ReferralCodeUsersDto> getReferralCodeUsers(Users codeOwner) {
-    return referralCodeUsageRepository.findReferralCodeUsersWhereOwnerIs(codeOwner);
+  public List<ReferralCodeUsersDto> getReferralCodeUsers(Users codeOwner) throws ReferralCodeUnusedException {
+    List<ReferralCodeUsersDto> dto = referralCodeUsageRepository.findReferralCodeUsersWhereOwnerIs(codeOwner);
+    if (dto == null) {
+      throw new ReferralCodeUnusedException("No referral code usage found");
+    }
+    return dto;
   }
 
 

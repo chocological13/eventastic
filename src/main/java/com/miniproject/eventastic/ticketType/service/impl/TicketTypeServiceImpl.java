@@ -19,7 +19,7 @@ public class TicketTypeServiceImpl implements TicketTypeService {
   }
 
   @Override
-  public TicketType getTicketTypeById(Long id) {
+  public TicketType getTicketTypeById(Long id) throws TicketTypeNotFoundException {
     return ticketTypeRepository.findById(id).orElseThrow(() -> new TicketTypeNotFoundException("This ticket type does not exist"));
   }
 

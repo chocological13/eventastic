@@ -1,5 +1,6 @@
 package com.miniproject.eventastic.ticket.service.impl;
 
+import com.miniproject.eventastic.exceptions.trx.TicketNotFoundException;
 import com.miniproject.eventastic.ticket.entity.Ticket;
 import com.miniproject.eventastic.ticket.repository.TicketRepository;
 import com.miniproject.eventastic.ticket.service.TicketService;
@@ -29,14 +30,28 @@ public class TicketServiceImpl implements TicketService {
     ticket.setTicketType(ticketType);
     ticket.setUser(user);
     ticket.setEvent(ticketType.getEvent());
-    ticket.setCode(UUID.randomUUID().toString().substring(0, 8));
+    ticket.setCode(generateTicketCode());
     ticket.setIssuedAt(Instant.now());
     ticketRepository.save(ticket);
     return ticket;
   }
 
+  public String generateTicketCode() {
+    String ticketCode;
+    Ticket ticket;
+    do {
+      ticketCode = UUID.randomUUID().toString().substring(0, 8);
+      ticket = ticketRepository.findByCode(ticketCode);
+    } while (ticket != null);
+      return ticketCode;
+  }
+
   @Override
   public Set<Ticket> findTicketsByUser(Users user) {
-    return ticketRepository.findByUser(user);
+    Set<Ticket> ticketSet = ticketRepository.findByUser(user);
+    if (ticketSet == null) {
+      throw new TicketNotFoundException("No ticket found");
+    }
+    return ticketSet;
   }
 }

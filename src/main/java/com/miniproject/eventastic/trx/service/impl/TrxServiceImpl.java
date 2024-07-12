@@ -1,6 +1,15 @@
 package com.miniproject.eventastic.trx.service.impl;
 
+import com.miniproject.eventastic.exceptions.trx.InsufficientPointsException;
+import com.miniproject.eventastic.exceptions.trx.NotAwardeeException;
+import com.miniproject.eventastic.exceptions.trx.PaymentMethodNotFoundException;
+import com.miniproject.eventastic.exceptions.trx.PointsWalletNotFoundException;
+import com.miniproject.eventastic.exceptions.trx.SeatUnavailableException;
 import com.miniproject.eventastic.exceptions.trx.TicketNotFoundException;
+import com.miniproject.eventastic.exceptions.trx.TicketTypeNotFoundException;
+import com.miniproject.eventastic.exceptions.trx.VoucherInvalidException;
+import com.miniproject.eventastic.exceptions.trx.VoucherNotFoundException;
+import com.miniproject.eventastic.exceptions.user.UserNotFoundException;
 import com.miniproject.eventastic.ticket.entity.Ticket;
 import com.miniproject.eventastic.ticket.service.TicketService;
 import com.miniproject.eventastic.trx.entity.Trx;
@@ -14,6 +23,7 @@ import java.util.Set;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -28,7 +38,9 @@ public class TrxServiceImpl implements TrxService {
 
   @Override
   @Transactional
-  public Trx purchaseTicket(TrxPurchaseRequestDto requestDto) {
+  public Trx purchaseTicket(TrxPurchaseRequestDto requestDto) throws UserNotFoundException, AccessDeniedException,
+      TicketTypeNotFoundException, PointsWalletNotFoundException, InsufficientPointsException,
+      VoucherNotFoundException, VoucherInvalidException, SeatUnavailableException, NotAwardeeException, PaymentMethodNotFoundException {
     // * get logged-in user
     Users loggedUser = usersService.getCurrentUser();
     Trx trx = new Trx();
@@ -38,7 +50,7 @@ public class TrxServiceImpl implements TrxService {
   }
 
   @Override
-  public Set<Ticket> getUserTickets() {
+  public Set<Ticket> getUserTickets() throws TicketNotFoundException {
     Users loggedUser = usersService.getCurrentUser();
     Set<Ticket> ticketSet = ticketService.findTicketsByUser(loggedUser);
     if (ticketSet.isEmpty()) {

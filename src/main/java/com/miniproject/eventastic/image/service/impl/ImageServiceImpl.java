@@ -37,38 +37,33 @@ public class ImageServiceImpl implements ImageService {
 
   @Override
   public ImageUserAvatar getAvatarById(Long imageId) {
-    return imageUserAvatarRepository.findById(imageId).orElseThrow(() -> new ImageNotFoundException("ImageUserAvatar not found"));
+    return imageUserAvatarRepository.findById(imageId)
+        .orElseThrow(() -> new ImageNotFoundException("ImageUserAvatar not found"));
   }
 
   @Override
   @Transactional
-  public ImageUserAvatar uploadAvatar(ImageUploadRequestDto requestDto, Users user) {
-    try {
-      validateUploadRequest(requestDto);
+  public ImageUserAvatar uploadAvatar(ImageUploadRequestDto requestDto, Users user) throws IllegalArgumentException {
+    validateUploadRequest(requestDto);
 
-      String imageName = requestDto.getFileName();
-      String imageUrl = cloudinaryService.uploadFile(requestDto.getFile(),
-          "eventastic/users/" + user.getId().toString());
+    String imageName = requestDto.getFileName();
+    String imageUrl = cloudinaryService.uploadFile(requestDto.getFile(),
+        "eventastic/users/" + user.getId().toString());
 
-      ImageUserAvatar imageUserAvatar = new ImageUserAvatar();
-      imageUserAvatar.setImageName(imageName);
-      imageUserAvatar.setImageUrl(imageUrl);
-      imageUserAvatar.setUser(user);
-      if (imageUserAvatar.getImageUrl() == null) {
-        // Handle error appropriately
-        return null;
-      }
-      return imageUserAvatarRepository.save(imageUserAvatar);
-    } catch (Exception e) {
-      log.error(e.getMessage());
+    ImageUserAvatar imageUserAvatar = new ImageUserAvatar();
+    imageUserAvatar.setImageName(imageName);
+    imageUserAvatar.setImageUrl(imageUrl);
+    imageUserAvatar.setUser(user);
+    if (imageUserAvatar.getImageUrl() == null) {
+      // Handle error appropriately
       return null;
     }
+    return imageUserAvatarRepository.save(imageUserAvatar);
   }
 
   @Override
   @Transactional
-  public ImageEvent uploadEventImage(ImageUploadRequestDto requestDto, Users organizer) {
-    try {
+  public ImageEvent uploadEventImage(ImageUploadRequestDto requestDto, Users organizer) throws IllegalArgumentException {
       validateUploadRequest(requestDto);
 
       String imageName = requestDto.getFileName();
@@ -84,10 +79,6 @@ public class ImageServiceImpl implements ImageService {
         return null;
       }
       return imageEventRepository.save(imageEvent);
-    } catch (Exception e) {
-      log.error(e.getMessage());
-      return null;
-    }
   }
 
   @Override

@@ -10,4 +10,5 @@ import org.springframework.stereotype.Repository;
 public interface TicketRepository extends JpaRepository<Ticket, Long> {
 
   Set<Ticket> findByUser(Users user);
+  Ticket findByCode(String code);
 }

@@ -31,7 +31,7 @@ public class AttendeeServiceImpl implements AttendeeService {
   }
 
   @Override
-  public Page<Event> findEventsByAttendee(Long userId, Pageable pageable) {
+  public Page<Event> findEventsByAttendee(Long userId, Pageable pageable) throws EventNotFoundException {
     Page<Event> usersEvents = attendeeRepository.findEventsByUserId(userId, pageable);
     if (usersEvents.isEmpty()) {
       throw new EventNotFoundException("You have no events associated to you");
