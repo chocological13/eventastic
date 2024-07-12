@@ -27,6 +27,17 @@ spring:
     jdbc:
       repositories:
         enabled: false
+  mail:
+    host: smtp.mailersend.net
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 
 application:
   env: ${ENV}

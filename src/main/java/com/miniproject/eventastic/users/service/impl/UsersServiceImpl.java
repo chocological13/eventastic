@@ -15,6 +15,8 @@ import com.miniproject.eventastic.image.entity.ImageUserAvatar;
 import com.miniproject.eventastic.image.entity.dto.ImageUploadRequestDto;
 import com.miniproject.eventastic.image.service.CloudinaryService;
 import com.miniproject.eventastic.image.service.ImageService;
+import com.miniproject.eventastic.mail.service.MailService;
+import com.miniproject.eventastic.mail.service.entity.dto.RegisterEmailTemp;
 import com.miniproject.eventastic.organizerWallet.entity.OrganizerWallet;
 import com.miniproject.eventastic.organizerWallet.entity.dto.OrganizerWalletDisplayDto;
 import com.miniproject.eventastic.organizerWallet.service.OrganizerWalletService;
@@ -72,6 +74,7 @@ public class UsersServiceImpl implements UsersService {
   private final PointsTrxService pointsTrxService;
   private final OrganizerWalletService organizerWalletService;
   private final AttendeeService attendeeService;
+  private final MailService mailService;
 
   @Override
   public Users getCurrentUser() throws AccessDeniedException, UserNotFoundException {
@@ -109,27 +112,39 @@ public class UsersServiceImpl implements UsersService {
   @Transactional
   public RegisterResponseDto register(RegisterRequestDto requestDto)
       throws UserNotFoundException, DuplicateCredentialsException, PointsWalletNotFoundException {
-    // check credentials
-    String username = requestDto.getUsername();
-    String email = requestDto.getEmail();
-    Optional<Users> usersOptional = usersRepository.findByUsername(username);
-    Optional<Users> usersOptional2 = usersRepository.findByEmail(email);
-    if (usersOptional.isPresent() || usersOptional2.isPresent()) {
-      throw new DuplicateCredentialsException("Username or email already exists");
+    try {
+      // check credentials
+      String username = requestDto.getUsername();
+      String email = requestDto.getEmail();
+      Optional<Users> usersOptional = usersRepository.findByUsername(username);
+      Optional<Users> usersOptional2 = usersRepository.findByEmail(email);
+      if (usersOptional.isPresent() || usersOptional2.isPresent()) {
+        throw new DuplicateCredentialsException("Username or email already exists");
+      }
+
+      // init new user and the dto
+      Users newUser = new Users();
+      RegisterRequestDto reqToUser = new RegisterRequestDto();
+      reqToUser.toEntity(newUser, requestDto);
+
+      // encode password and save user so that it persists in db
+      newUser.setPassword(passwordEncoder.encode(requestDto.getPassword()));
+      usersRepository.save(newUser);
+      eventPublisher.publishEvent(new UserRegistrationEvent(this, newUser));
+
+      log.info("Registered user: {}", newUser);
+
+      // * send email
+      String fullName = newUser.getFullName();
+      RegisterEmailTemp welcomeMail = new RegisterEmailTemp();
+      mailService.sendWelcomeEmail(welcomeMail.buildTemplate(email, fullName));
+
+      return new RegisterResponseDto(newUser);
+    } catch (Exception e) {
+      log.error(e.getClass().getSimpleName() + e.getMessage());
+      log.error("Registration failed for user {}", requestDto.getUsername());
+      throw e;
     }
-
-    // init new user and the dto
-    Users newUser = new Users();
-    RegisterRequestDto reqToUser = new RegisterRequestDto();
-    reqToUser.toEntity(newUser, requestDto);
-
-    // encode password and save user so that it persists in db
-    newUser.setPassword(passwordEncoder.encode(requestDto.getPassword()));
-    usersRepository.save(newUser);
-    eventPublisher.publishEvent(new UserRegistrationEvent(this, newUser));
-
-    log.info("Registered user: {}", newUser);
-    return new RegisterResponseDto(newUser);
   }
 
   @Override
@@ -168,13 +183,13 @@ public class UsersServiceImpl implements UsersService {
 
   // ref code related
   @Override
-  public Users getUserByOwnedCode(String ownedCode) throws UserNotFoundException {
-    return usersRepository.findByOwnedRefCode(ownedCode).orElseThrow(() -> new UserNotFoundException(
-        "No code found, make sure you've entered the right referral code"));
+  public Users getUserByOwnedCode(String ownedCode) {
+    return usersRepository.findByOwnedRefCode(ownedCode).orElse(null);
   }
 
   @Override
-  public ReferralCodeUsageSummaryDto getCodeUsageSummary() throws UserNotFoundException, AccessDeniedException, ReferralCodeUnusedException {
+  public ReferralCodeUsageSummaryDto getCodeUsageSummary()
+      throws UserNotFoundException, AccessDeniedException, ReferralCodeUnusedException {
     Users codeOwner = getCurrentUser();
     log.info("CodeOwner: {}", codeOwner);
 
@@ -186,7 +201,8 @@ public class UsersServiceImpl implements UsersService {
 
   @SneakyThrows
   @Override
-  public PointsWallet getUsersPointsWallet() throws UserNotFoundException, AccessDeniedException, PointsWalletNotFoundException {
+  public PointsWallet getUsersPointsWallet()
+      throws UserNotFoundException, AccessDeniedException, PointsWalletNotFoundException {
     // get currently logged-in user
     Users currentUser = getCurrentUser();
     return pointsWalletService.getPointsWallet(currentUser);

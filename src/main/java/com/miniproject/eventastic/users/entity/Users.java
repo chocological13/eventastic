@@ -55,7 +55,7 @@ public class Users {
   private String username;
 
   @NotNull
-  @Column(name = "email", nullable = false, length = 50)
+  @Column(name = "email", nullable = false)
   private String email;
 
   @NotNull

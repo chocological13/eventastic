@@ -53,8 +53,9 @@ public class UserRegistrationListener {
     initPointsWallet(user);
 
     // * init org wallet if org
-    if (user.getIsOrganizer())
+    if (user.getIsOrganizer()) {
       initOrganizerWallet(user);
+    }
 
     // * Generate and assign referral code
     String ownedReferralCode = generateReferralCode();
@@ -87,11 +88,7 @@ public class UserRegistrationListener {
     Users check = null;
     do {
       ownedReferralCode = UUID.randomUUID().toString().substring(0, 7);
-      try {
-        check = usersService.getUserByOwnedCode(ownedReferralCode);
-      } catch (UserNotFoundException e) {
-        log.info("Expected behavior, referral code is available");
-      }
+      check = usersService.getUserByOwnedCode(ownedReferralCode);
     } while (check != null);
     return ownedReferralCode;
   }
@@ -149,6 +146,7 @@ public class UserRegistrationListener {
       log.info("Referral code from user {} was used by new user {}", owner.getUsername(), user.getUsername());
     } else {
       log.info("No referral code was used by new user {}", user.getUsername());
+      throw new UserNotFoundException("No code found, make sure you've entered the right referral code");
     }
   }
 }
