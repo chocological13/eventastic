@@ -17,6 +17,7 @@ import com.miniproject.eventastic.exceptions.trx.TicketTypeNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.VoucherInvalidException;
 import com.miniproject.eventastic.exceptions.trx.VoucherNotFoundException;
 import com.miniproject.eventastic.exceptions.user.AttendeeNotFoundException;
+import com.miniproject.eventastic.exceptions.user.DuplicateCredentialsException;
 import com.miniproject.eventastic.exceptions.user.UserNotFoundException;
 import com.miniproject.eventastic.responses.Response;
 import java.util.HashMap;
@@ -51,12 +52,13 @@ public class GlobalExceptionHandler {
       EXCEPTION_STATUS_MAP.put(VoucherInvalidException.class, HttpStatus.BAD_REQUEST);
       EXCEPTION_STATUS_MAP.put(VoucherNotFoundException.class, HttpStatus.NOT_FOUND);
       EXCEPTION_STATUS_MAP.put(AttendeeNotFoundException.class, HttpStatus.NOT_FOUND);
+      EXCEPTION_STATUS_MAP.put(DuplicateCredentialsException.class, HttpStatus.BAD_REQUEST);
       EXCEPTION_STATUS_MAP.put(UserNotFoundException.class, HttpStatus.NOT_FOUND);
       EXCEPTION_STATUS_MAP.put(AccessDeniedException.class, HttpStatus.FORBIDDEN);
    }
 
    @ExceptionHandler(Exception.class)
-   public ResponseEntity<Response<String>> handleRuntimeException(RuntimeException ex) {
+   public ResponseEntity<Response<String>> handleException(Exception ex) {
       HttpStatus status = EXCEPTION_STATUS_MAP.getOrDefault(ex.getClass(), HttpStatus.INTERNAL_SERVER_ERROR);
       String message = status == HttpStatus.INTERNAL_SERVER_ERROR ? "An unexpected error occurred" : ex.getMessage();
 

@@ -6,6 +6,7 @@ import com.miniproject.eventastic.event.entity.dto.EventResponseDto;
 import com.miniproject.eventastic.exceptions.image.ImageNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.OrganizerWalletNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.PointsTrxNotFoundException;
+import com.miniproject.eventastic.exceptions.user.DuplicateCredentialsException;
 import com.miniproject.eventastic.exceptions.user.UserNotFoundException;
 import com.miniproject.eventastic.image.entity.ImageUserAvatar;
 import com.miniproject.eventastic.image.entity.dto.ImageUploadRequestDto;
@@ -56,6 +57,7 @@ import org.springframework.stereotype.Service;
 @Transactional
 public class UsersServiceImpl implements UsersService {
 
+
   private final UsersRepository usersRepository;
   private final PasswordEncoder passwordEncoder;
   private final AuthenticationManager authenticationManager;
@@ -103,6 +105,15 @@ public class UsersServiceImpl implements UsersService {
   @Override
   @Transactional
   public RegisterResponseDto register(RegisterRequestDto requestDto) {
+    // check credentials
+    String username = requestDto.getUsername();
+    String email = requestDto.getEmail();
+    Optional<Users> usersOptional = usersRepository.findByUsername(username);
+    Optional<Users> usersOptional2 = usersRepository.findByEmail(email);
+    if (usersOptional.isPresent() || usersOptional2.isPresent()) {
+      throw new DuplicateCredentialsException("Username or email already exists");
+    }
+
     // init new user and the dto
     Users newUser = new Users();
     RegisterRequestDto reqToUser = new RegisterRequestDto();
@@ -158,7 +169,8 @@ public class UsersServiceImpl implements UsersService {
   // ref code related
   @Override
   public Users getUserByOwnedCode(String ownedCode) {
-    return usersRepository.findByOwnedRefCode(ownedCode).orElse(null);
+    return usersRepository.findByOwnedRefCode(ownedCode).orElseThrow(() -> new UserNotFoundException(
+        "No code found, make sure you've entered the right referral code"));
   }
 
   @Override
