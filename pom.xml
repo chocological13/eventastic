@@ -104,6 +104,12 @@
       <version>6.0.0</version>
       <scope>compile</scope>
     </dependency>
+    <dependency>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-surefire-plugin</artifactId>
+      <version>3.3.1</version>
+    </dependency>
+
     <!--    cloudinary image upload dependency-->
     <dependency>
       <groupId>com.cloudinary</groupId>
