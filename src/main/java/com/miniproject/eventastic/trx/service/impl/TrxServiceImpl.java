@@ -10,6 +10,8 @@ import com.miniproject.eventastic.exceptions.trx.TicketTypeNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.VoucherInvalidException;
 import com.miniproject.eventastic.exceptions.trx.VoucherNotFoundException;
 import com.miniproject.eventastic.exceptions.user.UserNotFoundException;
+import com.miniproject.eventastic.mail.service.MailService;
+import com.miniproject.eventastic.mail.service.entity.dto.MailTemplate;
 import com.miniproject.eventastic.ticket.entity.Ticket;
 import com.miniproject.eventastic.ticket.service.TicketService;
 import com.miniproject.eventastic.trx.entity.Trx;
@@ -35,16 +37,22 @@ public class TrxServiceImpl implements TrxService {
   private final UsersService usersService;
   private final TicketService ticketService;
   private final ApplicationEventPublisher eventPublisher;
+  private final MailService mailService;
 
   @Override
   @Transactional
   public Trx purchaseTicket(TrxPurchaseRequestDto requestDto) throws UserNotFoundException, AccessDeniedException,
-      TicketTypeNotFoundException, PointsWalletNotFoundException, InsufficientPointsException,
-      VoucherNotFoundException, VoucherInvalidException, SeatUnavailableException, NotAwardeeException, PaymentMethodNotFoundException {
+      TicketTypeNotFoundException, PointsWalletNotFoundException, InsufficientPointsException, VoucherNotFoundException, VoucherInvalidException, SeatUnavailableException, NotAwardeeException, PaymentMethodNotFoundException {
     // * get logged-in user
     Users loggedUser = usersService.getCurrentUser();
     Trx trx = new Trx();
     eventPublisher.publishEvent(new TicketPurchasedEvent(this, loggedUser, trx, requestDto));
+
+    // * send email confirmation
+    MailTemplate temp = new MailTemplate();
+    temp = temp.buildPurchaseTemp(trx);
+    // ! TODO : uncomment in production, suspend email sending for local
+//    mailService.sendEmail(temp);
 
     return trx;
   }

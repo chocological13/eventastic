@@ -42,7 +42,7 @@ public class UserRegistrationListener {
   private final PointsTrxService pointsTrxService;
   private final OrganizerWalletService organizerWalletService;
   private final VoucherService voucherService;
-//
+
   @EventListener
   @Transactional
   public void handleUserRegistrationEvent(UserRegistrationEvent event) throws RuntimeException {

@@ -6,7 +6,6 @@ import com.miniproject.eventastic.voucher.entity.Voucher;
 import com.miniproject.eventastic.voucher.entity.dto.create.CreateVoucherRequestDto;
 import com.miniproject.eventastic.voucher.entity.dto.create.CreateVoucherResponseDto;
 import com.miniproject.eventastic.voucher.service.VoucherService;
-import java.nio.file.AccessDeniedException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,8 +24,7 @@ public class VoucherController {
   private final VoucherService voucherService;
 
   @PostMapping("/create")
-  public ResponseEntity<Response<CreateVoucherResponseDto>> createVoucher(@RequestBody CreateVoucherRequestDto createVoucherRequestDto)
-      throws AccessDeniedException {
+  public ResponseEntity<Response<CreateVoucherResponseDto>> createVoucher(@RequestBody CreateVoucherRequestDto createVoucherRequestDto) {
     CreateVoucherResponseDto newVoucher = new CreateVoucherResponseDto(voucherService.createVoucher(createVoucherRequestDto));
     return Response.successfulResponse(HttpStatus.CREATED.value(), "New Voucher Created!", newVoucher);
   }

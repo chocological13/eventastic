@@ -92,7 +92,7 @@ public class UsersController {
     } catch (PointsTrxNotFoundException e) {
       Response.failedResponse(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
     }
-    return Response.successfulResponse(HttpStatus.OK.value(), "Displayimng points usage history..", pointsTrxDtos);
+    return Response.successfulResponse(HttpStatus.OK.value(), "Displaying points usage history..", pointsTrxDtos);
   }
 
   // * Get logged-in user's vouchers

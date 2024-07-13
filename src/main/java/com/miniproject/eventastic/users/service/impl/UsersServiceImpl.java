@@ -16,7 +16,7 @@ import com.miniproject.eventastic.image.entity.dto.ImageUploadRequestDto;
 import com.miniproject.eventastic.image.service.CloudinaryService;
 import com.miniproject.eventastic.image.service.ImageService;
 import com.miniproject.eventastic.mail.service.MailService;
-import com.miniproject.eventastic.mail.service.entity.dto.RegisterEmailTemp;
+import com.miniproject.eventastic.mail.service.entity.dto.MailTemplate;
 import com.miniproject.eventastic.organizerWallet.entity.OrganizerWallet;
 import com.miniproject.eventastic.organizerWallet.entity.dto.OrganizerWalletDisplayDto;
 import com.miniproject.eventastic.organizerWallet.service.OrganizerWalletService;
@@ -111,7 +111,8 @@ public class UsersServiceImpl implements UsersService {
   @Override
   @Transactional
   public RegisterResponseDto register(RegisterRequestDto requestDto)
-      throws UserNotFoundException, DuplicateCredentialsException, PointsWalletNotFoundException {
+      throws RuntimeException {
+    // will throw UserNotFoundException, DuplicateCredentialsException, PointsWalletNotFoundException
     try {
       // check credentials
       String username = requestDto.getUsername();
@@ -136,8 +137,9 @@ public class UsersServiceImpl implements UsersService {
 
       // * send email
       String fullName = newUser.getFullName();
-      RegisterEmailTemp welcomeMail = new RegisterEmailTemp();
-      mailService.sendWelcomeEmail(welcomeMail.buildTemplate(email, fullName));
+      MailTemplate welcomeMail = new MailTemplate();
+      // ! TODO : uncomment in production, suspend email sending for local
+//      mailService.sendEmail(welcomeMail.buildWelcomeTemp(email, fullName));
 
       return new RegisterResponseDto(newUser);
     } catch (Exception e) {
@@ -184,7 +186,7 @@ public class UsersServiceImpl implements UsersService {
   // ref code related
   @Override
   public Users getUserByOwnedCode(String ownedCode) {
-    return usersRepository.findByOwnedRefCode(ownedCode.toUpperCase()).orElse(null);
+    return usersRepository.findByOwnedRefCode(ownedCode).orElse(null);
   }
 
   @Override

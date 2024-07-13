@@ -10,7 +10,6 @@ import com.miniproject.eventastic.voucher.entity.dto.create.CreateVoucherRequest
 import com.miniproject.eventastic.voucher.repository.VoucherRepository;
 import com.miniproject.eventastic.voucher.service.VoucherService;
 import jakarta.transaction.Transactional;
-import java.nio.file.AccessDeniedException;
 import java.time.Instant;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
@@ -18,6 +17,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 @Service
