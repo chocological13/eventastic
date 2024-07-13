@@ -184,7 +184,7 @@ public class UsersServiceImpl implements UsersService {
   // ref code related
   @Override
   public Users getUserByOwnedCode(String ownedCode) {
-    return usersRepository.findByOwnedRefCode(ownedCode).orElse(null);
+    return usersRepository.findByOwnedRefCode(ownedCode.toUpperCase()).orElse(null);
   }
 
   @Override

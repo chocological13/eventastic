@@ -37,7 +37,7 @@ public class VoucherServiceImpl implements VoucherService {
 
   @Override
   public Voucher getVoucher(String code) {
-    return voucherRepository.findByCode(code).orElse(null);
+    return voucherRepository.findByCode(code.toUpperCase()).orElse(null);
   }
 
   @Override

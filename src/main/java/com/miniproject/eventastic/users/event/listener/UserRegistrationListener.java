@@ -1,7 +1,6 @@
 package com.miniproject.eventastic.users.event.listener;
 
 
-import com.miniproject.eventastic.exceptions.trx.PointsWalletNotFoundException;
 import com.miniproject.eventastic.exceptions.user.UserNotFoundException;
 import com.miniproject.eventastic.organizerWallet.entity.OrganizerWallet;
 import com.miniproject.eventastic.organizerWallet.service.OrganizerWalletService;
@@ -46,8 +45,11 @@ public class UserRegistrationListener {
 
   @EventListener
   @Transactional
-  public void handleUserRegistrationEvent(UserRegistrationEvent event) throws UserNotFoundException {
+  public void handleUserRegistrationEvent(UserRegistrationEvent event) throws RuntimeException {
     Users user = event.getUser();
+    if (user == null) {
+      throw new IllegalArgumentException("User cannot be null in UserRegistrationEvent");
+    }
 
     // * init points wallet
     initPointsWallet(user);
@@ -63,8 +65,10 @@ public class UserRegistrationListener {
     usersService.saveUser(user);
 
     // * Process referral code and update in points trx if used
-    String refCodeUsed = event.getUser().getRefCodeUsed();
-    useRefCode(user, refCodeUsed);
+    if (user.getRefCodeUsed() != null && !user.getRefCodeUsed().isEmpty()) {
+      String refCodeUsed = user.getRefCodeUsed();
+      useRefCode(user, refCodeUsed);
+    }
   }
 
   public void initOrganizerWallet(Users user) {
@@ -85,15 +89,18 @@ public class UserRegistrationListener {
 
   public String generateReferralCode() {
     String ownedReferralCode;
-    Users check = null;
     do {
-      ownedReferralCode = UUID.randomUUID().toString().substring(0, 7);
-      check = usersService.getUserByOwnedCode(ownedReferralCode);
-    } while (check != null);
+      ownedReferralCode = UUID.randomUUID().toString().substring(0, 7).toUpperCase();
+    } while (checkRefCodeExist(ownedReferralCode));
     return ownedReferralCode;
   }
 
-  public void useRefCode(Users user, String refCodeUsed) throws UserNotFoundException, PointsWalletNotFoundException {
+  public boolean checkRefCodeExist(String code) {
+    return usersService.getUserByOwnedCode(code) != null;
+  }
+
+  public void useRefCode(Users user, String refCodeUsed) throws RuntimeException {
+
     Users owner = usersService.getUserByOwnedCode(refCodeUsed);
     if (owner != null) {
       // ** Add points to the code owner's wallet
@@ -103,25 +110,18 @@ public class UserRegistrationListener {
       ownerPointsWallet.setPoints(ownerPointsWallet.getPoints() + POINTS_REWARD);
       ownerPointsWallet.setAwardedAt(Instant.now());
       ownerPointsWallet.setExpiresAt(Instant.now().plus(90, ChronoUnit.DAYS));
-      pointsWalletService.savePointsWallet(ownerPointsWallet);
 
       // update in points trx
       PointsTrx pointsTrx = new PointsTrx();
       pointsTrx.setPointsWallet(ownerPointsWallet);
       pointsTrx.setPoints(POINTS_REWARD);
       pointsTrx.setDescription("Referral code usage by new user");
-      pointsTrxService.savePointsTrx(pointsTrx);
 
       // ** Give voucher to user of the code
       // time set up
       ZonedDateTime endOfDay = ZonedDateTime.now().with(LocalTime.MAX);
       Instant expiresAt = endOfDay.toInstant().plus(90, ChronoUnit.DAYS);
-      String code = "REF10" + UUID.randomUUID().toString().substring(0, 4);
-
-      // check if code exists and regenerate code until it isn't in database
-      while (voucherService.getVoucher(code) != null) {
-        code = "REF10" + UUID.randomUUID().toString().substring(0, 4);
-      }
+      String code = generateVoucher();
 
       // init voucher
       Voucher newVoucher = new Voucher();
@@ -132,7 +132,6 @@ public class UserRegistrationListener {
       newVoucher.setExpiresAt(expiresAt);
       newVoucher.setAwardee(user);
       newVoucher.setUseLimit(1);
-      voucherService.saveVoucher(newVoucher);
 
       // ** Log the usage of referral code
       ReferralCodeUsage usage = new ReferralCodeUsage(
@@ -141,12 +140,35 @@ public class UserRegistrationListener {
           owner,
           Instant.now()
       );
-      referralCodeUsageService.saveReferralCodeUsage(usage);
+
+      // make sure all the saves are executed, if not catch it
+      try {
+        pointsWalletService.savePointsWallet(ownerPointsWallet);
+        pointsTrxService.savePointsTrx(pointsTrx);
+        voucherService.saveVoucher(newVoucher);
+        referralCodeUsageService.saveReferralCodeUsage(usage);
+      } catch (Exception e) {
+        log.error("{}: {}", e.getClass().getSimpleName(), e.getMessage());
+        throw new RuntimeException("Referral code usage have failed!");
+      }
 
       log.info("Referral code from user {} was used by new user {}", owner.getUsername(), user.getUsername());
     } else {
       log.info("No referral code was used by new user {}", user.getUsername());
       throw new UserNotFoundException("No code found, make sure you've entered the right referral code");
     }
+  }
+
+  public String generateVoucher() {
+    String code;
+    // check if code exists and regenerate code until it isn't in database
+    do {
+      code = "REF10" + UUID.randomUUID().toString().substring(0, 4).toUpperCase();
+    } while (checkVoucher(code));
+    return code;
+  }
+
+  public boolean checkVoucher(String code) {
+    return voucherService.getVoucher(code) != null;
   }
 }
