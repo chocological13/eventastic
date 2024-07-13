@@ -6,6 +6,7 @@ import com.miniproject.eventastic.review.entity.Review;
 import com.miniproject.eventastic.ticketType.entity.TicketType;
 import com.miniproject.eventastic.trx.entity.Trx;
 import com.miniproject.eventastic.users.entity.Users;
+import com.miniproject.eventastic.voucher.entity.Voucher;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -111,6 +112,9 @@ public class Event {
   @JoinColumn(name = "event_image_id")
   private ImageEvent eventImage;
 
+  @Column(name = "map", length = Integer.MAX_VALUE)
+  private String map;
+
   @OneToMany(mappedBy = "event")
   private Set<Review> reviews = new LinkedHashSet<>();
 
@@ -119,6 +123,10 @@ public class Event {
 
   @OneToMany(mappedBy = "event")
   private Set<Trx> trxes = new LinkedHashSet<>();
+
+  @OneToMany(mappedBy = "event")
+  private Set<Voucher> vouchers = new LinkedHashSet<>();
+
 
   @PrePersist
   protected void onCreate() {

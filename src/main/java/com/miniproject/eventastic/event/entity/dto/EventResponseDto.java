@@ -23,6 +23,7 @@ public class EventResponseDto {
   private String description;
   private String location;
   private String venue;
+  private String map;
   private EventImageResponseDto image;
   private LocalDate eventDate;
   private LocalTime startTime;
@@ -45,6 +46,7 @@ public class EventResponseDto {
     this.category = event.getCategory().getName();
     this.location = event.getLocation();
     this.venue = event.getVenue();
+    this.map = event.getMap();
     this.image = new EventImageResponseDto(event.getEventImage());
     this.eventDate = event.getEventDate();
     this.startTime = event.getStartTime();

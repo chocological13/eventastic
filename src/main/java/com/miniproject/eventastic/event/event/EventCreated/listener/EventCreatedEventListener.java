@@ -45,24 +45,29 @@ public class EventCreatedEventListener {
 
     // update seat limit
     setSeatLimit(createdEvent, ticketTypes);
+
+    // set map
+    if (requestDto.getMap() != null) {
+      createdEvent.setMap(requestDto.getMap());
+    }
   }
 
   // Region - utilities
-  private void setCategory(Event createdEvent, CreateEventRequestDto requestDto) throws CategoryNotFoundException {
+  public void setCategory(Event createdEvent, CreateEventRequestDto requestDto) throws CategoryNotFoundException {
     if (requestDto.getCategoryId() != null) {
       Category category = categoryRepository.findById(requestDto.getCategoryId()).orElseThrow(() -> new CategoryNotFoundException("Category not found, please enter another ID"));
       createdEvent.setCategory(category);
     }
   }
 
-  private void setImage(Event createdEvent, CreateEventRequestDto requestDto) throws ImageNotFoundException {
+  public void setImage(Event createdEvent, CreateEventRequestDto requestDto) throws ImageNotFoundException {
     if (requestDto.getImageId() != null) {
       ImageEvent imageEvent = imageService.getEventImageById(requestDto.getImageId());
       createdEvent.setEventImage(imageEvent);
     }
   }
 
-  private Set<TicketType> getTicketType(Event createdEvent,
+  public Set<TicketType> getTicketType(Event createdEvent,
       Set<TicketTypeCreateRequestDto> ticketTypeCreateRequestDtos) {
     Set<TicketType> ticketTypes = new LinkedHashSet<>();
     if (!createdEvent.getIsFree()) {

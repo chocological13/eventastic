@@ -89,6 +89,7 @@ public class EventServiceImpl implements EventService {
 
     // event listener
     eventPublisher.publishEvent(new EventCreatedEvent(this, createdEvent, requestDto));
+    eventRepository.save(createdEvent);
 
     return new EventResponseDto(createdEvent);
   }

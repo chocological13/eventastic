@@ -21,6 +21,7 @@ public class UpdateEventRequestDto {
   private Long categoryId;
   private String location;
   private String venue;
+  private String map;
   private Long imageId;
   private LocalDate eventDate;
   private LocalTime startTime;
@@ -36,6 +37,7 @@ public class UpdateEventRequestDto {
     event.setStartTime(Optional.ofNullable(startTime).orElse(updateDto.getStartTime()));
     event.setEndTime(Optional.ofNullable(endTime).orElse(updateDto.getEndTime()));
     event.setUpdatedAt(Instant.now());
+    event.setMap(Optional.ofNullable(map).orElse(updateDto.getMap()));
     return event;
   }
 }

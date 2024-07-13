@@ -31,6 +31,8 @@ public class CreateEventRequestDto {
   @NotEmpty
   private String venue;
 
+  private String map;
+
   private Long imageId;
 
   @NotNull
@@ -45,6 +47,7 @@ public class CreateEventRequestDto {
   @NotNull
   private Boolean isFree;
 
+
   private Set<TicketTypeCreateRequestDto> ticketTypeCreateRequestDtos;
 
   public Event dtoToEvent(CreateEventRequestDto eventRequestDto) {
@@ -54,6 +57,7 @@ public class CreateEventRequestDto {
     event.setDescription(eventRequestDto.description);
     event.setLocation(eventRequestDto.location);
     event.setVenue(eventRequestDto.venue);
+    event.setMap(eventRequestDto.map);
     event.setEventDate(eventRequestDto.eventDate);
     event.setStartTime(eventRequestDto.startTime);
     event.setEndTime(eventRequestDto.endTime);

@@ -39,6 +39,11 @@ public class EventUpdatedListener {
 
     // update ticket types, if any
     setTicketTypes(updatedEvent, requestDto);
+
+    // set map, if any
+    if (requestDto.getMap() != null) {
+      updatedEvent.setMap(requestDto.getMap());
+    }
   }
 
   // Region - utilities
