@@ -49,12 +49,15 @@ public class TrxServiceImpl implements TrxService {
     eventPublisher.publishEvent(new TicketPurchasedEvent(this, loggedUser, trx, requestDto));
 
     // * send email confirmation
+    sendConfirmationEmail(trx);
+    return trx;
+  }
+
+  public void sendConfirmationEmail(Trx trx) {
     MailTemplate temp = new MailTemplate();
     temp = temp.buildPurchaseTemp(trx);
     // ! TODO : uncomment in production, suspend email sending for local
 //    mailService.sendEmail(temp);
-
-    return trx;
   }
 
   @Override

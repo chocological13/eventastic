@@ -40,6 +40,7 @@ import java.time.LocalDate;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
@@ -70,34 +71,31 @@ public class TicketPurchasedEventListener {
 
     // Get event
     Event eventPurchase = validateAndRetrieveEvent(requestDto.getEventId());
+    System.out.println("Event: " + eventPurchase);
 
     // Check TT and available seat
     TicketType ticketType = validateAndRetrieveTicketType(requestDto.getTicketTypeId());
+    System.out.println("TicketType: " + ticketType);
 
     // Create Trx
     createTransaction(requestDto, loggedUser, eventPurchase, ticketType, trx);
+    trxRepository.save(trx);
+    System.out.println("Transaction created for user: " + loggedUser);
 
     // points and voucher usage and payment method
     PointsTrx pointsTrx = usePoints(requestDto, trx);
-    BigDecimal discount = useVoucher(requestDto, trx);
+    BigDecimal discount = calculateDiscount(requestDto, trx);
     setPaymentMethod(requestDto, trx);
 
-    // get total amount
-    BigDecimal points = pointsTrx != null ? BigDecimal.valueOf(-pointsTrx.getPoints()) : BigDecimal.ZERO;
-    BigDecimal initAmount = calculateInitialAmount(ticketType, requestDto.getQty());
-    BigDecimal toBeDeducted = points.add(discount);
-    BigDecimal totalAmount = initAmount.subtract(toBeDeducted);
-    trx.setTotalAmount(totalAmount);
-
-    trx.setTrxDate(Instant.now());
-    trx.setIsPaid(true);
-    trxRepository.save(trx);
+    // finalize trx total amount
+    finalizeTransaction(trx, pointsTrx, discount);
 
     // set attendee for this purchase
     setAttendee(loggedUser, eventPurchase, requestDto.getQty());
 
     // set trx to PointsTrx
     if (pointsTrx != null) pointsTrx.setTrx(trx);
+    pointsTrxService.savePointsTrx(pointsTrx);
 
     // send payout to organizer
     organizerWalletTrxService.sendPayout(trx);
@@ -177,6 +175,7 @@ public class TicketPurchasedEventListener {
     PointsTrx pointsTrx = new PointsTrx();
     pointsTrx.setPointsWallet(pointsWallet);
     pointsTrx.setDescription("Points used to purchase tickets to " + trx.getEvent().getTitle());
+    pointsTrx.setTrx(trx);
 
     if (points.compareTo(price) < 0) {
       int pointsUsed = pointsWallet.getPoints(); // use all points available
@@ -199,38 +198,20 @@ public class TicketPurchasedEventListener {
     return pointsTrx;
   }
 
-  public BigDecimal useVoucher(TrxPurchaseRequestDto requestDto, Trx trx) throws VoucherNotFoundException, VoucherInvalidException {
+  public BigDecimal calculateDiscount(TrxPurchaseRequestDto requestDto, Trx trx) throws RuntimeException {
     BigDecimal discount = BigDecimal.ZERO;
     if (!requestDto.getVoucherCode().isEmpty()) {
-      Voucher voucher = voucherService.getVoucher(requestDto.getVoucherCode());
-      if (voucher == null) {
-        throw new VoucherNotFoundException("This voucher does not exist!");
-      }
-      if (voucher.getExpiresAt().isBefore(Instant.now())) {
-        throw new VoucherInvalidException("Voucher is expired!");
-      }
-      if (voucher.getUseLimit() <= 0) {
-        throw new VoucherInvalidException("Voucher has been all used up!");
-      }
-      trx.setVoucher(voucher);
-      discount = applyVoucher(trx, voucher);
+      Voucher usedVoucher = voucherService.useVoucher(requestDto.getVoucherCode(), trx.getUser());
+      trx.setVoucher(usedVoucher);
+      discount = applyVoucher(trx, usedVoucher);
     }
     return discount;
   }
 
-  public BigDecimal applyVoucher(Trx trx, Voucher voucher) throws NotAwardeeException {
-    BigDecimal discount;
-    Users user = trx.getUser();
-    Users awardee = voucher.getAwardee();
-    if (awardee == null || awardee.equals(user)) {
-      discount = trx.getInitialAmount()
-          .multiply(BigDecimal.valueOf(voucher.getPercentDiscount()).divide(BigDecimal.valueOf(100), RoundingMode.HALF_UP));
-      voucher.setUseLimit(voucher.getUseLimit() - 1);
-      voucherService.saveVoucher(voucher);
-    } else {
-      throw new NotAwardeeException("This voucher was not meant for you >:C");
-    }
-    return discount;
+  public BigDecimal applyVoucher(Trx trx, Voucher voucher) {
+    BigDecimal percent = BigDecimal.valueOf(voucher.getPercentDiscount())
+        .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+    return trx.getInitialAmount().multiply(percent);
   }
 
   // set payment method
@@ -238,6 +219,18 @@ public class TicketPurchasedEventListener {
     Payment payment = paymentRepository.findById(requestDto.getPaymentId()).orElseThrow(() ->
         new PaymentMethodNotFoundException("Please enter a valid method of payment!"));
     trx.setPayment(payment);
+  }
+
+  private void finalizeTransaction(Trx trx, PointsTrx pointsTrx, BigDecimal discount) {
+    BigDecimal points = pointsTrx != null ? BigDecimal.valueOf(-pointsTrx.getPoints()) : BigDecimal.ZERO;
+    BigDecimal initAmount = trx.getInitialAmount();
+    BigDecimal toBeDeducted = points.add(discount);
+    BigDecimal totalAmount = initAmount.subtract(toBeDeducted);
+    trx.setTotalAmount(totalAmount);
+
+    trx.setTrxDate(Instant.now());
+    trx.setIsPaid(true);
+    trxRepository.save(trx);
   }
 
   // attendee set up

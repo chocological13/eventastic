@@ -6,8 +6,9 @@ import java.util.Objects;
 import lombok.Data;
 
 @Data
-public class CreateVoucherResponseDto {
+public class CreateEventVoucherResponseDto {
 
+  private Long id;
   private String code;
   private String description;
   private String awardee;
@@ -18,8 +19,9 @@ public class CreateVoucherResponseDto {
   private Instant createdAt;
   private Instant expiresAt;
 
-  public CreateVoucherResponseDto(Voucher voucher) {
+  public CreateEventVoucherResponseDto(Voucher voucher) {
 
+    this.id = voucher.getId();
     this.code = voucher.getCode();
     this.description = voucher.getDescription();
     this.awardee = voucher.getAwardee() != null ?
@@ -37,8 +39,8 @@ public class CreateVoucherResponseDto {
     this.expiresAt = voucher.getExpiresAt();
   }
 
-  public CreateVoucherResponseDto toDto(Voucher voucher) {
-    return new CreateVoucherResponseDto(voucher);
+  public CreateEventVoucherResponseDto toDto(Voucher voucher) {
+    return new CreateEventVoucherResponseDto(voucher);
   }
 
 }

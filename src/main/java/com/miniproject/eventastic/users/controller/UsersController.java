@@ -4,7 +4,6 @@ import com.miniproject.eventastic.exceptions.image.ImageNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.OrganizerWalletNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.PointsTrxNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.TicketNotFoundException;
-import com.miniproject.eventastic.exceptions.trx.VoucherNotFoundException;
 import com.miniproject.eventastic.image.entity.ImageUserAvatar;
 import com.miniproject.eventastic.image.entity.dto.ImageUploadRequestDto;
 import com.miniproject.eventastic.image.entity.dto.ImageUploadResponseDto;
@@ -22,12 +21,9 @@ import com.miniproject.eventastic.users.entity.dto.register.RegisterRequestDto;
 import com.miniproject.eventastic.users.entity.dto.register.RegisterResponseDto;
 import com.miniproject.eventastic.users.entity.dto.userManagement.ProfileUpdateRequestDTO;
 import com.miniproject.eventastic.users.service.UsersService;
-import com.miniproject.eventastic.voucher.entity.Voucher;
-import com.miniproject.eventastic.voucher.entity.dto.create.CreateVoucherResponseDto;
 import com.miniproject.eventastic.voucher.service.VoucherService;
 import jakarta.validation.Valid;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -95,19 +91,19 @@ public class UsersController {
     return Response.successfulResponse(HttpStatus.OK.value(), "Displaying points usage history..", pointsTrxDtos);
   }
 
-  // * Get logged-in user's vouchers
-  @GetMapping("/me/vouchers")
-  public ResponseEntity<Response<List<CreateVoucherResponseDto>>> getAwardeesVoucher() {
-    try {
-      List<Voucher> voucherList = voucherService.getAwardeesVouchers();
-      List<CreateVoucherResponseDto> responseDtos = voucherList.stream()
-          .map(CreateVoucherResponseDto::new)
-          .toList();
-      return Response.successfulResponse(HttpStatus.OK.value(), "Displaying your vouchers..", responseDtos);
-    } catch (VoucherNotFoundException e) {
-      return Response.failedResponse(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
-    }
-  }
+  // TODO : Get logged-in user's vouchers
+//  @GetMapping("/me/vouchers")
+//  public ResponseEntity<Response<List<CreateEventVoucherResponseDto>>> getAwardeesVoucher() {
+//    try {
+//      List<Voucher> voucherList = voucherService.getAwardeesVouchers();
+//      List<CreateEventVoucherResponseDto> responseDtos = voucherList.stream()
+//          .map(CreateEventVoucherResponseDto::new)
+//          .toList();
+//      return Response.successfulResponse(HttpStatus.OK.value(), "Displaying your vouchers..", responseDtos);
+//    } catch (VoucherNotFoundException e) {
+//      return Response.failedResponse(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
+//    }
+//  }
 
   // * Edit Profile
   @PutMapping("/me/update")

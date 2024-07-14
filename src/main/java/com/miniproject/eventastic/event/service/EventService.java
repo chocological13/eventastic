@@ -10,6 +10,8 @@ import com.miniproject.eventastic.image.entity.dto.ImageUploadRequestDto;
 import com.miniproject.eventastic.review.entity.Review;
 import com.miniproject.eventastic.review.entity.dto.ReviewSubmitRequestDto;
 import com.miniproject.eventastic.review.entity.dto.ReviewSubmitResponseDto;
+import com.miniproject.eventastic.voucher.entity.Voucher;
+import com.miniproject.eventastic.voucher.entity.dto.create.CreateEventVoucherRequestDto;
 import org.springframework.data.domain.Page;
 
 public interface EventService {
@@ -30,6 +32,11 @@ public interface EventService {
 
   // soft delete
   void deleteEvent(Long eventId);
+
+  // Region - other entities service calls
+
+  // create voucher
+  Voucher createEventVoucher(Long eventId, CreateEventVoucherRequestDto requestDto);
 
   // category
   Category getCategoryById(Long eventId);

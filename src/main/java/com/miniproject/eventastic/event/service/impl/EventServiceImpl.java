@@ -29,6 +29,9 @@ import com.miniproject.eventastic.review.service.ReviewService;
 import com.miniproject.eventastic.ticketType.service.TicketTypeService;
 import com.miniproject.eventastic.users.entity.Users;
 import com.miniproject.eventastic.users.service.UsersService;
+import com.miniproject.eventastic.voucher.entity.Voucher;
+import com.miniproject.eventastic.voucher.entity.dto.create.CreateEventVoucherRequestDto;
+import com.miniproject.eventastic.voucher.service.VoucherService;
 import jakarta.transaction.Transactional;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -61,6 +64,7 @@ public class EventServiceImpl implements EventService {
   private final ReviewService reviewService;
   private final AttendeeService attendeeService;
   private final ApplicationEventPublisher eventPublisher;
+  private final VoucherService voucherService;
 
   @Override
   public void saveEvent(Event event) {
@@ -186,6 +190,13 @@ public class EventServiceImpl implements EventService {
     verifyOrganizer(eventToDelete);
     eventToDelete.setDeletedAt(Instant.now());
 
+  }
+
+  @Override
+  public Voucher createEventVoucher(Long eventId, CreateEventVoucherRequestDto requestDto) throws RuntimeException {
+    Users organizer = usersService.getCurrentUser();
+    Event event = getEventById(eventId);
+    return voucherService.createEventVoucher(organizer, event, requestDto);
   }
 
   @Override

@@ -1,13 +1,16 @@
 package com.miniproject.eventastic.voucher.service.impl;
 
 import com.miniproject.eventastic.event.entity.Event;
-import com.miniproject.eventastic.event.service.EventService;
+import com.miniproject.eventastic.exceptions.trx.VoucherInvalidException;
 import com.miniproject.eventastic.exceptions.trx.VoucherNotFoundException;
+import com.miniproject.eventastic.exceptions.user.DuplicateCredentialsException;
 import com.miniproject.eventastic.users.entity.Users;
-import com.miniproject.eventastic.users.service.UsersService;
 import com.miniproject.eventastic.voucher.entity.Voucher;
-import com.miniproject.eventastic.voucher.entity.dto.create.CreateVoucherRequestDto;
+import com.miniproject.eventastic.voucher.entity.VoucherUsage;
+import com.miniproject.eventastic.voucher.entity.VoucherUsageId;
+import com.miniproject.eventastic.voucher.entity.dto.create.CreateEventVoucherRequestDto;
 import com.miniproject.eventastic.voucher.repository.VoucherRepository;
+import com.miniproject.eventastic.voucher.repository.VoucherUsageRepository;
 import com.miniproject.eventastic.voucher.service.VoucherService;
 import jakarta.transaction.Transactional;
 import java.time.Instant;
@@ -27,8 +30,7 @@ import org.springframework.stereotype.Service;
 public class VoucherServiceImpl implements VoucherService {
 
   private final VoucherRepository voucherRepository;
-  private final UsersService usersService;
-  private final EventService eventService;
+  private final VoucherUsageRepository voucherUsageRepository;
 
   @Override
   public void saveVoucher(Voucher voucher) {
@@ -36,44 +38,111 @@ public class VoucherServiceImpl implements VoucherService {
   }
 
   @Override
-  public Voucher getVoucher(String code) {
-    return voucherRepository.findByCode(code.toUpperCase()).orElse(null);
+  public Voucher useVoucher(String voucherCode, Users user) {
+    Voucher voucher = voucherRepository.findByCodeAndIsActiveTrue(voucherCode);
+//        .orElseThrow(() -> new VoucherNotFoundException("Voucher with code " + voucherCode + " not found or is no longer active!"));
+
+    // * check validity
+    if (voucher == null) {
+      throw new VoucherNotFoundException("Voucher with code " + voucherCode + " not found or is no longer active!");
+    }
+
+    // check if it's a for all voucher or for a specific user voucher
+    if (voucher.getAwardee() != null && !voucher.getAwardee().getId().equals(user.getId())) {
+      throw new VoucherInvalidException("This voucher isn't meant for you :(");
+    }
+    // check expiry
+    Instant now = Instant.now();
+    if (voucher.getExpiresAt().isBefore(now)) {
+      voucher.setIsActive(false);
+      voucher.setExpiresAt(now);
+      voucherRepository.save(voucher);
+      throw new VoucherInvalidException("Voucher with code " + voucherCode + " is expired!!");
+    }
+    // check if it's available
+    if (voucher.getUseLimit() > 0) {
+      voucher.setUseLimit(voucher.getUseLimit() - 1);
+      if (voucher.getUseLimit() <= 0) {
+        voucher.setIsActive(false);
+        voucher.setDeactivatedAt(now);
+      }
+      voucherRepository.save(voucher);
+    } else {
+      throw new VoucherInvalidException("Voucher with code " + voucherCode + " is all used up!");
+    }
+
+    // check if voucher has been used by user before
+    VoucherUsageId voucherUsageId = new VoucherUsageId(user.getId(), voucher.getId());
+
+    VoucherUsage checkUsage = voucherUsageRepository.findById(voucherUsageId).orElse(null);
+    if (checkUsage != null) {
+      throw new VoucherInvalidException("You've used this voucher before!!");
+    }
+
+    // set usage history
+    VoucherUsage voucherUsage = new VoucherUsage();
+    voucherUsage.setId(voucherUsageId);
+    voucherUsage.setUser(user);
+    voucherUsage.setVoucher(voucher);
+    voucherUsage.setUsedAt(now);
+    voucherUsageRepository.save(voucherUsage);
+
+    return voucher;
   }
 
   @Override
-  public Voucher createVoucher(CreateVoucherRequestDto createVoucherRequestDto) throws AccessDeniedException {
-    // verify user
-    Users loggedInUser = usersService.getCurrentUser();
-    if (!loggedInUser.getIsOrganizer() && !loggedInUser.getUsername().equals("strwbry")) {
+  public Voucher getVoucher(String code) {
+    return voucherRepository.findByCode(code.toUpperCase())
+        .orElseThrow(() -> new VoucherNotFoundException(code + " not found!"));
+  }
+
+  @Override
+  @Transactional
+  public Voucher createEventVoucher(Users organizer, Event event, CreateEventVoucherRequestDto requestDto)
+      throws AccessDeniedException {
+    /* * check for voucher code and see if it already exists and is still valid for use
+     * if voucher exists, but is not active (expired and use limit = 0),
+     * reference it to the new voucher
+     * this is so that later we can reference in the usage history without duplicate history
+     * of the older voucher  */
+
+    // * 1. verify user and get event
+    if (!organizer.getIsOrganizer() && !organizer.getUsername().equals("strwbry")) {
       throw new AccessDeniedException("Only organizers and admins can create a voucher.");
     }
 
-    // time set up
-    ZonedDateTime endOfDay = ZonedDateTime.now().with(LocalTime.MAX);
-    Instant expiresAt = endOfDay.toInstant().plus(createVoucherRequestDto.getValidity(), ChronoUnit.DAYS);
-
-    // init voucher
-    Voucher newVoucher = new Voucher();
-    newVoucher.setCode(createVoucherRequestDto.getCode());
-    newVoucher.setDescription(createVoucherRequestDto.getDescription());
-    newVoucher.setPercentDiscount(createVoucherRequestDto.getPercentDiscount());
-    newVoucher.setCreatedAt(Instant.now());
-    newVoucher.setExpiresAt(expiresAt);
-    newVoucher.setOrganizer(loggedInUser);
-
-    // see if voucher is for a user or specific to an event
-    if (createVoucherRequestDto.getAwardeeId() != null) {
-      Users awardedUser = usersService.getById(createVoucherRequestDto.getAwardeeId());
-      newVoucher.setAwardee(awardedUser);
-    } else {
-      // limit usage only for global voucher, if user is null and useLimit is null, default useLimit is 100
-      newVoucher.setUseLimit(createVoucherRequestDto.getUseLimit() != null ? createVoucherRequestDto.getUseLimit() : 100);
+    // * 2. check if voucher exists and is active (will throw exception)
+    String voucherCode = requestDto.getCode().toUpperCase();
+    Voucher existingVoucher = voucherRepository.findByCodeAndIsActiveTrue(voucherCode);
+    if (existingVoucher != null) {
+      throw new DuplicateCredentialsException("Voucher with this code already exists! Please choose a different "
+                                              + "voucher code!");
     }
 
-    // see if voucher is tied to a specific event
-    if (createVoucherRequestDto.getEventId() != null) {
-      Event event = eventService.getEventById(createVoucherRequestDto.getEventId());
-      newVoucher.setEvent(event);
+    // * 3. init new voucher
+    // time set up
+    Instant now = Instant.now();
+    int validity = requestDto.getValidity();
+    ZonedDateTime endOfDay = ZonedDateTime.now().with(LocalTime.MAX);
+    Instant expiresAt = endOfDay.toInstant().plus(validity, ChronoUnit.DAYS);
+
+    Voucher newVoucher = new Voucher();
+    newVoucher.setCode(voucherCode);
+    newVoucher.setOrganizer(organizer);
+    newVoucher.setEvent(event);
+    newVoucher.setDescription(requestDto.getDescription());
+    newVoucher.setPercentDiscount(requestDto.getPercentDiscount());
+    newVoucher.setCreatedAt(Instant.now());
+    newVoucher.setExpiresAt(expiresAt);
+    newVoucher.setUseLimit(requestDto.getUseLimit() != null ? requestDto.getUseLimit() : 100); // default useLimit is
+    // 100 if not given by organizer
+    newVoucher.setIsActive(true);
+
+    // * 4. check if voucher exists and is inactive, set this to originalVoucher
+    // order by createdAt desc = will get the inactive voucher that is created the most recent
+    Voucher inactiveVoucher = voucherRepository.findByCodeAndIsActiveFalseOrderByCreatedAtDesc(voucherCode);
+    if (inactiveVoucher != null) {
+      newVoucher.setOriginalVoucher(inactiveVoucher);
     }
 
     voucherRepository.save(newVoucher);
@@ -81,11 +150,9 @@ public class VoucherServiceImpl implements VoucherService {
   }
 
 
-
   @Override
-  public List<Voucher> getAwardeesVouchers() {
-    Users loggedInUser = usersService.getCurrentUser();
-    Long userId = loggedInUser.getId();
+  public List<Voucher> getAwardeesVouchers(Users user) {
+    Long userId = user.getId();
     List<Voucher> voucherList = voucherRepository.findByAwardeeIdAndExpiresAtIsAfter(userId, Instant.now());
     if (voucherList.isEmpty()) {
       throw new VoucherNotFoundException("You currently have no active vouchers.");
@@ -110,6 +177,11 @@ public class VoucherServiceImpl implements VoucherService {
       throw new VoucherNotFoundException("There are no active global vouchers");
     }
     return voucherList;
+  }
+
+  @Override
+  public void saveVoucherUsage(VoucherUsage voucherUsage) {
+    voucherUsageRepository.save(voucherUsage);
   }
 
 

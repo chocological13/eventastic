@@ -15,7 +15,7 @@
 //import com.miniproject.eventastic.users.repository.UsersRepository;
 //import com.miniproject.eventastic.users.service.impl.UsersServiceImpl;
 //import com.miniproject.eventastic.voucher.entity.Voucher;
-//import com.miniproject.eventastic.voucher.entity.dto.create.CreateVoucherRequestDto;
+//import com.miniproject.eventastic.voucher.entity.dto.create.CreateEventVoucherRequestDto;
 //import com.miniproject.eventastic.voucher.repository.VoucherRepository;
 //import java.nio.file.AccessDeniedException;
 //import java.util.Optional;
@@ -95,7 +95,7 @@
 //  @Test
 //  public void testCreateVoucherByOrganizer() throws AccessDeniedException {
 //    // set up dto
-//    CreateVoucherRequestDto requestDto = new CreateVoucherRequestDto();
+//    CreateEventVoucherRequestDto requestDto = new CreateEventVoucherRequestDto();
 //    requestDto.setCode("TEST");
 //    requestDto.setDescription("test desc");
 //    requestDto.setPercentDiscount(10);

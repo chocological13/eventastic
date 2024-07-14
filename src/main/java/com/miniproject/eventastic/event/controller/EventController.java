@@ -18,7 +18,8 @@ import com.miniproject.eventastic.review.entity.Review;
 import com.miniproject.eventastic.review.entity.dto.ReviewSubmitRequestDto;
 import com.miniproject.eventastic.review.entity.dto.ReviewSubmitResponseDto;
 import com.miniproject.eventastic.voucher.entity.Voucher;
-import com.miniproject.eventastic.voucher.entity.dto.create.CreateVoucherResponseDto;
+import com.miniproject.eventastic.voucher.entity.dto.create.CreateEventVoucherRequestDto;
+import com.miniproject.eventastic.voucher.entity.dto.create.CreateEventVoucherResponseDto;
 import com.miniproject.eventastic.voucher.service.VoucherService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -76,18 +77,27 @@ public class EventController {
 
   // * Display available vouchers for event
   @GetMapping("/{eventId}/vouchers")
-  public ResponseEntity<Response<List<CreateVoucherResponseDto>>> getVouchers(@PathVariable Long eventId) {
+  public ResponseEntity<Response<List<CreateEventVoucherResponseDto>>> getVouchers(@PathVariable Long eventId) {
     try {
       Event existingEvent = eventService.getEventById(eventId);
       List<Voucher> eventVoucher = voucherService.getEventVouchers(eventId);
-      List<CreateVoucherResponseDto> createVoucherResponseDtos = eventVoucher.stream()
-          .map(CreateVoucherResponseDto::new).toList();
+      List<CreateEventVoucherResponseDto> createEventVoucherResponseDtos = eventVoucher.stream()
+          .map(CreateEventVoucherResponseDto::new).toList();
       return Response.successfulResponse(HttpStatus.OK.value(),
           "Displaying vouchers for " + existingEvent.getTitle(),
-          createVoucherResponseDtos);
+          createEventVoucherResponseDtos);
     } catch (EventNotFoundException e) {
       return Response.failedResponse(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
     }
+  }
+
+  // * Create vouchers for event (organizer only)
+  @PostMapping("/{eventId}/vouchers/create")
+  public ResponseEntity<Response<CreateEventVoucherResponseDto>> createEventVoucher(@PathVariable Long eventId, @Valid @RequestBody CreateEventVoucherRequestDto requestDto) {
+    Voucher newVoucher = eventService.createEventVoucher(eventId, requestDto);
+    Event event = eventService.getEventById(eventId);
+    log.info("Voucher request created for event: {}", event.getTitle());
+    return Response.successfulResponse(HttpStatus.CREATED.value(), "Voucher successfully created!!", new CreateEventVoucherResponseDto(newVoucher));
   }
 
   // search, sort, pagination

@@ -10,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
@@ -33,7 +34,7 @@ public class Voucher {
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "voucher_id_gen")
   @SequenceGenerator(name = "voucher_id_gen", sequenceName = "voucher_id_seq", allocationSize = 1)
   @Column(name = "id", nullable = false)
-  private Integer id;
+  private Long id;
 
   @Size(max = 10)
   @NotNull
@@ -59,8 +60,8 @@ public class Voucher {
   @Column(name = "created_at")
   private Instant createdAt;
 
-  @Column(name = "deleted_at")
-  private Instant deletedAt;
+  @Column(name = "deactivated_at")
+  private Instant deactivatedAt;
 
   @Column(name = "expires_at")
   private Instant expiresAt;
@@ -71,5 +72,18 @@ public class Voucher {
 
   @Column(name = "use_limit")
   private Integer useLimit;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "original_voucher_id")
+  private Voucher originalVoucher;
+
+  @NotNull
+  @Column(name = "is_active", nullable = false)
+  private Boolean isActive;
+
+  @PrePersist
+  protected void onCreate() {
+    createdAt = Instant.now();
+  }
 
 }
