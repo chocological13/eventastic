@@ -8,6 +8,7 @@ import com.miniproject.eventastic.exceptions.image.ImageNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.OrganizerWalletNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.PointsTrxNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.PointsWalletNotFoundException;
+import com.miniproject.eventastic.exceptions.trx.VoucherNotFoundException;
 import com.miniproject.eventastic.exceptions.user.DuplicateCredentialsException;
 import com.miniproject.eventastic.exceptions.user.ReferralCodeUnusedException;
 import com.miniproject.eventastic.exceptions.user.UserNotFoundException;
@@ -36,6 +37,8 @@ import com.miniproject.eventastic.users.entity.dto.userManagement.ProfileUpdateR
 import com.miniproject.eventastic.users.event.UserRegistrationEvent;
 import com.miniproject.eventastic.users.repository.UsersRepository;
 import com.miniproject.eventastic.users.service.UsersService;
+import com.miniproject.eventastic.voucher.entity.Voucher;
+import com.miniproject.eventastic.voucher.service.VoucherService;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
@@ -75,6 +78,7 @@ public class UsersServiceImpl implements UsersService {
   private final OrganizerWalletService organizerWalletService;
   private final AttendeeService attendeeService;
   private final MailService mailService;
+  private final VoucherService voucherService;
 
   @Override
   public Users getCurrentUser() throws AccessDeniedException, UserNotFoundException {
@@ -132,21 +136,26 @@ public class UsersServiceImpl implements UsersService {
       newUser.setPassword(passwordEncoder.encode(requestDto.getPassword()));
       usersRepository.save(newUser);
       eventPublisher.publishEvent(new UserRegistrationEvent(this, newUser));
+      Voucher awardedVoucher = voucherService.getVoucherByAwardee(newUser);
 
       log.info("Registered user: {}", newUser);
 
       // * send email
-      String fullName = newUser.getFullName();
-      MailTemplate welcomeMail = new MailTemplate();
-      // ! TODO : uncomment in production, suspend email sending for local
-//      mailService.sendEmail(welcomeMail.buildWelcomeTemp(email, fullName));
+      sendWelcomeEmail(newUser);
 
-      return new RegisterResponseDto(newUser);
+      return new RegisterResponseDto(newUser, awardedVoucher);
     } catch (Exception e) {
-      log.error(e.getClass().getSimpleName() + e.getMessage());
+      log.error(new StringBuilder().append(e.getClass().getSimpleName()).append(e.getMessage()).toString());
       log.error("Registration failed for user {}", requestDto.getUsername());
       throw e;
     }
+  }
+
+  private void sendWelcomeEmail (Users user) {
+    String fullName = user.getFullName();
+    MailTemplate welcomeMail = new MailTemplate();
+    // ! TODO : uncomment in production, suspend email sending for local
+//      mailService.sendEmail(welcomeMail.buildWelcomeTemp(email, user.getFullName());
   }
 
   @Override

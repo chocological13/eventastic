@@ -1,6 +1,7 @@
 package com.miniproject.eventastic.users.event.listener;
 
 
+import com.miniproject.eventastic.exceptions.trx.VoucherNotFoundException;
 import com.miniproject.eventastic.exceptions.user.UserNotFoundException;
 import com.miniproject.eventastic.organizerWallet.entity.OrganizerWallet;
 import com.miniproject.eventastic.organizerWallet.service.OrganizerWalletService;
@@ -27,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 @Component
 @RequiredArgsConstructor
@@ -132,6 +134,7 @@ public class UserRegistrationListener {
       newVoucher.setExpiresAt(expiresAt);
       newVoucher.setAwardee(user);
       newVoucher.setUseLimit(1);
+      newVoucher.setIsActive(true);
 
       // ** Log the usage of referral code
       ReferralCodeUsage usage = new ReferralCodeUsage(
@@ -168,7 +171,14 @@ public class UserRegistrationListener {
     return code;
   }
 
+  @Transactional(dontRollbackOn = VoucherNotFoundException.class)
   public boolean checkVoucher(String code) {
-    return voucherService.getVoucher(code) != null;
+    try {
+      voucherService.getVoucher(code);
+    } catch (VoucherNotFoundException e) {
+      log.info("Intended to check voucher code {}", code);
+      return false;
+    }
+    return true;
   }
 }

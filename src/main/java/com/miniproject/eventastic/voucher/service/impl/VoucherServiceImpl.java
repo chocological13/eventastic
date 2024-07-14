@@ -26,7 +26,6 @@ import org.springframework.stereotype.Service;
 @Service
 @Data
 @RequiredArgsConstructor
-@Transactional
 public class VoucherServiceImpl implements VoucherService {
 
   private final VoucherRepository voucherRepository;
@@ -38,6 +37,7 @@ public class VoucherServiceImpl implements VoucherService {
   }
 
   @Override
+  @Transactional
   public Voucher useVoucher(String voucherCode, Users user) {
     Voucher voucher = voucherRepository.findByCodeAndIsActiveTrue(voucherCode);
 //        .orElseThrow(() -> new VoucherNotFoundException("Voucher with code " + voucherCode + " not found or is no longer active!"));
@@ -97,6 +97,11 @@ public class VoucherServiceImpl implements VoucherService {
   }
 
   @Override
+  public Voucher getVoucherByAwardee(Users user) {
+    return voucherRepository.findByAwardeeAndIsActiveTrue(user);
+  }
+
+  @Override
   @Transactional
   public Voucher createEventVoucher(Users organizer, Event event, CreateEventVoucherRequestDto requestDto)
       throws AccessDeniedException {
@@ -153,7 +158,7 @@ public class VoucherServiceImpl implements VoucherService {
   @Override
   public List<Voucher> getAwardeesVouchers(Users user) {
     Long userId = user.getId();
-    List<Voucher> voucherList = voucherRepository.findByAwardeeIdAndExpiresAtIsAfter(userId, Instant.now());
+    List<Voucher> voucherList = voucherRepository.findByAwardeeIdAndIsActiveTrue(userId);
     if (voucherList.isEmpty()) {
       throw new VoucherNotFoundException("You currently have no active vouchers.");
     }
@@ -163,7 +168,7 @@ public class VoucherServiceImpl implements VoucherService {
   // this will be called under event
   @Override
   public List<Voucher> getEventVouchers(Long eventId) {
-    List<Voucher> voucherList = voucherRepository.findByEventIdAndExpiresAtIsAfter(eventId, Instant.now());
+    List<Voucher> voucherList = voucherRepository.findByEventIdAndIsActiveTrue(eventId);
     if (voucherList.isEmpty()) {
       throw new VoucherNotFoundException("This event currently offers no vouchers :(");
     }

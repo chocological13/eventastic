@@ -15,6 +15,8 @@ public interface VoucherService {
 
   Voucher getVoucher(String code);
 
+  Voucher getVoucherByAwardee(Users user);
+
   Voucher createEventVoucher(Users organizer, Event event, CreateEventVoucherRequestDto requestDto);
 
   List<Voucher> getAwardeesVouchers(Users user);
