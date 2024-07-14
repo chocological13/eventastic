@@ -4,6 +4,7 @@ import com.miniproject.eventastic.event.entity.Event;
 import com.miniproject.eventastic.users.entity.Users;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -34,6 +35,12 @@ public class EventSpecifications {
       Join<Event, Users> organizerJoin = root.join("organizer", JoinType.INNER);
       return criteriaBuilder.equal(criteriaBuilder.lower(organizerJoin.get("username")), organizer.toLowerCase());
     });
+  }
+
+  public static Specification<Event> isFree() {
+    return (root, query, criteriaBuilder) -> {
+      return criteriaBuilder.isTrue(root.get("isFree"));
+    };
   }
 
   // Upcoming event filter
