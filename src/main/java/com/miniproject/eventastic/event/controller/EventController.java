@@ -109,10 +109,12 @@ public class EventController {
       @RequestParam(required = false) String category,
       @RequestParam(required = false) String location,
       @RequestParam(required = false) String organizer,
+      @RequestParam(required = false) Boolean isFree,
       @RequestParam(required = false) String order,
       @RequestParam(required = false) String direction
   ) {
-    Page<EventResponseDto> eventPage = eventService.getEvents(page, size, title, category, location, organizer, order,
+    Page<EventResponseDto> eventPage = eventService.getEvents(page, size, title, category, location, organizer,
+        isFree, order,
         direction);
     return Response.responseMapper(HttpStatus.OK.value(), "Displaying events..", eventPage);
   }

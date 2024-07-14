@@ -36,6 +36,12 @@ public class EventSpecifications {
     });
   }
 
+  public static Specification<Event> isFree(Boolean isFree) {
+    return (root, query, criteriaBuilder) -> {
+      return criteriaBuilder.equal(root.get("isFree"), isFree);
+    };
+  }
+
   // Upcoming event filter
   public static Specification<Event> isUpcoming() {
     return ((root, query, criteriaBuilder) -> {

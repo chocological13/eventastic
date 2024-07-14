@@ -20,7 +20,8 @@ public interface EventService {
 
   EventResponseDto createEvent(CreateEventRequestDto requestDto);
 
-  Page<EventResponseDto> getEvents(int page, int size, String title, String category, String location, String organizer, String order, String direction);
+  Page<EventResponseDto> getEvents(int page, int size, String title, String category, String location,
+      String organizer, Boolean isFree, String order, String direction);
 
   Page<EventResponseDto> getUpcomingEvents(int page, int size);
 

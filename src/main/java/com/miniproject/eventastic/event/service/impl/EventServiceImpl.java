@@ -100,7 +100,7 @@ public class EventServiceImpl implements EventService {
 
   @Override
   public Page<EventResponseDto> getEvents(int page, int size, String title, String category, String location,
-      String organizer, String order, String direction) throws EventNotFoundException {
+      String organizer, Boolean isFree, String order, String direction) throws EventNotFoundException {
 
     // sort direction, by default ascending
     Direction sortDirection = Direction.fromString(order == null ? "asc" : direction);
@@ -123,6 +123,9 @@ public class EventServiceImpl implements EventService {
     }
     if (organizer != null) {
       specification = specification.and(EventSpecifications.hasOrganizer(organizer));
+    }
+    if (isFree != null) {
+      specification = specification.and(EventSpecifications.isFree(isFree));
     }
 
     Page<Event> eventsPage = eventRepository.findAll(specification, pageable);
