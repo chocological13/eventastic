@@ -52,6 +52,11 @@ management:
       exposure:
         include: '*'
 
+# cron
+voucher:
+  cleanup:
+    cron: "0 0 0 * * ?"
+
 # Uncomment for debug logging
 # logging:
 #   level:
