@@ -22,22 +22,19 @@ public interface UsersService {
 
   void saveUser(Users user);
 
+  // getting logged-in user
+  Users getCurrentUser();
+
   RegisterResponseDto register(RegisterRequestDto requestDto);
 
   void resetPassword(Users user, String newPassword);
 
-  void update(ProfileUpdateRequestDTO requestDto) throws ImageNotFoundException;
-
-  UserProfileDto getProfile();
+  void update(ProfileUpdateRequestDTO requestDto);
 
   // Getting Users
-
+  UserProfileDto getProfile();
   Users getByUsername(String username);
 
-  Users getById(Long id);
-
-  // getting logged-in user
-  Users getCurrentUser();
 
   // Region - other entity's calls
 

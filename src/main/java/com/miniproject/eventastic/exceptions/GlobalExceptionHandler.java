@@ -21,6 +21,7 @@ import com.miniproject.eventastic.exceptions.user.DuplicateCredentialsException;
 import com.miniproject.eventastic.exceptions.user.ReferralCodeUnusedException;
 import com.miniproject.eventastic.exceptions.user.UserNotFoundException;
 import com.miniproject.eventastic.responses.Response;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
@@ -62,9 +63,7 @@ public class GlobalExceptionHandler {
    @ExceptionHandler(Exception.class)
    public ResponseEntity<Response<String>> handleException(Exception ex) {
       HttpStatus status = EXCEPTION_STATUS_MAP.getOrDefault(ex.getClass(), HttpStatus.INTERNAL_SERVER_ERROR);
-      String message = status == HttpStatus.INTERNAL_SERVER_ERROR ? "An unexpected error occurred" :
-          ex.getClass().getSimpleName() + ": " + ex.getMessage();
-
+      String message = ex.getClass().getSimpleName() + ": " + ex.getMessage() + "\n" + status.getReasonPhrase();
       return Response.failedResponse(status.value(), message, null);
    }
 }

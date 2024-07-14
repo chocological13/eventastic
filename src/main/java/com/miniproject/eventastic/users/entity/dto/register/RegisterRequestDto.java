@@ -26,14 +26,4 @@ public class RegisterRequestDto {
   private String fullName;
   private String refCodeUsed;
   private Boolean isOrganizer;
-
-  public Users toEntity(Users user, RegisterRequestDto registerRequestDto) {
-    user.setUsername(registerRequestDto.getUsername());
-    user.setEmail(registerRequestDto.getEmail());
-    user.setPassword(registerRequestDto.getPassword());
-    user.setFullName(registerRequestDto.getFullName());
-    Optional.ofNullable(registerRequestDto.refCodeUsed).ifPresent(user::setRefCodeUsed);
-    user.setIsOrganizer(registerRequestDto.getIsOrganizer());
-    return user;
-  }
 }

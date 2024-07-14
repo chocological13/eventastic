@@ -40,7 +40,6 @@ public class VoucherServiceImpl implements VoucherService {
   @Transactional
   public Voucher useVoucher(String voucherCode, Users user) {
     Voucher voucher = voucherRepository.findByCodeAndIsActiveTrue(voucherCode);
-//        .orElseThrow(() -> new VoucherNotFoundException("Voucher with code " + voucherCode + " not found or is no longer active!"));
 
     // * check validity
     if (voucher == null) {

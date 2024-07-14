@@ -47,6 +47,7 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -55,6 +56,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -79,6 +81,12 @@ public class UsersServiceImpl implements UsersService {
   private final AttendeeService attendeeService;
   private final MailService mailService;
   private final VoucherService voucherService;
+  private final ModelMapper modelMapper;
+
+  @Override
+  public void saveUser(Users user) {
+    usersRepository.save(user);
+  }
 
   @Override
   public Users getCurrentUser() throws AccessDeniedException, UserNotFoundException {
@@ -105,63 +113,47 @@ public class UsersServiceImpl implements UsersService {
   }
 
   @Override
-  public Users getById(Long id) throws UserNotFoundException {
-    Optional<Users> usersOptional = usersRepository.findById(id);
-    return usersOptional.orElseThrow(() -> new UserNotFoundException(
-        "User by ID: " + id + " not found. Please ensure you've entered the correct ID!"));
-  }
-
-  @SneakyThrows
-  @Override
   @Transactional
   public RegisterResponseDto register(RegisterRequestDto requestDto)
       throws RuntimeException {
     // will throw UserNotFoundException, DuplicateCredentialsException, PointsWalletNotFoundException
-    try {
-      // check credentials
-      String username = requestDto.getUsername();
-      String email = requestDto.getEmail();
-      Optional<Users> usersOptional = usersRepository.findByUsername(username);
-      Optional<Users> usersOptional2 = usersRepository.findByEmail(email);
-      if (usersOptional.isPresent() || usersOptional2.isPresent()) {
-        throw new DuplicateCredentialsException("Username or email already exists");
-      }
+    // check credentials
+    validateCredentials(requestDto.getUsername(), requestDto.getPassword());
 
-      // init new user and the dto
-      Users newUser = new Users();
-      RegisterRequestDto reqToUser = new RegisterRequestDto();
-      reqToUser.toEntity(newUser, requestDto);
+    // init new user
+    // this will also publish user registration event
+    Users newUser = createUser(requestDto);
 
-      // encode password and save user so that it persists in db
-      newUser.setPassword(passwordEncoder.encode(requestDto.getPassword()));
-      usersRepository.save(newUser);
-      eventPublisher.publishEvent(new UserRegistrationEvent(this, newUser));
-      Voucher awardedVoucher = voucherService.getVoucherByAwardee(newUser);
+    // get voucher if they used ref code to register
+    Voucher awardedVoucher = voucherService.getVoucherByAwardee(newUser);
 
-      log.info("Registered user: {}", newUser);
+    // * send email
+    sendWelcomeEmail(newUser);
+    return new RegisterResponseDto(newUser, awardedVoucher);
+  }
 
-      // * send email
-      sendWelcomeEmail(newUser);
-
-      return new RegisterResponseDto(newUser, awardedVoucher);
-    } catch (Exception e) {
-      log.error(new StringBuilder().append(e.getClass().getSimpleName()).append(e.getMessage()).toString());
-      log.error("Registration failed for user {}", requestDto.getUsername());
-      throw e;
+  private void validateCredentials(String username, String email) {
+    if (usersRepository.findByUsername(username).isPresent() || usersRepository.findByEmail(email).isPresent()) {
+      throw new DuplicateCredentialsException("Username or email already exists");
     }
   }
 
-  private void sendWelcomeEmail (Users user) {
+  private Users createUser(RegisterRequestDto requestDto) {
+    Users newUser = modelMapper.map(requestDto, Users.class);
+    newUser.setPassword(passwordEncoder.encode(requestDto.getPassword()));
+    usersRepository.save(newUser);
+    eventPublisher.publishEvent(new UserRegistrationEvent(this, newUser));
+    log.info("Registered user: {}", newUser);
+    return newUser;
+  }
+
+  private void sendWelcomeEmail(Users user) {
     String fullName = user.getFullName();
     MailTemplate welcomeMail = new MailTemplate();
     // ! TODO : uncomment in production, suspend email sending for local
 //      mailService.sendEmail(welcomeMail.buildWelcomeTemp(email, user.getFullName());
   }
 
-  @Override
-  public void saveUser(Users user) {
-    usersRepository.save(user);
-  }
 
   @Override
   public void resetPassword(Users user, String newPassword) {
@@ -200,7 +192,8 @@ public class UsersServiceImpl implements UsersService {
 
   @Override
   public ReferralCodeUsageSummaryDto getCodeUsageSummary()
-      throws UserNotFoundException, AccessDeniedException, ReferralCodeUnusedException {
+      throws RuntimeException {
+    // will throw UserNotFoundException, AccessDeniedException, ReferralCodeUnusedException
     Users codeOwner = getCurrentUser();
     log.info("CodeOwner: {}", codeOwner);
 
@@ -231,9 +224,8 @@ public class UsersServiceImpl implements UsersService {
     Set<PointsTrx> pointsTrxes = pointsTrxService.getPointsTrx(pointsWallet);
     if (pointsTrxes.isEmpty()) {
       throw new PointsTrxNotFoundException("No history of points usage is found!");
-    } else {
-      return pointsTrxes;
     }
+    return pointsTrxes;
   }
 
   @Override
