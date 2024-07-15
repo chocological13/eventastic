@@ -8,36 +8,28 @@ import com.miniproject.eventastic.exceptions.image.ImageNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.OrganizerWalletNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.PointsTrxNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.PointsWalletNotFoundException;
-import com.miniproject.eventastic.exceptions.trx.VoucherNotFoundException;
 import com.miniproject.eventastic.exceptions.user.DuplicateCredentialsException;
-import com.miniproject.eventastic.exceptions.user.ReferralCodeUnusedException;
 import com.miniproject.eventastic.exceptions.user.UserNotFoundException;
 import com.miniproject.eventastic.image.entity.ImageUserAvatar;
 import com.miniproject.eventastic.image.entity.dto.ImageUploadRequestDto;
 import com.miniproject.eventastic.image.service.CloudinaryService;
 import com.miniproject.eventastic.image.service.ImageService;
-import com.miniproject.eventastic.mail.service.MailService;
-import com.miniproject.eventastic.mail.service.entity.dto.MailTemplate;
 import com.miniproject.eventastic.organizerWallet.entity.OrganizerWallet;
 import com.miniproject.eventastic.organizerWallet.entity.dto.OrganizerWalletDisplayDto;
 import com.miniproject.eventastic.organizerWallet.service.OrganizerWalletService;
 import com.miniproject.eventastic.pointsTrx.entity.PointsTrx;
 import com.miniproject.eventastic.pointsTrx.service.PointsTrxService;
 import com.miniproject.eventastic.pointsWallet.entity.PointsWallet;
-import com.miniproject.eventastic.pointsWallet.service.impl.PointsWalletService;
+import com.miniproject.eventastic.pointsWallet.service.PointsWalletService;
 import com.miniproject.eventastic.referralCodeUsage.entity.dto.ReferralCodeUsageSummaryDto;
 import com.miniproject.eventastic.referralCodeUsage.entity.dto.ReferralCodeUseCountDto;
 import com.miniproject.eventastic.referralCodeUsage.entity.dto.ReferralCodeUsersDto;
 import com.miniproject.eventastic.referralCodeUsage.service.ReferralCodeUsageService;
 import com.miniproject.eventastic.users.entity.Users;
 import com.miniproject.eventastic.users.entity.dto.profile.UserProfileDto;
-import com.miniproject.eventastic.users.entity.dto.register.RegisterRequestDto;
-import com.miniproject.eventastic.users.entity.dto.register.RegisterResponseDto;
 import com.miniproject.eventastic.users.entity.dto.userManagement.ProfileUpdateRequestDTO;
-import com.miniproject.eventastic.users.event.UserRegistrationEvent;
 import com.miniproject.eventastic.users.repository.UsersRepository;
 import com.miniproject.eventastic.users.service.UsersService;
-import com.miniproject.eventastic.voucher.entity.Voucher;
 import com.miniproject.eventastic.voucher.service.VoucherService;
 import jakarta.transaction.Transactional;
 import java.util.List;
@@ -56,7 +48,6 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -72,14 +63,12 @@ public class UsersServiceImpl implements UsersService {
   private final PasswordEncoder passwordEncoder;
   private final AuthenticationManager authenticationManager;
   private final ReferralCodeUsageService referralCodeUsageService;
-  private final ApplicationEventPublisher eventPublisher;
   private final PointsWalletService pointsWalletService;
   private final CloudinaryService cloudinaryService;
   private final ImageService imageService;
   private final PointsTrxService pointsTrxService;
   private final OrganizerWalletService organizerWalletService;
   private final AttendeeService attendeeService;
-  private final MailService mailService;
   private final VoucherService voucherService;
   private final ModelMapper modelMapper;
 
@@ -111,49 +100,6 @@ public class UsersServiceImpl implements UsersService {
     return usersOptional.orElseThrow(() -> new UserNotFoundException(
         "User by username: " + username + " not found. Please ensure you've entered the correct username!"));
   }
-
-  @Override
-  @Transactional
-  public RegisterResponseDto register(RegisterRequestDto requestDto)
-      throws RuntimeException {
-    // will throw UserNotFoundException, DuplicateCredentialsException, PointsWalletNotFoundException
-    // check credentials
-    validateCredentials(requestDto.getUsername(), requestDto.getPassword());
-
-    // init new user
-    // this will also publish user registration event
-    Users newUser = createUser(requestDto);
-
-    // get voucher if they used ref code to register
-    Voucher awardedVoucher = voucherService.getVoucherByAwardee(newUser);
-
-    // * send email
-    sendWelcomeEmail(newUser);
-    return new RegisterResponseDto(newUser, awardedVoucher);
-  }
-
-  private void validateCredentials(String username, String email) {
-    if (usersRepository.findByUsername(username).isPresent() || usersRepository.findByEmail(email).isPresent()) {
-      throw new DuplicateCredentialsException("Username or email already exists");
-    }
-  }
-
-  private Users createUser(RegisterRequestDto requestDto) {
-    Users newUser = modelMapper.map(requestDto, Users.class);
-    newUser.setPassword(passwordEncoder.encode(requestDto.getPassword()));
-    usersRepository.save(newUser);
-    eventPublisher.publishEvent(new UserRegistrationEvent(this, newUser));
-    log.info("Registered user: {}", newUser);
-    return newUser;
-  }
-
-  private void sendWelcomeEmail(Users user) {
-    String fullName = user.getFullName();
-    MailTemplate welcomeMail = new MailTemplate();
-    // ! TODO : uncomment in production, suspend email sending for local
-//      mailService.sendEmail(welcomeMail.buildWelcomeTemp(email, user.getFullName());
-  }
-
 
   @Override
   public void resetPassword(Users user, String newPassword) {

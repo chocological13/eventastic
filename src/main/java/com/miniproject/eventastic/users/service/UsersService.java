@@ -25,8 +25,6 @@ public interface UsersService {
   // getting logged-in user
   Users getCurrentUser();
 
-  RegisterResponseDto register(RegisterRequestDto requestDto);
-
   void resetPassword(Users user, String newPassword);
 
   void update(ProfileUpdateRequestDTO requestDto);
@@ -34,11 +32,9 @@ public interface UsersService {
   // Getting Users
   UserProfileDto getProfile();
   Users getByUsername(String username);
-
+  Users getUserByOwnedCode(String ownedCode);
 
   // Region - other entity's calls
-
-  Users getUserByOwnedCode(String ownedCode);
 
   ReferralCodeUsageSummaryDto getCodeUsageSummary();
 
