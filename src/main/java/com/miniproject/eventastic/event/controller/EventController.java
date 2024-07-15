@@ -7,9 +7,7 @@ import com.miniproject.eventastic.event.entity.dto.updateEvent.UpdateEventReques
 import com.miniproject.eventastic.event.service.CreateEventService;
 import com.miniproject.eventastic.event.service.EventService;
 import com.miniproject.eventastic.event.service.UpdateEventService;
-import com.miniproject.eventastic.exceptions.event.CategoryNotFoundException;
 import com.miniproject.eventastic.exceptions.event.EventNotFoundException;
-import com.miniproject.eventastic.exceptions.image.ImageNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.TicketTypeNotFoundException;
 import com.miniproject.eventastic.exceptions.user.AttendeeNotFoundException;
 import com.miniproject.eventastic.image.entity.dto.ImageUploadRequestDto;
@@ -30,7 +28,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

@@ -2,8 +2,6 @@ package com.miniproject.eventastic.event.service;
 
 import com.miniproject.eventastic.event.entity.Event;
 import com.miniproject.eventastic.event.entity.dto.EventResponseDto;
-import com.miniproject.eventastic.event.entity.dto.createEvent.CreateEventRequestDto;
-import com.miniproject.eventastic.event.entity.dto.updateEvent.UpdateEventRequestDto;
 import com.miniproject.eventastic.event.metadata.Category;
 import com.miniproject.eventastic.image.entity.ImageEvent;
 import com.miniproject.eventastic.image.entity.dto.ImageUploadRequestDto;
