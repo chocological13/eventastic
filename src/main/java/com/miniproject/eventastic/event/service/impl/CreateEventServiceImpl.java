@@ -80,7 +80,7 @@ public class CreateEventServiceImpl implements CreateEventService {
     return new EventResponseDto(createdEvent);
   }
 
-  private Boolean isDuplicateEvent(CreateEventRequestDto checkDuplicate) {
+  public Boolean isDuplicateEvent(CreateEventRequestDto checkDuplicate) {
     String title = checkDuplicate.getTitle();
     String location = checkDuplicate.getLocation();
     LocalDate eventDate = checkDuplicate.getEventDate();
@@ -90,21 +90,21 @@ public class CreateEventServiceImpl implements CreateEventService {
     return checkEvent.isPresent();
   }
 
-  private void setCategory(Event createdEvent, CreateEventRequestDto requestDto) throws CategoryNotFoundException {
+  public void setCategory(Event createdEvent, CreateEventRequestDto requestDto) throws CategoryNotFoundException {
     if (requestDto.getCategoryId() != null) {
       Category category = categoryRepository.findById(requestDto.getCategoryId()).orElseThrow(() -> new CategoryNotFoundException("Category not found, please enter another ID"));
       createdEvent.setCategory(category);
     }
   }
 
-  private void setImage(Event createdEvent, CreateEventRequestDto requestDto) throws ImageNotFoundException {
+  public void setImage(Event createdEvent, CreateEventRequestDto requestDto) throws ImageNotFoundException {
     if (requestDto.getImageId() != null) {
       ImageEvent imageEvent = imageService.getEventImageById(requestDto.getImageId());
       createdEvent.setEventImage(imageEvent);
     }
   }
 
-  private Set<TicketType> getTicketType(Event createdEvent,
+  public Set<TicketType> getTicketType(Event createdEvent,
       Set<TicketTypeCreateRequestDto> ticketTypeCreateRequestDtos) {
     Set<TicketType> ticketTypes = new LinkedHashSet<>();
     if (!createdEvent.getIsFree()) {
@@ -138,7 +138,7 @@ public class CreateEventServiceImpl implements CreateEventService {
     return ticketTypes;
   }
 
-  private void setSeatLimit(Event createdEvent, Set<TicketType> ticketTypes) {
+  public void setSeatLimit(Event createdEvent, Set<TicketType> ticketTypes) {
     int totalSeats = ticketTypes.stream().mapToInt(TicketType::getSeatLimit).sum();
     createdEvent.setSeatLimit(totalSeats);
     createdEvent.setAvailableSeat(totalSeats);

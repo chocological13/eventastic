@@ -59,19 +59,19 @@ public class UpdateEventServiceImpl implements UpdateEventService {
   }
 
   // * get logged-in user and verify identity as organizer that created the event
-  private void verifyOrganizer(Event event) throws AccessDeniedException {
+  public void verifyOrganizer(Event event) throws AccessDeniedException {
     Users loggedUser = usersService.getCurrentUser();
     if (loggedUser != event.getOrganizer()) {
       throw new AccessDeniedException("You do not have permission to update this event");
     }
   }
 
-  private void updateEventDetails(Event updatedEvent, UpdateEventRequestDto requestDto) {
+  public void updateEventDetails(Event updatedEvent, UpdateEventRequestDto requestDto) {
     UpdateEventRequestDto dto = new UpdateEventRequestDto();
     dto.dtoToEvent(updatedEvent, requestDto);
   }
 
-  private void setImage(Event updatedEvent, UpdateEventRequestDto requestDto) {
+  public void setImage(Event updatedEvent, UpdateEventRequestDto requestDto) {
     if (requestDto.getImageId() != null) {
       ImageEvent eventImage = imageService.getEventImageById(requestDto.getImageId());
       if (eventImage != null) {
@@ -80,7 +80,7 @@ public class UpdateEventServiceImpl implements UpdateEventService {
     }
   }
 
-  private void setTicketTypes(Event updatedEvent, UpdateEventRequestDto requestDto) {
+  public void setTicketTypes(Event updatedEvent, UpdateEventRequestDto requestDto) {
     if (requestDto.getTicketTypeUpdates() != null) {
       Set<TicketType> existingTicketTypes = updatedEvent.getTicketTypes();
       Set<TicketTypeUpdateRequestDto> requestTicketTypeDtos = requestDto.getTicketTypeUpdates();
@@ -102,7 +102,7 @@ public class UpdateEventServiceImpl implements UpdateEventService {
     }
   }
 
-  private void updateExistingTicketType(Set<TicketType> existingTicketTypes, TicketType ticketType,
+  public void updateExistingTicketType(Set<TicketType> existingTicketTypes, TicketType ticketType,
       TicketTypeUpdateRequestDto ticketTypeUpdateRequestDto) {
     if (ticketTypeUpdateRequestDto.getDescription() != null) {
       ticketType.setDescription(ticketTypeUpdateRequestDto.getDescription());

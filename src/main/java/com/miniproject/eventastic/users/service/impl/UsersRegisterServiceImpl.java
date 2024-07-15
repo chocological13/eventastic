@@ -91,13 +91,13 @@ public class UsersRegisterServiceImpl implements UsersRegisterService {
 
   }
 
-  private void validateCredentials(String username, String email) {
+  public void validateCredentials(String username, String email) {
     if (usersRepository.findByUsername(username).isPresent() || usersRepository.findByEmail(email).isPresent()) {
       throw new DuplicateCredentialsException("Username or email already exists");
     }
   }
 
-  private Users createUser(RegisterRequestDto requestDto) {
+  public Users createUser(RegisterRequestDto requestDto) {
 //    Users newUser = modelMapper.map(requestDto, Users.class);
     Users newUser = new Users();
     newUser.setUsername(requestDto.getUsername());
@@ -111,7 +111,7 @@ public class UsersRegisterServiceImpl implements UsersRegisterService {
     return newUser;
   }
 
-  private PointsWallet initPointsWallet(Users user) {
+  public PointsWallet initPointsWallet(Users user) {
     PointsWallet pointsWallet = new PointsWallet();
     pointsWallet.setUser(user);
     pointsWallet.setPoints(0);
@@ -120,7 +120,7 @@ public class UsersRegisterServiceImpl implements UsersRegisterService {
     return pointsWallet;
   }
 
-  private OrganizerWallet initOrganizerWallet(Users user) {
+  public OrganizerWallet initOrganizerWallet(Users user) {
     OrganizerWallet organizerWallet = new OrganizerWallet();
     organizerWallet.setOrganizer(user);
     organizerWallet.setBalance(BigDecimal.ZERO);
@@ -129,7 +129,7 @@ public class UsersRegisterServiceImpl implements UsersRegisterService {
     return organizerWallet;
   }
 
-  private String generateReferralCode() {
+  public String generateReferralCode() {
     String ownedReferralCode;
     do {
       ownedReferralCode = UUID.randomUUID().toString().substring(0, 7).toUpperCase();
@@ -137,7 +137,7 @@ public class UsersRegisterServiceImpl implements UsersRegisterService {
     return ownedReferralCode;
   }
 
-  private boolean checkRefCodeExist(String code) {
+  public boolean checkRefCodeExist(String code) {
     return usersService.getUserByOwnedCode(code) != null;
   }
 
@@ -202,7 +202,7 @@ public class UsersRegisterServiceImpl implements UsersRegisterService {
     }
   }
 
-  private String generateVoucher() {
+  public String generateVoucher() {
     String code;
     // check if code exists and regenerate code until it isn't in database
     do {
@@ -221,7 +221,7 @@ public class UsersRegisterServiceImpl implements UsersRegisterService {
     return true;
   }
 
-  private void sendWelcomeEmail(Users user) {
+  public void sendWelcomeEmail(Users user) {
     String fullName = user.getFullName();
     MailTemplate welcomeMail = new MailTemplate();
     // ! TODO : uncomment in production, suspend email sending for local
