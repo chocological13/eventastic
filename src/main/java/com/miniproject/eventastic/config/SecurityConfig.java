@@ -164,10 +164,10 @@ public class SecurityConfig {
                   return cookie.getValue();
                 }
               }
-            } else if (cookies == null && !bearerHeader.isEmpty()){
-              // Get bearer header token
-              var splittedHeader = bearerHeader.split(" ");
-              return splittedHeader[1];
+//            } else if (cookies == null && !bearerHeader.isEmpty()) {
+//              // Get bearer header token
+//              var splittedHeader = bearerHeader.split(" ");
+//              return splittedHeader[1];
             }
             return null;
           });
