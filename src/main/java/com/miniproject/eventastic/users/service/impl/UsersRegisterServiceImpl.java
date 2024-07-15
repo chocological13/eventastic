@@ -1,8 +1,9 @@
-package com.miniproject.eventastic.users.event.listener;
-
+package com.miniproject.eventastic.users.service.impl;
 
 import com.miniproject.eventastic.exceptions.trx.VoucherNotFoundException;
+import com.miniproject.eventastic.exceptions.user.DuplicateCredentialsException;
 import com.miniproject.eventastic.exceptions.user.UserNotFoundException;
+import com.miniproject.eventastic.mail.service.entity.dto.MailTemplate;
 import com.miniproject.eventastic.organizerWallet.entity.OrganizerWallet;
 import com.miniproject.eventastic.organizerWallet.service.OrganizerWalletService;
 import com.miniproject.eventastic.pointsTrx.entity.PointsTrx;
@@ -13,7 +14,10 @@ import com.miniproject.eventastic.referralCodeUsage.entity.ReferralCodeUsage;
 import com.miniproject.eventastic.referralCodeUsage.entity.composite.ReferralCodeUsageId;
 import com.miniproject.eventastic.referralCodeUsage.service.ReferralCodeUsageService;
 import com.miniproject.eventastic.users.entity.Users;
-import com.miniproject.eventastic.users.event.UserRegistrationEvent;
+import com.miniproject.eventastic.users.entity.dto.register.RegisterRequestDto;
+import com.miniproject.eventastic.users.entity.dto.register.RegisterResponseDto;
+import com.miniproject.eventastic.users.repository.UsersRepository;
+import com.miniproject.eventastic.users.service.UsersRegisterService;
 import com.miniproject.eventastic.users.service.UsersService;
 import com.miniproject.eventastic.voucher.entity.Voucher;
 import com.miniproject.eventastic.voucher.service.VoucherService;
@@ -26,69 +30,106 @@ import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.event.EventListener;
-import org.springframework.stereotype.Component;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
-@Component
+@Service
 @RequiredArgsConstructor
 @Slf4j
-@Transactional
-public class UserRegistrationListener {
+public class UsersRegisterServiceImpl implements UsersRegisterService {
 
   private final static int POINTS_REWARD = 10000;
 
+  private final UsersRepository usersRepository;
+  private final PasswordEncoder passwordEncoder;
   private final PointsWalletService pointsWalletService;
-  private final UsersService usersService;
-  private final ReferralCodeUsageService referralCodeUsageService;
-  private final PointsTrxService pointsTrxService;
   private final OrganizerWalletService organizerWalletService;
+  private final UsersService usersService;
+  private final PointsTrxService pointsTrxService;
   private final VoucherService voucherService;
+  private final ReferralCodeUsageService referralCodeUsageService;
 
-  @EventListener
+  @Override
   @Transactional
-  public void handleUserRegistrationEvent(UserRegistrationEvent event) throws RuntimeException {
-    Users user = event.getUser();
-    if (user == null) {
-      throw new IllegalArgumentException("User cannot be null in UserRegistrationEvent");
-    }
+  public RegisterResponseDto register(RegisterRequestDto registerRequestDto) {
+    // * validate
+    String username = registerRequestDto.getUsername();
+    String email = registerRequestDto.getEmail();
+    validateCredentials(username, email);
+    log.info("Registering user: " + username);
+    log.info("Testing credentials");
+
+    // * init new user
+    Users newUser = createUser(registerRequestDto);
+    log.info("New user ID: " + newUser.getId());
 
     // * init points wallet
-    initPointsWallet(user);
+    PointsWallet newPointsWallet = initPointsWallet(newUser);
+    log.info("New points wallet for: " + newPointsWallet.getUser().getUsername());
 
-    // * init org wallet if org
-    if (user.getIsOrganizer()) {
-      initOrganizerWallet(user);
+    // * if Organizer init organizer wallet
+    if (newUser.getIsOrganizer()) {
+      OrganizerWallet newOrganizerWallet = initOrganizerWallet(newUser);
     }
 
     // * Generate and assign referral code
     String ownedReferralCode = generateReferralCode();
-    user.setOwnedRefCode(ownedReferralCode);
-    usersService.saveUser(user);
+    newUser.setOwnedRefCode(ownedReferralCode);
+    usersService.saveUser(newUser);
 
-    // * Process referral code and update in points trx if used
-    if (user.getRefCodeUsed() != null && !user.getRefCodeUsed().isEmpty()) {
-      String refCodeUsed = user.getRefCodeUsed();
-      useRefCode(user, refCodeUsed);
+    // * process referral code and update in points trx if using
+    Voucher referralVoucher = null;
+    if (newUser.getRefCodeUsed() != null && !newUser.getRefCodeUsed().isEmpty()) {
+      String refCodeUsed = newUser.getRefCodeUsed();
+      referralVoucher = useRefCode(newUser, refCodeUsed);
+    }
+
+    // * send email
+    sendWelcomeEmail(newUser);
+    return new RegisterResponseDto(newUser, referralVoucher);
+
+
+  }
+
+  private void validateCredentials(String username, String email) {
+    if (usersRepository.findByUsername(username).isPresent() || usersRepository.findByEmail(email).isPresent()) {
+      throw new DuplicateCredentialsException("Username or email already exists");
     }
   }
 
-  public void initOrganizerWallet(Users user) {
-    OrganizerWallet organizerWallet = new OrganizerWallet();
-    organizerWallet.setOrganizer(user);
-    organizerWallet.setBalance(BigDecimal.ZERO);
-    organizerWalletService.saveWallet(organizerWallet);
-    user.setOrganizerWallet(organizerWallet);
+  private Users createUser(RegisterRequestDto requestDto) {
+//    Users newUser = modelMapper.map(requestDto, Users.class);
+    Users newUser = new Users();
+    newUser.setUsername(requestDto.getUsername());
+    newUser.setEmail(requestDto.getEmail());
+    newUser.setFullName(requestDto.getFullName());
+    newUser.setPassword(passwordEncoder.encode(requestDto.getPassword()));
+    newUser.setRefCodeUsed(requestDto.getRefCodeUsed());
+    newUser.setIsOrganizer(requestDto.getIsOrganizer());
+    usersRepository.save(newUser);
+    log.info("Registered user: {}", newUser);
+    return newUser;
   }
 
-  public void initPointsWallet(Users user) {
+  private PointsWallet initPointsWallet(Users user) {
     PointsWallet pointsWallet = new PointsWallet();
     pointsWallet.setUser(user);
     pointsWallet.setPoints(0);
     pointsWalletService.savePointsWallet(pointsWallet);
     user.setPointsWallet(pointsWallet);
+    return pointsWallet;
   }
 
-  public String generateReferralCode() {
+  private OrganizerWallet initOrganizerWallet(Users user) {
+    OrganizerWallet organizerWallet = new OrganizerWallet();
+    organizerWallet.setOrganizer(user);
+    organizerWallet.setBalance(BigDecimal.ZERO);
+    organizerWalletService.saveWallet(organizerWallet);
+    user.setOrganizerWallet(organizerWallet);
+    return organizerWallet;
+  }
+
+  private String generateReferralCode() {
     String ownedReferralCode;
     do {
       ownedReferralCode = UUID.randomUUID().toString().substring(0, 7).toUpperCase();
@@ -96,12 +137,12 @@ public class UserRegistrationListener {
     return ownedReferralCode;
   }
 
-  public boolean checkRefCodeExist(String code) {
+  private boolean checkRefCodeExist(String code) {
     return usersService.getUserByOwnedCode(code) != null;
   }
 
-  public void useRefCode(Users user, String refCodeUsed) throws RuntimeException {
-
+  public Voucher useRefCode(Users user, String refCodeUsed) throws RuntimeException {
+    Voucher newVoucher = new Voucher();
     Users owner = usersService.getUserByOwnedCode(refCodeUsed);
     if (owner != null) {
       // ** Add points to the code owner's wallet
@@ -125,7 +166,6 @@ public class UserRegistrationListener {
       String code = generateVoucher();
 
       // init voucher
-      Voucher newVoucher = new Voucher();
       newVoucher.setCode(code);
       newVoucher.setDescription("Thank you for using " + owner.getUsername() + "'s referral code!");
       newVoucher.setPercentDiscount(10);
@@ -155,13 +195,14 @@ public class UserRegistrationListener {
       }
 
       log.info("Referral code from user {} was used by new user {}", owner.getUsername(), user.getUsername());
+      return newVoucher;
     } else {
       log.info("No referral code was used by new user {}", user.getUsername());
       throw new UserNotFoundException("No code found, make sure you've entered the right referral code");
     }
   }
 
-  public String generateVoucher() {
+  private String generateVoucher() {
     String code;
     // check if code exists and regenerate code until it isn't in database
     do {
@@ -170,8 +211,7 @@ public class UserRegistrationListener {
     return code;
   }
 
-  @Transactional(dontRollbackOn = VoucherNotFoundException.class)
-  public boolean checkVoucher(String code) {
+  private boolean checkVoucher(String code) {
     try {
       voucherService.getVoucher(code);
     } catch (VoucherNotFoundException e) {
@@ -180,4 +220,12 @@ public class UserRegistrationListener {
     }
     return true;
   }
+
+  private void sendWelcomeEmail(Users user) {
+    String fullName = user.getFullName();
+    MailTemplate welcomeMail = new MailTemplate();
+    // ! TODO : uncomment in production, suspend email sending for local
+//      mailService.sendEmail(welcomeMail.buildWelcomeTemp(email, user.getFullName());
+  }
+
 }
