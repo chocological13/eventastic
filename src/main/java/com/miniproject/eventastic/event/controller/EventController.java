@@ -4,9 +4,10 @@ import com.miniproject.eventastic.event.entity.Event;
 import com.miniproject.eventastic.event.entity.dto.EventResponseDto;
 import com.miniproject.eventastic.event.entity.dto.createEvent.CreateEventRequestDto;
 import com.miniproject.eventastic.event.entity.dto.updateEvent.UpdateEventRequestDto;
+import com.miniproject.eventastic.event.service.CreateEventService;
 import com.miniproject.eventastic.event.service.EventService;
+import com.miniproject.eventastic.event.service.UpdateEventService;
 import com.miniproject.eventastic.exceptions.event.CategoryNotFoundException;
-import com.miniproject.eventastic.exceptions.event.DuplicateEventException;
 import com.miniproject.eventastic.exceptions.event.EventNotFoundException;
 import com.miniproject.eventastic.exceptions.image.ImageNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.TicketTypeNotFoundException;
@@ -48,20 +49,17 @@ public class EventController {
 
   private final EventService eventService;
   private final VoucherService voucherService;
+  private final CreateEventService createEventService;
+  private final UpdateEventService updateEventService;
 
   @PostMapping("/create")
   public ResponseEntity<Response<EventResponseDto>> createEvent(@Valid @RequestBody CreateEventRequestDto requestDto) {
-    try {
       log.info("Attempting to create event: {} on date: {}", requestDto.getTitle(), requestDto.getEventDate());
 
-      EventResponseDto responseDto = eventService.createEvent(requestDto);
+      EventResponseDto responseDto = createEventService.createEvent(requestDto);
       log.info("Event created successfully: {} by organizer: {} on date: {}", responseDto.getTitle(),
           responseDto.getOrganizer(), responseDto.getEventDate());
       return Response.successfulResponse(HttpStatus.CREATED.value(), "Event successfully created!", responseDto);
-
-    } catch (DuplicateEventException | CategoryNotFoundException | ImageNotFoundException e) {
-      return Response.failedResponse(HttpStatus.CONFLICT.value(), e.getMessage(), null);
-    }
   }
 
   @GetMapping("/{eventId}")
@@ -141,13 +139,9 @@ public class EventController {
   @PutMapping("/{eventId}/update")
   public ResponseEntity<Response<EventResponseDto>> updateEvent(@PathVariable Long eventId,
       @Valid @RequestBody UpdateEventRequestDto requestDto) {
-    try {
       log.info("Attempting to update event: {}", eventId);
-      EventResponseDto responseDto = eventService.updateEvent(eventId, requestDto);
+      EventResponseDto responseDto = updateEventService.updateEvent(eventId, requestDto);
       return Response.successfulResponse(HttpStatus.OK.value(), "Event successfully updated!", responseDto);
-    } catch (EventNotFoundException | AccessDeniedException | CategoryNotFoundException | ImageNotFoundException e) {
-      return Response.failedResponse(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
-    }
   }
 
   @DeleteMapping("/{eventId}")

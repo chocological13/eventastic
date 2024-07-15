@@ -1,9 +1,11 @@
-package com.miniproject.eventastic.event.event.EventUpdated.listener;
+package com.miniproject.eventastic.event.service.impl;
 
 import com.miniproject.eventastic.event.entity.Event;
+import com.miniproject.eventastic.event.entity.dto.EventResponseDto;
 import com.miniproject.eventastic.event.entity.dto.updateEvent.UpdateEventRequestDto;
-import com.miniproject.eventastic.event.event.EventUpdated.EventUpdatedEvent;
-import com.miniproject.eventastic.event.service.EventService;
+import com.miniproject.eventastic.event.repository.EventRepository;
+import com.miniproject.eventastic.event.service.UpdateEventService;
+import com.miniproject.eventastic.exceptions.event.EventNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.TicketNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.TicketTypeNotFoundException;
 import com.miniproject.eventastic.image.entity.ImageEvent;
@@ -11,42 +13,59 @@ import com.miniproject.eventastic.image.service.ImageService;
 import com.miniproject.eventastic.ticketType.entity.TicketType;
 import com.miniproject.eventastic.ticketType.entity.dto.update.TicketTypeUpdateRequestDto;
 import com.miniproject.eventastic.ticketType.service.TicketTypeService;
-import jakarta.transaction.Transactional;
+import com.miniproject.eventastic.users.entity.Users;
+import com.miniproject.eventastic.users.service.UsersService;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.event.EventListener;
-import org.springframework.stereotype.Component;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.stereotype.Service;
 
-@Component
+@Service
 @RequiredArgsConstructor
-public class EventUpdatedListener {
-
-  private final EventService eventService;
+public class UpdateEventServiceImpl implements UpdateEventService {
+  private final EventRepository eventRepository;
+  private final UsersService usersService;
   private final ImageService imageService;
   private final TicketTypeService ticketTypeService;
 
-  @EventListener
-  @Transactional
-  public void handleEventUpdatedEvent(EventUpdatedEvent event) {
-    Event updatedEvent = event.getEvent();
-    UpdateEventRequestDto requestDto = event.getRequestDto();
+
+  @Override
+  public EventResponseDto updateEvent(Long eventId, UpdateEventRequestDto requestDto) throws RuntimeException {
+    // get existing event
+    Event existingEvent = eventRepository.findById(eventId)
+        .orElseThrow(() -> new EventNotFoundException("Event not found, please enter a valid ID"));
+
+    // verify organizer
+    verifyOrganizer(existingEvent);
 
     // dto to entity
-    updateEventDetails(updatedEvent, requestDto);
+    updateEventDetails(existingEvent, requestDto);
 
     // set image, if any
-    setImage(updatedEvent, requestDto);
+    setImage(existingEvent, requestDto);
 
     // update ticket types, if any
-    setTicketTypes(updatedEvent, requestDto);
+    setTicketTypes(existingEvent, requestDto);
 
     // set map, if any
     if (requestDto.getMap() != null) {
-      updatedEvent.setMap(requestDto.getMap());
+      existingEvent.setMap(requestDto.getMap());
+    }
+
+
+    // save event
+    eventRepository.save(existingEvent);
+    return new EventResponseDto(existingEvent);
+  }
+
+  // * get logged-in user and verify identity as organizer that created the event
+  private void verifyOrganizer(Event event) throws AccessDeniedException {
+    Users loggedUser = usersService.getCurrentUser();
+    if (loggedUser != event.getOrganizer()) {
+      throw new AccessDeniedException("You do not have permission to update this event");
     }
   }
 
-  // Region - utilities
   private void updateEventDetails(Event updatedEvent, UpdateEventRequestDto requestDto) {
     UpdateEventRequestDto dto = new UpdateEventRequestDto();
     dto.dtoToEvent(updatedEvent, requestDto);

@@ -5,20 +5,13 @@ import com.miniproject.eventastic.attendee.entity.AttendeeId;
 import com.miniproject.eventastic.attendee.service.AttendeeService;
 import com.miniproject.eventastic.event.entity.Event;
 import com.miniproject.eventastic.event.entity.dto.EventResponseDto;
-import com.miniproject.eventastic.event.entity.dto.createEvent.CreateEventRequestDto;
-import com.miniproject.eventastic.event.entity.dto.updateEvent.UpdateEventRequestDto;
-import com.miniproject.eventastic.event.event.EventCreated.EventCreatedEvent;
-import com.miniproject.eventastic.event.event.EventUpdated.EventUpdatedEvent;
 import com.miniproject.eventastic.event.metadata.Category;
 import com.miniproject.eventastic.event.repository.CategoryRepository;
 import com.miniproject.eventastic.event.repository.EventRepository;
 import com.miniproject.eventastic.event.service.EventService;
-import com.miniproject.eventastic.exceptions.event.CategoryNotFoundException;
 import com.miniproject.eventastic.exceptions.event.EventNotFoundException;
 import com.miniproject.eventastic.exceptions.event.ReviewNotFoundException;
-import com.miniproject.eventastic.exceptions.image.ImageNotFoundException;
 import com.miniproject.eventastic.exceptions.user.AttendeeNotFoundException;
-import com.miniproject.eventastic.exceptions.user.DuplicateCredentialsException;
 import com.miniproject.eventastic.image.entity.ImageEvent;
 import com.miniproject.eventastic.image.entity.dto.ImageUploadRequestDto;
 import com.miniproject.eventastic.image.service.ImageService;
@@ -32,10 +25,7 @@ import com.miniproject.eventastic.users.service.UsersService;
 import com.miniproject.eventastic.voucher.entity.Voucher;
 import com.miniproject.eventastic.voucher.entity.dto.create.CreateEventVoucherRequestDto;
 import com.miniproject.eventastic.voucher.service.VoucherService;
-import jakarta.transaction.Transactional;
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.Optional;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -69,33 +59,6 @@ public class EventServiceImpl implements EventService {
   @Override
   public void saveEvent(Event event) {
     eventRepository.save(event);
-  }
-
-  @Override
-  @Transactional
-  public EventResponseDto createEvent(CreateEventRequestDto requestDto) throws DuplicateCredentialsException,
-      AccessDeniedException, ImageNotFoundException, CategoryNotFoundException, EventNotFoundException {
-    // check if there's a duplicate
-    if (isDuplicateEvent(requestDto)) {
-      throw new DuplicateCredentialsException("Event already exists. Please create another one.");
-    }
-
-    // extract user
-    Users organizer = usersService.getCurrentUser();
-    if (!organizer.getIsOrganizer()) {
-      throw new AccessDeniedException("You are not an organizer!");
-    }
-
-    // save event here, so we can set it to the ticket types
-    Event createdEvent = requestDto.dtoToEvent(requestDto);
-    createdEvent.setOrganizer(organizer);
-    eventRepository.save(createdEvent);
-
-    // event listener
-    eventPublisher.publishEvent(new EventCreatedEvent(this, createdEvent, requestDto));
-    eventRepository.save(createdEvent);
-
-    return new EventResponseDto(createdEvent);
   }
 
   @Override
@@ -170,22 +133,6 @@ public class EventServiceImpl implements EventService {
   }
 
   @Override
-  public EventResponseDto updateEvent(Long eventId, UpdateEventRequestDto requestDto) throws EventNotFoundException,
-      AccessDeniedException {
-    // get existing event
-    Event existingEvent = eventRepository.findById(eventId)
-        .orElseThrow(() -> new EventNotFoundException("Event not found, please enter a valid ID"));
-
-    // verify organizer
-    verifyOrganizer(existingEvent);
-    eventPublisher.publishEvent(new EventUpdatedEvent(this, existingEvent, requestDto));
-
-    // save event
-    eventRepository.save(existingEvent);
-    return new EventResponseDto(existingEvent);
-  }
-
-  @Override
   public void deleteEvent(Long eventId) throws EventNotFoundException, AccessDeniedException {
     Event eventToDelete = eventRepository.findById(eventId)
         .orElseThrow(() -> new EventNotFoundException("Event not found, please enter a valid ID"));
@@ -242,17 +189,6 @@ public class EventServiceImpl implements EventService {
       throw new AccessDeniedException("You do not have permission to upload an image for an event!");
     }
     return imageService.uploadEventImage(requestDto, organizer);
-  }
-
-  // Region - utilities
-  private Boolean isDuplicateEvent(CreateEventRequestDto checkDuplicate) {
-    String title = checkDuplicate.getTitle();
-    String location = checkDuplicate.getLocation();
-    LocalDate eventDate = checkDuplicate.getEventDate();
-    LocalTime startTime = checkDuplicate.getStartTime();
-    Optional<Event> checkEvent = eventRepository.findByTitleAndLocationAndEventDateAndStartTime(title, location,
-        eventDate, startTime);
-    return checkEvent.isPresent();
   }
 
   // * get logged-in user and verify identity as organizer that created the event

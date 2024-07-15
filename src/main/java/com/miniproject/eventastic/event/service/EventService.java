@@ -18,8 +18,6 @@ public interface EventService {
 
   void saveEvent(Event event);
 
-  EventResponseDto createEvent(CreateEventRequestDto requestDto);
-
   Page<EventResponseDto> getEvents(int page, int size, String title, String category, String location,
       String organizer, Boolean isFree, String order, String direction);
 
@@ -28,8 +26,6 @@ public interface EventService {
   Page<EventResponseDto> getEventsByOrganizer(Long organizerId, int page, int size);
 
   Event getEventById(Long eventId);
-
-  EventResponseDto updateEvent(Long eventId, UpdateEventRequestDto requestDto);
 
   // soft delete
   void deleteEvent(Long eventId);
