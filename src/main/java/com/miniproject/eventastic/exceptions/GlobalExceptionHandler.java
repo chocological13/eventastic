@@ -63,7 +63,7 @@ public class GlobalExceptionHandler {
    @ExceptionHandler(Exception.class)
    public ResponseEntity<Response<String>> handleException(Exception ex) {
       HttpStatus status = EXCEPTION_STATUS_MAP.getOrDefault(ex.getClass(), HttpStatus.INTERNAL_SERVER_ERROR);
-      String message = ex.getClass().getSimpleName() + ": " + ex.getMessage() + "\n" + status.getReasonPhrase();
+      String message = ex.getClass().getSimpleName() + ": " + ex.getMessage() + " \n" + status.getReasonPhrase();
       return Response.failedResponse(status.value(), message, null);
    }
 }

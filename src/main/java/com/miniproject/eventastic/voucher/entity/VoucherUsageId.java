@@ -22,4 +22,8 @@ public class VoucherUsageId implements Serializable {
   @Column(name = "voucher_id", nullable = false)
   private Long voucherId;
 
+  @NotNull
+  @Column(name = "event_id", nullable = false)
+  private Long eventId;
+
 }

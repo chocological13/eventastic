@@ -77,26 +77,27 @@ public class TrxServiceImpl implements TrxService {
     Users loggedUser = usersService.getCurrentUser();
     Trx trx = new Trx();
 
-    // Get event
+    // * Get event
     Event eventPurchase = validateAndRetrieveEvent(requestDto.getEventId());
     log.info("Event: " + eventPurchase);
 
-    // Check TT and available seat
+    // * Check TT and available seat
     TicketType ticketType = validateAndRetrieveTicketType(requestDto.getTicketTypeId());
-    System.out.println("TicketType: " + ticketType);
+    log.info("TicketType: " + ticketType.getName());
 
-    // Create Trx
+    // * Create Trx
     createTransaction(requestDto, loggedUser, eventPurchase, ticketType, trx);
     trxRepository.save(trx);
     System.out.println("Transaction created for user: " + loggedUser);
 
-    // points and voucher usage and payment method
+    // * points and voucher usage and payment method
     PointsTrx pointsTrx = usePoints(requestDto, trx);
     BigDecimal discount = calculateDiscount(requestDto, trx);
+    BigDecimal promo = applyPromo(requestDto, trx);
     setPaymentMethod(requestDto, trx);
 
     // finalize trx total amount
-    finalizeTransaction(trx, pointsTrx, discount);
+    finalizeTransaction(trx, pointsTrx, discount, promo);
 
     // set attendee for this purchase
     setAttendee(loggedUser, eventPurchase, requestDto.getQty());
@@ -232,17 +233,40 @@ public class TrxServiceImpl implements TrxService {
   public BigDecimal calculateDiscount(TrxPurchaseRequestDto requestDto, Trx trx) throws RuntimeException {
     BigDecimal discount = BigDecimal.ZERO;
     if (!requestDto.getVoucherCode().isEmpty()) {
-      Voucher usedVoucher = voucherService.useVoucher(requestDto.getVoucherCode(), trx.getUser());
+      String voucherCode = requestDto.getVoucherCode();
+      Voucher usedVoucher = voucherService.useVoucher(voucherCode, trx.getUser(), trx.getEvent());
       trx.setVoucher(usedVoucher);
       discount = applyVoucher(trx, usedVoucher);
     }
     return discount;
   }
 
-  public BigDecimal applyVoucher(Trx trx, Voucher voucher) {
+  public BigDecimal applyVoucher(Trx trx, Voucher voucher) throws VoucherInvalidException {
+    Event event = trx.getEvent();
+    String voucherCode = voucher.getCode();
+    // check if it's a referral voucher
+    if (voucherCode.startsWith("REF10")) {
+      int currentAvailability = event.getReferralVoucherUsageAvailability();
+      if (currentAvailability <= 0) {
+        throw new VoucherInvalidException("Referral voucher usage limit exceeded for this event");
+      }
+      event.setReferralVoucherUsageAvailability(currentAvailability - 1);
+      eventService.saveEvent(event);
+    }
     BigDecimal percent = BigDecimal.valueOf(voucher.getPercentDiscount())
         .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
     return trx.getInitialAmount().multiply(percent);
+  }
+
+  public BigDecimal applyPromo(TrxPurchaseRequestDto requestDto, Trx trx) {
+    Instant now = Instant.now();
+    BigDecimal promo = BigDecimal.ZERO;
+    if (trx.getEvent().getPromoPercent() != null && trx.getEvent().getPromoEndDate().isAfter(now)) {
+      BigDecimal promoPercent = BigDecimal.valueOf(trx.getEvent().getPromoPercent()).divide(BigDecimal.valueOf(100), 2,
+          RoundingMode.HALF_UP);
+      promo = trx.getInitialAmount().multiply(promoPercent);
+    }
+    return promo;
   }
 
   // set payment method
@@ -252,10 +276,10 @@ public class TrxServiceImpl implements TrxService {
     trx.setPayment(payment);
   }
 
-  public void finalizeTransaction(Trx trx, PointsTrx pointsTrx, BigDecimal discount) {
+  public void finalizeTransaction(Trx trx, PointsTrx pointsTrx, BigDecimal discount, BigDecimal promo) {
     BigDecimal points = pointsTrx != null ? BigDecimal.valueOf(-pointsTrx.getPoints()) : BigDecimal.ZERO;
     BigDecimal initAmount = trx.getInitialAmount();
-    BigDecimal toBeDeducted = points.add(discount);
+    BigDecimal toBeDeducted = points.add(discount).add(promo);
     BigDecimal totalAmount = initAmount.subtract(toBeDeducted);
     trx.setTotalAmount(totalAmount);
 

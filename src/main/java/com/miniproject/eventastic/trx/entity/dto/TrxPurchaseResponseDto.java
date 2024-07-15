@@ -22,6 +22,7 @@ public class TrxPurchaseResponseDto {
   private BigDecimal initialPrice;
   private TrxVoucherResponseDto voucher;
   private Boolean usingPoints;
+  private Integer promoPercent;
   private BigDecimal totalPrice;
   private Boolean isPaid;
   private TrxPaymentResponseDto paymentMethod;
@@ -37,6 +38,7 @@ public class TrxPurchaseResponseDto {
     this.initialPrice = trx.getInitialAmount();
     this.voucher = trx.getVoucher() != null ? new TrxVoucherResponseDto(trx.getVoucher()) : null;
     this.usingPoints = requestDto.getUsingPoints();
+    this.promoPercent = trx.getEvent().getPromoPercent() != null ? trx.getEvent().getPromoPercent() : null;
     this.totalPrice = trx.getTotalAmount();
     this.isPaid = trx.getIsPaid();
     this.paymentMethod = new TrxPaymentResponseDto(trx.getPayment());

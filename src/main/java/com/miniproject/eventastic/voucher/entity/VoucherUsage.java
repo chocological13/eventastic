@@ -10,6 +10,7 @@ import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
@@ -42,12 +43,18 @@ public class VoucherUsage {
   @JoinColumn(name = "voucher_id", nullable = false)
   private Voucher voucher;
 
+  @MapsId("eventId")
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "event_id", nullable = false)
+  private Event event;
+
   @NotNull
   @Column(name = "used_at", nullable = false)
   private Instant usedAt;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "event_id")
-  private Event event;
+  @PrePersist
+  protected void onCreate() {
+    this.usedAt = Instant.now();
+  }
 
 }

@@ -38,7 +38,7 @@ public class VoucherServiceImpl implements VoucherService {
 
   @Override
   @Transactional
-  public Voucher useVoucher(String voucherCode, Users user) {
+  public Voucher useVoucher(String voucherCode, Users user, Event event) {
     Voucher voucher = voucherRepository.findByCodeAndIsActiveTrue(voucherCode);
 
     // * check validity
@@ -71,7 +71,7 @@ public class VoucherServiceImpl implements VoucherService {
     }
 
     // check if voucher has been used by user before
-    VoucherUsageId voucherUsageId = new VoucherUsageId(user.getId(), voucher.getId());
+    VoucherUsageId voucherUsageId = new VoucherUsageId(user.getId(), voucher.getId(), event.getId());
 
     VoucherUsage checkUsage = voucherUsageRepository.findById(voucherUsageId).orElse(null);
     if (checkUsage != null) {
@@ -82,8 +82,8 @@ public class VoucherServiceImpl implements VoucherService {
     VoucherUsage voucherUsage = new VoucherUsage();
     voucherUsage.setId(voucherUsageId);
     voucherUsage.setUser(user);
+    voucherUsage.setEvent(event);
     voucherUsage.setVoucher(voucher);
-    voucherUsage.setUsedAt(now);
     voucherUsageRepository.save(voucherUsage);
 
     return voucher;

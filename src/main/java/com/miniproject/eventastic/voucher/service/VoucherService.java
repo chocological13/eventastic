@@ -11,7 +11,7 @@ public interface VoucherService {
 
   void saveVoucher(Voucher voucher);
 
-  Voucher useVoucher(String voucherCode, Users user);
+  Voucher useVoucher(String voucherCode, Users user, Event event);
 
   Voucher getVoucher(String code);
 
