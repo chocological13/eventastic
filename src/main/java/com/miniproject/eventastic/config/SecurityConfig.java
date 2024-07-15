@@ -1,5 +1,7 @@
 package com.miniproject.eventastic.config;
 
+import static com.cloudinary.AccessControlRule.AccessType.token;
+
 import com.miniproject.eventastic.auth.service.impl.UserDetailsServiceImpl;
 import com.miniproject.eventastic.exceptions.CustomAccessDeniedHandler;
 import com.miniproject.eventastic.exceptions.CustomAuthenticationEntryPoint;
@@ -11,6 +13,7 @@ import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import java.security.KeyFactory;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -121,65 +124,122 @@ public class SecurityConfig {
     return NimbusJwtDecoder.withPublicKey(rsaKeyConfigProperties.publicKey()).build();
   }
 
+//  @Bean
+//  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+//    // to clear site cookies, cache, storage
+//    HeaderWriterLogoutHandler clearSiteData = new HeaderWriterLogoutHandler(new ClearSiteDataHeaderWriter(Directive.ALL));
+//
+//
+//    return http
+//        // * disables unused configs
+//        .csrf(AbstractHttpConfigurer::disable)
+//        .cors(cors -> cors.configurationSource(corsConfigurationSource))
+//        // * endpoints authorization
+//        .authorizeHttpRequests(auth -> {
+//
+//          auth.requestMatchers("/error/**").permitAll();
+//          auth.requestMatchers("/api/v1/auth/**").permitAll();
+//          auth.requestMatchers("/api/v1/users/register/**").permitAll();
+//          auth.requestMatchers(HttpMethod.GET, "/api/v1/events/**").permitAll();
+//          // ! TODO: add roles related authorizations
+////          // * event management - only organizer
+//          auth.requestMatchers("/api/v1/events/create/**").hasAuthority("SCOPE_ROLE_ORGANIZER");
+//          auth.requestMatchers("/api/v1/events/{eventId}/update/**").hasAuthority("SCOPE_ROLE_ORGANIZER");
+//
+//          auth.anyRequest().authenticated();
+//        })
+//        // * exception handling
+//        .exceptionHandling(e -> {
+//          e.accessDeniedHandler(new CustomAccessDeniedHandler()); // 403
+//          e.authenticationEntryPoint(new CustomAuthenticationEntryPoint()); //401
+//        })
+//        // * session management
+//        .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+//        // * oauth2 resource server to validate jwt and extract cookie
+//        .oauth2ResourceServer((oauth2) -> {
+//          oauth2.jwt((jwt) -> jwt.decoder(jwtDecoder()));
+//          oauth2.bearerTokenResolver((request) -> {
+//            Cookie[] cookies = request.getCookies();
+//            var bearerHeader = request.getHeader("Authorization");
+//            if (cookies != null) {
+//              for (Cookie cookie : cookies) {
+//                if ("JSESSIONID".equals(cookie.getName())) {
+//                  return cookie.getValue();
+//                }
+//              }
+//            }
+//            if (token == null) {
+//              bearerHeader = request.getHeader("Authorization");
+//              if (bearerHeader != null && bearerHeader.startsWith("Bearer ")) {
+//                token = bearerHeader.substring(7);
+//              }
+//            }
+//            return token;
+////            } else if (cookies == null && !bearerHeader.isEmpty()) {
+////              // Get bearer header token
+////              var splittedHeader = bearerHeader.split(" ");
+////              return splittedHeader[1];
+////            }
+////            return null;
+//          });
+//        })
+//        // * configuring UserDetailsService, we will pass the one we already made
+//        .userDetailsService(userDetailsService)
+//        // * basic http authentication
+//        .httpBasic(Customizer.withDefaults())
+//        .formLogin(auth -> auth.failureHandler(new CustomAuthenticationFailureHandler()))//401
+//        .formLogin(Customizer.withDefaults())
+//        .logout((logout) -> logout.addLogoutHandler(clearSiteData))
+//        .build();
+//  }
+
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    // to clear site cookies, cache, storage
     HeaderWriterLogoutHandler clearSiteData = new HeaderWriterLogoutHandler(new ClearSiteDataHeaderWriter(Directive.ALL));
 
-
     return http
-        // * disables unused configs
         .csrf(AbstractHttpConfigurer::disable)
         .cors(cors -> cors.configurationSource(corsConfigurationSource))
-        // * endpoints authorization
         .authorizeHttpRequests(auth -> {
-
-          auth.requestMatchers("/error/**").permitAll();
-          auth.requestMatchers("/api/v1/auth/**").permitAll();
-          auth.requestMatchers("/api/v1/users/register/**").permitAll();
+          auth.requestMatchers("/error/**", "/api/v1/auth/**", "/api/v1/users/register/**").permitAll();
           auth.requestMatchers(HttpMethod.GET, "/api/v1/events/**").permitAll();
-          // ! TODO: add roles related authorizations
-//          // * event management - only organizer
-          auth.requestMatchers("/api/v1/events/create/**").hasAuthority("SCOPE_ROLE_ORGANIZER");
-          auth.requestMatchers("/api/v1/events/{eventId}/update/**").hasAuthority("SCOPE_ROLE_ORGANIZER");
-
+          auth.requestMatchers("/api/v1/events/create/**", "/api/v1/events/{eventId}/update/**").hasAuthority("SCOPE_ROLE_ORGANIZER");
           auth.anyRequest().authenticated();
         })
-        // * exception handling
         .exceptionHandling(e -> {
-          e.accessDeniedHandler(new CustomAccessDeniedHandler()); // 403
-          e.authenticationEntryPoint(new CustomAuthenticationEntryPoint()); //401
+          e.accessDeniedHandler(new CustomAccessDeniedHandler());
+          e.authenticationEntryPoint(new CustomAuthenticationEntryPoint());
         })
-        // * session management
         .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        // * oauth2 resource server to validate jwt and extract cookie
-        .oauth2ResourceServer((oauth2) -> {
-          oauth2.jwt((jwt) -> jwt.decoder(jwtDecoder()));
-          oauth2.bearerTokenResolver((request) -> {
-            Cookie[] cookies = request.getCookies();
-            var bearerHeader = request.getHeader("Authorization");
-            if (cookies != null) {
-              for (Cookie cookie : cookies) {
-                if ("JSESSIONID".equals(cookie.getName())) {
-                  return cookie.getValue();
-                }
-              }
-//            } else if (cookies == null && !bearerHeader.isEmpty()) {
-//              // Get bearer header token
-//              var splittedHeader = bearerHeader.split(" ");
-//              return splittedHeader[1];
-            }
-            return null;
-          });
-        })
-        // * configuring UserDetailsService, we will pass the one we already made
+        .oauth2ResourceServer(oauth2 -> oauth2
+            .jwt(jwt -> jwt.decoder(jwtDecoder()))
+            .bearerTokenResolver(this::resolveBearerToken)
+        )
         .userDetailsService(userDetailsService)
-        // * basic http authentication
         .httpBasic(Customizer.withDefaults())
-        .formLogin(auth -> auth.failureHandler(new CustomAuthenticationFailureHandler()))//401
-        .formLogin(Customizer.withDefaults())
-        .logout((logout) -> logout.addLogoutHandler(clearSiteData))
+        .formLogin(auth -> auth.failureHandler(new CustomAuthenticationFailureHandler()))
+        .logout(logout -> logout.addLogoutHandler(clearSiteData))
         .build();
   }
+
+  private String resolveBearerToken(HttpServletRequest request) {
+    Cookie[] cookies = request.getCookies();
+    if (cookies != null) {
+      for (Cookie cookie : cookies) {
+        if ("JSESSIONID".equals(cookie.getName())) {
+          return cookie.getValue();
+        }
+      }
+    }
+
+    String bearerHeader = request.getHeader("Authorization");
+    if (bearerHeader != null && bearerHeader.startsWith("Bearer ")) {
+      return bearerHeader.substring(7);
+    }
+
+    return null;
+  }
+
+
 
 }
