@@ -17,6 +17,9 @@ import com.miniproject.eventastic.ticketType.entity.dto.create.TicketTypeCreateR
 import com.miniproject.eventastic.ticketType.service.TicketTypeService;
 import com.miniproject.eventastic.users.entity.Users;
 import com.miniproject.eventastic.users.service.UsersService;
+import com.miniproject.eventastic.voucher.entity.Voucher;
+import com.miniproject.eventastic.voucher.entity.dto.create.CreateEventVoucherRequestDto;
+import com.miniproject.eventastic.voucher.service.VoucherService;
 import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -36,48 +39,57 @@ public class CreateEventServiceImpl implements CreateEventService {
   private final CategoryRepository categoryRepository;
   private final TicketTypeService ticketTypeService;
   private final ImageService imageService;
+  private final VoucherService voucherService;
 
   @Override
   @Transactional
   public EventResponseDto createEvent(CreateEventRequestDto requestDto) throws RuntimeException {
-    // check if there's a duplicate
+    // * 1. check if there's a duplicate
     if (isDuplicateEvent(requestDto)) {
       throw new DuplicateCredentialsException("Event already exists. Please create another one.");
     }
 
-    // extract user
+    // * 2. extract user
     Users organizer = usersService.getCurrentUser();
     if (!organizer.getIsOrganizer()) {
       throw new AccessDeniedException("You are not an organizer!");
     }
 
-    // save event here, so we can set it to the ticket types
-    Event createdEvent = requestDto.dtoToEvent(requestDto);
-    createdEvent.setOrganizer(organizer);
-    eventRepository.save(createdEvent);
+    // * 3 save event here, so we can set it to the ticket types
+    Event newEvent = requestDto.dtoToEvent(requestDto);
+    newEvent.setOrganizer(organizer);
+    eventRepository.save(newEvent);
 
-    // set category
-    setCategory(createdEvent, requestDto);
+    // * 4 set category
+    setCategory(newEvent, requestDto);
 
-    // set image
-    setImage(createdEvent, requestDto);
+    // * 5 set image
+    setImage(newEvent, requestDto);
 
-    // init ticket type and set it
-    Set<TicketTypeCreateRequestDto> ticketTypeCreateRequestDtos = requestDto.getTicketTypeCreateRequestDtos();
-    Set<TicketType> ticketTypes = getTicketType(createdEvent, ticketTypeCreateRequestDtos);
+    // * 6 init ticket type and set it
+    Set<TicketTypeCreateRequestDto> ticketTypeCreateRequestDtos = requestDto.getTicketTypeRequestDtos();
+    Set<TicketType> ticketTypes = getTicketType(newEvent, ticketTypeCreateRequestDtos);
 
-    // update seat limit
-    setSeatLimit(createdEvent, ticketTypes);
+    // * 7 update seat limit
+    setSeatLimit(newEvent, ticketTypes);
 
-    // set map
-    if (requestDto.getMap() != null) {
-      createdEvent.setMap(requestDto.getMap());
+    // * 8. create voucher, if any
+    Set<Voucher> eventVouchers = new LinkedHashSet<>();
+    if (requestDto.getVoucherRequestDto() != null) {
+      CreateEventVoucherRequestDto voucherDto = requestDto.getVoucherRequestDto();
+      Voucher eventVoucher = voucherService.createEventVoucher(organizer, newEvent, voucherDto);
+      eventVouchers.add(eventVoucher);
+      newEvent.setVouchers(eventVouchers);
     }
 
+    // * set map
+    if (requestDto.getMap() != null) {
+      newEvent.setMap(requestDto.getMap());
+    }
 
-    eventRepository.save(createdEvent);
+    eventRepository.save(newEvent);
 
-    return new EventResponseDto(createdEvent);
+    return new EventResponseDto(newEvent);
   }
 
   public Boolean isDuplicateEvent(CreateEventRequestDto checkDuplicate) {
@@ -111,7 +123,7 @@ public class CreateEventServiceImpl implements CreateEventService {
       for (TicketTypeCreateRequestDto ticketTypeCreateRequestDto : ticketTypeCreateRequestDtos) {
         TicketType ticketType = TicketTypeCreateRequestDto.requestToTicketTypeEntity(ticketTypeCreateRequestDto);
         ticketType.setEvent(createdEvent);
-        ticketType.setAvailableSeat(ticketTypeCreateRequestDto.getSeatLimit());
+        ticketType.setSeatAvailability(ticketTypeCreateRequestDto.getSeatLimit());
 
         // add in the set
         ticketTypes.add(ticketType);
@@ -128,7 +140,7 @@ public class CreateEventServiceImpl implements CreateEventService {
       freeTicketType.setName("Free Admission");
       freeTicketType.setDescription("Free entry ticket");
       freeTicketType.setSeatLimit(firstInSet.getSeatLimit());
-      freeTicketType.setAvailableSeat(firstInSet.getSeatLimit());
+      freeTicketType.setSeatAvailability(firstInSet.getSeatLimit());
 
       ticketTypes.add(freeTicketType);
       ticketTypeService.saveTicketType(freeTicketType);
@@ -141,7 +153,7 @@ public class CreateEventServiceImpl implements CreateEventService {
   public void setSeatLimit(Event createdEvent, Set<TicketType> ticketTypes) {
     int totalSeats = ticketTypes.stream().mapToInt(TicketType::getSeatLimit).sum();
     createdEvent.setSeatLimit(totalSeats);
-    createdEvent.setAvailableSeat(totalSeats);
+    createdEvent.setSeatAvailability(totalSeats);
   }
 
 }

@@ -114,7 +114,7 @@ public class UpdateEventServiceImpl implements UpdateEventService {
 
     if (ticketTypeUpdateRequestDto.getSeatLimit() != null) {
       ticketType.setSeatLimit(ticketTypeUpdateRequestDto.getSeatLimit());
-      ticketType.setAvailableSeat(ticketTypeUpdateRequestDto.getSeatLimit());
+      ticketType.setSeatAvailability(ticketTypeUpdateRequestDto.getSeatLimit());
     }
     ticketTypeService.saveTicketType(ticketType);
     existingTicketTypes.add(ticketType);

@@ -16,7 +16,7 @@ public class TicketTypeCreateResponseDto {
   private String description;
   private BigDecimal price;
   private Integer seatLimit;
-  private Integer availableSeat;
+  private Integer seatAvailability;
 
   public TicketTypeCreateResponseDto(TicketType ticketType) {
     this.id = ticketType.getId();
@@ -24,7 +24,7 @@ public class TicketTypeCreateResponseDto {
     this.description = ticketType.getDescription();
     this.price = ticketType.getPrice();
     this.seatLimit = ticketType.getSeatLimit();
-    this.availableSeat = ticketType.getAvailableSeat();
+    this.seatAvailability = ticketType.getSeatAvailability();
   }
 
   public TicketTypeCreateResponseDto toDto(TicketType ticketType) {
@@ -38,7 +38,7 @@ public class TicketTypeCreateResponseDto {
     ticketType.setDescription(ticketTypeCreateResponseDto.getDescription());
     ticketType.setPrice(ticketTypeCreateResponseDto.getPrice());
     ticketType.setSeatLimit(ticketTypeCreateResponseDto.getSeatLimit());
-    ticketType.setAvailableSeat(ticketTypeCreateResponseDto.getAvailableSeat());
+    ticketType.setSeatAvailability(ticketTypeCreateResponseDto.getSeatAvailability());
     return ticketType;
   }
 }

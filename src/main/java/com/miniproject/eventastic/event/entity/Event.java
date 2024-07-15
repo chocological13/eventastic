@@ -90,8 +90,8 @@ public class Event {
   @Column(name = "seat_limit")
   private Integer seatLimit;
 
-  @Column(name = "available_seat")
-  private Integer availableSeat;
+  @Column(name = "seat_availability")
+  private Integer seatAvailability;
 
   @NotNull
   @Column(name = "is_free", nullable = false, columnDefinition = "false")
@@ -115,6 +115,19 @@ public class Event {
   @Column(name = "map", length = Integer.MAX_VALUE)
   private String map;
 
+  @NotNull
+  @Column(name = "referral_voucher_usage_limit", nullable = false)
+  private Integer referralVoucherUsageLimit;
+
+  @Column(name = "referral_voucher_usage_availability")
+  private Integer referralVoucherUsageAvailability;
+
+  @Column(name = "promo_percent")
+  private Integer promoPercent;
+
+  @Column(name = "promo_end_date")
+  private Instant promoEndDate;
+
   @OneToMany(mappedBy = "event")
   private Set<Review> reviews = new LinkedHashSet<>();
 
@@ -126,6 +139,7 @@ public class Event {
 
   @OneToMany(mappedBy = "event")
   private Set<Voucher> vouchers = new LinkedHashSet<>();
+
 
 
   @PrePersist

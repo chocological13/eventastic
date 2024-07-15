@@ -59,9 +59,9 @@ public class VoucherServiceImpl implements VoucherService {
       throw new VoucherInvalidException("Voucher with code " + voucherCode + " is expired!!");
     }
     // check if it's available
-    if (voucher.getUseLimit() > 0) {
-      voucher.setUseLimit(voucher.getUseLimit() - 1);
-      if (voucher.getUseLimit() <= 0) {
+    if (voucher.getUseAvailability() > 0) {
+      voucher.setUseAvailability(voucher.getUseAvailability() - 1);
+      if (voucher.getUseAvailability() <= 0) {
         voucher.setIsActive(false);
         voucher.setDeactivatedAt(now);
       }
@@ -140,6 +140,7 @@ public class VoucherServiceImpl implements VoucherService {
     newVoucher.setExpiresAt(expiresAt);
     newVoucher.setUseLimit(requestDto.getUseLimit() != null ? requestDto.getUseLimit() : 100); // default useLimit is
     // 100 if not given by organizer
+    newVoucher.setUseAvailability(newVoucher.getUseLimit());
     newVoucher.setIsActive(true);
 
     // * 4. check if voucher exists and is inactive, set this to originalVoucher

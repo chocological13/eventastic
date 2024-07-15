@@ -65,6 +65,9 @@ public class TicketType {
   @Column(name = "seat_limit", nullable = false)
   private Integer seatLimit;
 
+  @Column(name = "seat_availability")
+  private Integer seatAvailability;
+
   @ColumnDefault("CURRENT_TIMESTAMP")
   @Column(name = "created_at")
   private Instant createdAt;
@@ -79,8 +82,6 @@ public class TicketType {
   @OneToMany(mappedBy = "ticketType")
   private Set<Ticket> tickets = new LinkedHashSet<>();
 
-  @Column(name = "available_seat")
-  private Integer availableSeat;
 
   @PrePersist
   protected void onCreate() {

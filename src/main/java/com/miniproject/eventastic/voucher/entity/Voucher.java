@@ -1,6 +1,7 @@
 package com.miniproject.eventastic.voucher.entity;
 
 import com.miniproject.eventastic.event.entity.Event;
+import com.miniproject.eventastic.trx.entity.Trx;
 import com.miniproject.eventastic.users.entity.Users;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -10,12 +11,15 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.time.Instant;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -73,6 +77,9 @@ public class Voucher {
   @Column(name = "use_limit")
   private Integer useLimit;
 
+  @Column(name = "use_availability")
+  private Integer useAvailability;
+
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "original_voucher_id")
   private Voucher originalVoucher;
@@ -80,6 +87,10 @@ public class Voucher {
   @NotNull
   @Column(name = "is_active", nullable = false)
   private Boolean isActive;
+
+  @OneToMany(mappedBy = "voucher")
+  private Set<Trx> trxes = new LinkedHashSet<>();
+
 
   @PrePersist
   protected void onCreate() {

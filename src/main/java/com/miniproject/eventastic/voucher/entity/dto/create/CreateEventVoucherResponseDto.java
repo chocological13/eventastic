@@ -16,6 +16,7 @@ public class CreateEventVoucherResponseDto {
   private String eventTitle;
   private Integer percentDiscount;
   private Integer useLimit;
+  private Integer useAvailability;
   private Instant createdAt;
   private Instant expiresAt;
 
@@ -35,6 +36,7 @@ public class CreateEventVoucherResponseDto {
         "Available for all events!";
     this.percentDiscount = voucher.getPercentDiscount();
     this.useLimit = voucher.getUseLimit();
+    this.useAvailability = voucher.getUseAvailability();
     this.createdAt = voucher.getCreatedAt();
     this.expiresAt = voucher.getExpiresAt();
   }

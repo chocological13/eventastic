@@ -143,7 +143,7 @@ public class TrxServiceImpl implements TrxService {
   public TicketType validateAndRetrieveTicketType(Long ticketTypeId) throws TicketTypeNotFoundException,
       SeatUnavailableException {
     TicketType ticketType = ticketTypeService.getTicketTypeById(ticketTypeId);
-    if (ticketType.getAvailableSeat() <= 0) {
+    if (ticketType.getSeatAvailability() <= 0) {
       throw new SeatUnavailableException("Seat for this ticket type is sold out!");
     }
     return ticketType;
@@ -179,10 +179,10 @@ public class TrxServiceImpl implements TrxService {
   }
 
   public void decrementAvailableSeat(Event event, TicketType ticketType, int qty) {
-    event.setAvailableSeat(event.getAvailableSeat() - qty);
+    event.setSeatAvailability(event.getSeatAvailability() - qty);
     eventService.saveEvent(event);
 
-    ticketType.setAvailableSeat(event.getAvailableSeat() - qty);
+    ticketType.setSeatAvailability(event.getSeatAvailability() - qty);
     ticketTypeService.saveTicketType(ticketType);
   }
 

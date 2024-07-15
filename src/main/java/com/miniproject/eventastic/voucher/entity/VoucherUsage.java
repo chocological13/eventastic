@@ -1,5 +1,6 @@
 package com.miniproject.eventastic.voucher.entity;
 
+import com.miniproject.eventastic.event.entity.Event;
 import com.miniproject.eventastic.users.entity.Users;
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
@@ -44,5 +45,9 @@ public class VoucherUsage {
   @NotNull
   @Column(name = "used_at", nullable = false)
   private Instant usedAt;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "event_id")
+  private Event event;
 
 }
