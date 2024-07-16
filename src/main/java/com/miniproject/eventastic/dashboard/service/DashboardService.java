@@ -1,6 +1,7 @@
 package com.miniproject.eventastic.dashboard.service;
 
 import com.miniproject.eventastic.dashboard.dto.AttendeeDashboardDto;
+import com.miniproject.eventastic.dashboard.dto.DailyStatisticsDto;
 import com.miniproject.eventastic.dashboard.dto.EventDashboardDto;
 import com.miniproject.eventastic.dashboard.dto.EventStatisticsDto;
 import com.miniproject.eventastic.dashboard.dto.MonthlyRevenueDto;
@@ -16,4 +17,5 @@ public interface DashboardService {
   Page<AttendeeDashboardDto> getAttendees(int page, int size);
   Page<TrxDashboardDto> getTrxs(int page, int size);
   List<MonthlyRevenueDto> getMonthlyRevenue(int year);
+  List<DailyStatisticsDto> getDailyStatistics(LocalDate startDate, LocalDate endDate);
 }

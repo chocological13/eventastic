@@ -3,6 +3,7 @@ package com.miniproject.eventastic.dashboard.service.impl;
 import com.miniproject.eventastic.attendee.entity.Attendee;
 import com.miniproject.eventastic.attendee.service.AttendeeService;
 import com.miniproject.eventastic.dashboard.dto.AttendeeDashboardDto;
+import com.miniproject.eventastic.dashboard.dto.DailyStatisticsDto;
 import com.miniproject.eventastic.dashboard.dto.EventDashboardDto;
 import com.miniproject.eventastic.dashboard.dto.EventStatisticsDto;
 import com.miniproject.eventastic.dashboard.dto.MonthlyRevenueDto;
@@ -15,7 +16,9 @@ import com.miniproject.eventastic.trx.service.TrxService;
 import com.miniproject.eventastic.users.entity.Users;
 import com.miniproject.eventastic.users.service.UsersService;
 import jakarta.transaction.Transactional;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -77,5 +80,11 @@ public class DashboardServiceImpl implements DashboardService {
   public List<MonthlyRevenueDto> getMonthlyRevenue(int year) throws RuntimeException {
     Users organizer = usersService.getCurrentUser();
     return eventService.getMonthlyRevenue(organizer, year);
+  }
+
+  @Override
+  public List<DailyStatisticsDto> getDailyStatistics(LocalDate startDate, LocalDate endDate) {
+    Users organizer = usersService.getCurrentUser();
+    return trxService.getDailyStatisticse(organizer, startDate, endDate);
   }
 }

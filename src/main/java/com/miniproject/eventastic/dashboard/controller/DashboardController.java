@@ -1,5 +1,6 @@
 package com.miniproject.eventastic.dashboard.controller;
 
+import com.miniproject.eventastic.dashboard.dto.DailyStatisticsDto;
 import com.miniproject.eventastic.dashboard.dto.MonthlyRevenueDto;
 import com.miniproject.eventastic.dashboard.service.DashboardService;
 import com.miniproject.eventastic.responses.Response;
@@ -40,6 +41,11 @@ public class DashboardController {
       ) {
     return Response.responseMapper(HttpStatus.OK.value(), "Displaying statistics for your event!",
         dashboardService.getEventStatistics(page, size, sortBy));
+  }
+  @GetMapping("/statistics/daily")
+  public ResponseEntity<Response<List<DailyStatisticsDto>>> getDailyStatistics(@RequestParam LocalDate startDate, @RequestParam LocalDate endDate) {
+    return Response.successfulResponse(HttpStatus.OK.value(), "Showing your daily statistics report",
+        dashboardService.getDailyStatistics(startDate, endDate));
   }
 
   @GetMapping("/attendees")

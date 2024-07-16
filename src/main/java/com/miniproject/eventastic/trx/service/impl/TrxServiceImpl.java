@@ -3,6 +3,7 @@ package com.miniproject.eventastic.trx.service.impl;
 import com.miniproject.eventastic.attendee.entity.Attendee;
 import com.miniproject.eventastic.attendee.entity.AttendeeId;
 import com.miniproject.eventastic.attendee.service.AttendeeService;
+import com.miniproject.eventastic.dashboard.dto.DailyStatisticsDto;
 import com.miniproject.eventastic.event.entity.Event;
 import com.miniproject.eventastic.event.service.EventService;
 import com.miniproject.eventastic.exceptions.ObjectNotFoundException;
@@ -43,7 +44,9 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -139,6 +142,18 @@ public class TrxServiceImpl implements TrxService {
       throw new ObjectNotFoundException("No one has bought tickets to your events yet :(");
     }
     return trxesPage;
+  }
+
+  @Override
+  public List<DailyStatisticsDto> getDailyStatisticse(Users organizer, LocalDate startDate, LocalDate endDate) {
+    ZoneOffset offset = ZoneOffset.UTC;  // or your specific offset
+    Instant start = startDate.atStartOfDay().toInstant(offset);
+    Instant end = endDate.plusDays(1).atStartOfDay().toInstant(offset).minusNanos(1);
+    List<DailyStatisticsDto> dailyStatisticsDtos = trxRepository.getDailyStatistics(organizer, start, end);
+    if (dailyStatisticsDtos.isEmpty()) {
+      throw new ObjectNotFoundException("No daily statistics to show");
+    }
+    return dailyStatisticsDtos;
   }
 
 
