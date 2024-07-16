@@ -2,6 +2,7 @@ package com.miniproject.eventastic.event.repository;
 
 import com.miniproject.eventastic.dashboard.dto.EventStatisticsDto;
 import com.miniproject.eventastic.dashboard.dto.MonthlyRevenueDto;
+import com.miniproject.eventastic.dashboard.dto.OrganizerDashboardSummaryDto;
 import com.miniproject.eventastic.event.entity.Event;
 import com.miniproject.eventastic.users.entity.Users;
 import java.time.LocalDate;
@@ -19,7 +20,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecificationExecutor<Event> {
 
-  Page<Event> findByOrganizerAndEventDateBetween(Users organizer, LocalDate startDate, LocalDate endDate, Pageable pageable);
+  Page<Event> findByOrganizerAndEventDateBetween(Users organizer, LocalDate startDate, LocalDate endDate,
+      Pageable pageable);
 
   Optional<Event> findByTitleAndLocationAndEventDateAndStartTime(String title, String location, LocalDate eventDate,
       LocalTime startTime);
@@ -46,23 +48,38 @@ public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecific
   Page<EventStatisticsDto> getEventStatisticsDto(@Param("organizer") Users organizer, Pageable pageable);
 
   @Query(
-       """
-       SELECT new com.miniproject.eventastic.dashboard.dto.MonthlyRevenueDto(
-        YEAR(e.eventDate),
-        MONTH(e.eventDate),
-        SUM(t.totalAmount),
-        SUM(owt.amount),
-        COUNT(DISTINCT e.id),
-        SUM(t.qty)
-       )
-       FROM Event e
-       JOIN e.trxes t
-       JOIN t.organizerWalletTrx owt
-       WHERE e.organizer = :organizer
-       AND YEAR(e.eventDate) = :year
-       GROUP BY YEAR(e.eventDate), MONTH(e.eventDate)
-     """
+      """
+            SELECT new com.miniproject.eventastic.dashboard.dto.MonthlyRevenueDto(
+             YEAR(e.eventDate),
+             MONTH(e.eventDate),
+             SUM(t.totalAmount),
+             SUM(owt.amount),
+             COUNT(DISTINCT e.id),
+             SUM(t.qty)
+            )
+            FROM Event e
+            JOIN e.trxes t
+            JOIN t.organizerWalletTrx owt
+            WHERE e.organizer = :organizer
+            AND YEAR(e.eventDate) = :year
+            GROUP BY YEAR(e.eventDate), MONTH(e.eventDate)
+          """
   )
-  List<MonthlyRevenueDto> getMonthlyRevenueByOrganizer(@Param("organizer") Users organizer,
-      @Param("year") Integer year);
+  List<MonthlyRevenueDto> getMonthlyRevenueByOrganizer(@Param("organizer") Users organizer, Integer year);
+
+      @Query("""
+          SELECT new com.miniproject.eventastic.dashboard.dto.OrganizerDashboardSummaryDto(
+          COUNT(e),
+          SUM(CASE WHEN e.eventDate > CURRENT_DATE THEN 1 ELSE 0 END),
+          SUM(owt.amount),
+          COUNT(DISTINCT a.id),
+          AVG(owt.amount)
+          )
+          FROM Event e
+          LEFT JOIN e.trxes t
+          LEFT JOIN t.organizerWalletTrx owt
+          LEFT JOIN e.attendees a
+          WHERE e.organizer= :organizer
+              """)
+      OrganizerDashboardSummaryDto getDashboardSummary(@Param("organizer") Users organizer);
 }

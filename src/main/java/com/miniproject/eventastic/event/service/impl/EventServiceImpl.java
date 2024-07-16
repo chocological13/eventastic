@@ -5,6 +5,7 @@ import com.miniproject.eventastic.attendee.entity.AttendeeId;
 import com.miniproject.eventastic.attendee.service.AttendeeService;
 import com.miniproject.eventastic.dashboard.dto.EventStatisticsDto;
 import com.miniproject.eventastic.dashboard.dto.MonthlyRevenueDto;
+import com.miniproject.eventastic.dashboard.dto.OrganizerDashboardSummaryDto;
 import com.miniproject.eventastic.event.entity.Event;
 import com.miniproject.eventastic.event.entity.dto.EventResponseDto;
 import com.miniproject.eventastic.event.metadata.Category;
@@ -228,6 +229,15 @@ public class EventServiceImpl implements EventService {
       throw new ObjectNotFoundException("You have no revenue reports for this year yet!");
     }
     return monthlyRevenueList;
+  }
+
+  @Override
+  public OrganizerDashboardSummaryDto getOrganizerDashboardSummary(Users organizer) {
+    OrganizerDashboardSummaryDto sum = eventRepository.getDashboardSummary(organizer);
+    if (sum == null) {
+      throw new ObjectNotFoundException("You have no summary to display!");
+    }
+    return sum;
   }
 
   // * get logged-in user and verify identity as organizer that created the event

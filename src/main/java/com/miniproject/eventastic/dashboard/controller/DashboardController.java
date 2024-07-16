@@ -2,6 +2,7 @@ package com.miniproject.eventastic.dashboard.controller;
 
 import com.miniproject.eventastic.dashboard.dto.DailyStatisticsDto;
 import com.miniproject.eventastic.dashboard.dto.MonthlyRevenueDto;
+import com.miniproject.eventastic.dashboard.dto.OrganizerDashboardSummaryDto;
 import com.miniproject.eventastic.dashboard.service.DashboardService;
 import com.miniproject.eventastic.responses.Response;
 import java.time.LocalDate;
@@ -21,6 +22,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class DashboardController {
 
   private final DashboardService dashboardService;
+
+  @GetMapping
+  public ResponseEntity<Response<OrganizerDashboardSummaryDto>> getOrganizerDashboardSummary() {
+    return Response.successfulResponse(HttpStatus.OK.value(), "Displaying your summary..", dashboardService.getOrganizerDashboardSummary());
+  }
 
   @GetMapping("/events")
   public ResponseEntity<Response<Map<String, Object>>> getEvents(

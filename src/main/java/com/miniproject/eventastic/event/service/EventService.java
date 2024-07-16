@@ -2,6 +2,7 @@ package com.miniproject.eventastic.event.service;
 
 import com.miniproject.eventastic.dashboard.dto.EventStatisticsDto;
 import com.miniproject.eventastic.dashboard.dto.MonthlyRevenueDto;
+import com.miniproject.eventastic.dashboard.dto.OrganizerDashboardSummaryDto;
 import com.miniproject.eventastic.event.entity.Event;
 import com.miniproject.eventastic.event.entity.dto.EventResponseDto;
 import com.miniproject.eventastic.event.metadata.Category;
@@ -58,4 +59,6 @@ public interface EventService {
   Page<Event> getEventBetweenDates(Users organizer, LocalDate startDate, LocalDate endDate, Pageable pageable);
 
   List<MonthlyRevenueDto> getMonthlyRevenue(Users organizer, Integer year);
+
+  OrganizerDashboardSummaryDto getOrganizerDashboardSummary(Users organizer);
 }

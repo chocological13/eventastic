@@ -7,6 +7,7 @@ import com.miniproject.eventastic.dashboard.dto.DailyStatisticsDto;
 import com.miniproject.eventastic.dashboard.dto.EventDashboardDto;
 import com.miniproject.eventastic.dashboard.dto.EventStatisticsDto;
 import com.miniproject.eventastic.dashboard.dto.MonthlyRevenueDto;
+import com.miniproject.eventastic.dashboard.dto.OrganizerDashboardSummaryDto;
 import com.miniproject.eventastic.dashboard.dto.TrxDashboardDto;
 import com.miniproject.eventastic.dashboard.service.DashboardService;
 import com.miniproject.eventastic.event.entity.Event;
@@ -81,8 +82,14 @@ public class DashboardServiceImpl implements DashboardService {
   }
 
   @Override
-  public List<DailyStatisticsDto> getDailyStatistics(LocalDate startDate, LocalDate endDate) {
+  public List<DailyStatisticsDto> getDailyStatistics(LocalDate startDate, LocalDate endDate) throws RuntimeException {
     Users organizer = usersService.getCurrentUser();
     return trxService.getDailyStatisticse(organizer, startDate, endDate);
+  }
+
+  @Override
+  public OrganizerDashboardSummaryDto getOrganizerDashboardSummary() {
+    Users organizer = usersService.getCurrentUser();
+    return eventService.getOrganizerDashboardSummary(organizer);
   }
 }
