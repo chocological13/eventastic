@@ -3,6 +3,7 @@ package com.miniproject.eventastic.event.service.impl;
 import com.miniproject.eventastic.attendee.entity.Attendee;
 import com.miniproject.eventastic.attendee.entity.AttendeeId;
 import com.miniproject.eventastic.attendee.service.AttendeeService;
+import com.miniproject.eventastic.dashboard.dto.EventStatisticsDto;
 import com.miniproject.eventastic.event.entity.Event;
 import com.miniproject.eventastic.event.entity.dto.EventResponseDto;
 import com.miniproject.eventastic.event.metadata.Category;
@@ -26,6 +27,7 @@ import com.miniproject.eventastic.voucher.entity.Voucher;
 import com.miniproject.eventastic.voucher.entity.dto.create.CreateEventVoucherRequestDto;
 import com.miniproject.eventastic.voucher.service.VoucherService;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Optional;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -194,6 +196,21 @@ public class EventServiceImpl implements EventService {
       throw new AccessDeniedException("You do not have permission to upload an image for an event!");
     }
     return imageService.uploadEventImage(requestDto, organizer);
+  }
+
+  @Override
+  public EventStatisticsDto getEventStatistics(Long eventId) {
+    return eventRepository.getEventStatisticsDto(eventId);
+  }
+
+  @Override
+  public Page<Event> findEventBetweenDates(Users organizer, LocalDate startDate, LocalDate endDate, Pageable pageable) {
+    Page<Event> eventPage = eventRepository.findByOrganizerAndEventDateBetween(organizer, startDate,
+        endDate, pageable);
+    if (eventPage.isEmpty()) {
+      throw new EventNotFoundException("Events between date " + startDate + " and " + endDate + " not found");
+    }
+    return eventPage;
   }
 
   // * get logged-in user and verify identity as organizer that created the event

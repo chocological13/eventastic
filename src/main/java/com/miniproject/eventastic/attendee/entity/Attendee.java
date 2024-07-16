@@ -11,7 +11,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
-import java.util.Date;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -35,7 +34,7 @@ public class Attendee {
   private Event event;
 
   @Column(name = "attended_at")
-  private LocalDate attendedAt;
+  private LocalDate attendingAt;
 
   @Column(name = "tickets_purchased")
   private Integer ticketsPurchased;

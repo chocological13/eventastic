@@ -3,6 +3,7 @@ package com.miniproject.eventastic.attendee.repository;
 import com.miniproject.eventastic.attendee.entity.Attendee;
 import com.miniproject.eventastic.attendee.entity.AttendeeId;
 import com.miniproject.eventastic.event.entity.Event;
+import com.miniproject.eventastic.users.entity.Users;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -20,5 +21,8 @@ public interface AttendeeRepository extends JpaRepository<Attendee, AttendeeId> 
       ORDER BY a.event.eventDate asc
       """)
   Page<Event> findEventsByUserId(@Param("userId") Long userId, Pageable pageable);
+
+
+  Page<Attendee> findAttendeeByEvent_Organizer(Users organizer, Pageable pageable);
 
 }

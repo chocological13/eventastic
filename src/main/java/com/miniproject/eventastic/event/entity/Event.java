@@ -1,12 +1,15 @@
 package com.miniproject.eventastic.event.entity;
 
+import com.miniproject.eventastic.attendee.entity.Attendee;
 import com.miniproject.eventastic.event.metadata.Category;
 import com.miniproject.eventastic.image.entity.ImageEvent;
 import com.miniproject.eventastic.review.entity.Review;
+import com.miniproject.eventastic.ticket.entity.Ticket;
 import com.miniproject.eventastic.ticketType.entity.TicketType;
 import com.miniproject.eventastic.trx.entity.Trx;
 import com.miniproject.eventastic.users.entity.Users;
 import com.miniproject.eventastic.voucher.entity.Voucher;
+import com.miniproject.eventastic.voucher.entity.VoucherUsage;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -40,8 +43,7 @@ import org.hibernate.annotations.ColumnDefault;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "event", schema = "public", indexes = {
-    @Index(name = "idx_event_organizer_id", columnList = "organizer_id"),
-    @Index(name = "idx_event_location_id", columnList = "location_id")
+    @Index(name = "idx_event_organizer_id", columnList = "organizer_id")
 })
 public class Event {
 
@@ -140,6 +142,14 @@ public class Event {
   @OneToMany(mappedBy = "event")
   private Set<Voucher> vouchers = new LinkedHashSet<>();
 
+  @OneToMany(mappedBy = "event")
+  private Set<Attendee> attendees = new LinkedHashSet<>();
+
+  @OneToMany(mappedBy = "event")
+  private Set<Ticket> tickets = new LinkedHashSet<>();
+
+  @OneToMany(mappedBy = "event")
+  private Set<VoucherUsage> voucherUsages = new LinkedHashSet<>();
 
 
   @PrePersist

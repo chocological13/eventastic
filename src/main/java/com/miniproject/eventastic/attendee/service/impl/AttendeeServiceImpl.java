@@ -6,6 +6,8 @@ import com.miniproject.eventastic.attendee.repository.AttendeeRepository;
 import com.miniproject.eventastic.attendee.service.AttendeeService;
 import com.miniproject.eventastic.event.entity.Event;
 import com.miniproject.eventastic.exceptions.event.EventNotFoundException;
+import com.miniproject.eventastic.exceptions.user.AttendeeNotFoundException;
+import com.miniproject.eventastic.users.entity.Users;
 import java.util.Optional;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +30,15 @@ public class AttendeeServiceImpl implements AttendeeService {
   @Override
   public Optional<Attendee> findAttendee(AttendeeId attendeeId) {
     return attendeeRepository.findById(attendeeId);
+  }
+
+  @Override
+  public Page<Attendee> getAttendeesByEventOrganizer(Users organizer, Pageable pageable) {
+    Page<Attendee> attendeesPage = attendeeRepository.findAttendeeByEvent_Organizer(organizer, pageable);
+    if (attendeesPage.isEmpty()) {
+      throw new AttendeeNotFoundException("No one bought any ticket to your events yet, sadge :(");
+    }
+    return attendeesPage;
   }
 
   @Override

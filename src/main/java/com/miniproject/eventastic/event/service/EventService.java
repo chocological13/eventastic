@@ -1,5 +1,6 @@
 package com.miniproject.eventastic.event.service;
 
+import com.miniproject.eventastic.dashboard.dto.EventStatisticsDto;
 import com.miniproject.eventastic.event.entity.Event;
 import com.miniproject.eventastic.event.entity.dto.EventResponseDto;
 import com.miniproject.eventastic.event.metadata.Category;
@@ -8,9 +9,12 @@ import com.miniproject.eventastic.image.entity.dto.ImageUploadRequestDto;
 import com.miniproject.eventastic.review.entity.Review;
 import com.miniproject.eventastic.review.entity.dto.ReviewSubmitRequestDto;
 import com.miniproject.eventastic.review.entity.dto.ReviewSubmitResponseDto;
+import com.miniproject.eventastic.users.entity.Users;
 import com.miniproject.eventastic.voucher.entity.Voucher;
 import com.miniproject.eventastic.voucher.entity.dto.create.CreateEventVoucherRequestDto;
+import java.time.LocalDate;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface EventService {
 
@@ -45,5 +49,10 @@ public interface EventService {
 
   // upload image for events
   ImageEvent uploadEventImage(ImageUploadRequestDto requestDto);
+
+  // Region - Dashboard
+  EventStatisticsDto getEventStatistics(Long eventId);
+
+  Page<Event> findEventBetweenDates(Users organizer, LocalDate startDate, LocalDate endDate, Pageable pageable);
 
 }

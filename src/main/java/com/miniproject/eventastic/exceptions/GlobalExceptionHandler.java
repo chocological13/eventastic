@@ -21,7 +21,7 @@ import com.miniproject.eventastic.exceptions.user.DuplicateCredentialsException;
 import com.miniproject.eventastic.exceptions.user.ReferralCodeUnusedException;
 import com.miniproject.eventastic.exceptions.user.UserNotFoundException;
 import com.miniproject.eventastic.responses.Response;
-import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
@@ -63,7 +63,7 @@ public class GlobalExceptionHandler {
    @ExceptionHandler(Exception.class)
    public ResponseEntity<Response<String>> handleException(Exception ex) {
       HttpStatus status = EXCEPTION_STATUS_MAP.getOrDefault(ex.getClass(), HttpStatus.INTERNAL_SERVER_ERROR);
-      String message = ex.getClass().getSimpleName() + ": " + ex.getMessage() + " \n" + status.getReasonPhrase();
+      String message = ex.getClass().getSimpleName() + ": " + ex.getMessage() + " \n " + Arrays.stream(ex.getStackTrace()).findFirst();
       return Response.failedResponse(status.value(), message, null);
    }
 }
