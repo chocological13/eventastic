@@ -1,6 +1,7 @@
 package com.miniproject.eventastic.users.service.impl;
 
 import com.miniproject.eventastic.attendee.service.AttendeeService;
+import com.miniproject.eventastic.auth.entity.dto.changePassword.ChangePasswordRequestDto;
 import com.miniproject.eventastic.event.entity.Event;
 import com.miniproject.eventastic.event.entity.dto.EventResponseDto;
 import com.miniproject.eventastic.exceptions.event.EventNotFoundException;
@@ -40,7 +41,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -105,6 +105,30 @@ public class UsersServiceImpl implements UsersService {
   public void resetPassword(Users user, String newPassword) {
     user.setPassword(passwordEncoder.encode(newPassword));
     usersRepository.save(user);
+  }
+
+  @Override
+  public void changePassword(ChangePasswordRequestDto requestDto) {
+    Users loggedInUser = getCurrentUser();
+
+    // Verify old password
+    if (!passwordEncoder.matches(requestDto.getOldPassword(), loggedInUser.getPassword())) {
+      throw new IllegalArgumentException("Old password is incorrect");
+    }
+
+    // Check if new password matches confirm password
+    if (!requestDto.getNewPassword().equals(requestDto.getConfirmPassword())) {
+      throw new IllegalArgumentException("New password and confirm password do not match");
+    }
+
+    // Check if new password is the same as the old password
+    if (passwordEncoder.matches(requestDto.getNewPassword(), loggedInUser.getPassword())) {
+      throw new IllegalArgumentException("New password cannot be the same as the old password");
+    }
+
+    // Update password
+    loggedInUser.setPassword(passwordEncoder.encode(requestDto.getNewPassword()));
+    usersRepository.save(loggedInUser);
   }
 
   @Override

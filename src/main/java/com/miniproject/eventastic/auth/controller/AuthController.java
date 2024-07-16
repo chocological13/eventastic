@@ -1,13 +1,15 @@
 package com.miniproject.eventastic.auth.controller;
 
+import com.miniproject.eventastic.auth.entity.dto.changePassword.ChangePasswordRequestDto;
 import com.miniproject.eventastic.auth.entity.dto.forgorPassword.ForgotPasswordRequestDto;
 import com.miniproject.eventastic.auth.entity.dto.forgorPassword.ForgotPasswordResponseDto;
 import com.miniproject.eventastic.auth.entity.dto.login.LoginRequestDto;
 import com.miniproject.eventastic.auth.entity.dto.resetPassword.ResetPasswordRequestDto;
 import com.miniproject.eventastic.auth.service.AuthService;
-import com.miniproject.eventastic.auth.service.ForgotPasswordService;
+import com.miniproject.eventastic.auth.service.PasswordService;
 import com.miniproject.eventastic.responses.Response;
 import com.nimbusds.jose.JOSEException;
+import jakarta.validation.Valid;
 import java.security.NoSuchAlgorithmException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
@@ -30,7 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
   private final AuthService authService;
-  private final ForgotPasswordService forgotPasswordService;
+  private final PasswordService passwordService;
 
   // > DEV: check who is currently logged in this session
   @GetMapping("")
@@ -60,7 +62,7 @@ public class AuthController {
   @PostMapping("/forgot-password")
   public ResponseEntity<Response<ForgotPasswordResponseDto>> forgotPassword(@RequestBody ForgotPasswordRequestDto req)
       throws NoSuchAlgorithmException, JOSEException {
-    ForgotPasswordResponseDto responseDto = forgotPasswordService.forgotPassword(req);
+    ForgotPasswordResponseDto responseDto = passwordService.forgotPassword(req);
     if (responseDto != null) {
       return Response.successfulResponse(HttpStatus.ACCEPTED.value(),
           "Reset password request for user with email " + req.getEmail() + " received!", responseDto);
@@ -73,7 +75,7 @@ public class AuthController {
   @PutMapping("/reset-password")
   public ResponseEntity<Response<Void>> resetPassword(@RequestParam String token,
       @RequestBody ResetPasswordRequestDto req) throws Exception {
-    forgotPasswordService.resetPassword(token, req);
+    passwordService.resetPassword(token, req);
       return Response.successfulResponse("Password reset successful! You can log back in with the new password now! "
           + "^^");
   }

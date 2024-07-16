@@ -1,5 +1,6 @@
 package com.miniproject.eventastic.users.controller;
 
+import com.miniproject.eventastic.auth.entity.dto.changePassword.ChangePasswordRequestDto;
 import com.miniproject.eventastic.exceptions.image.ImageNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.OrganizerWalletNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.PointsTrxNotFoundException;
@@ -115,6 +116,12 @@ public class UsersController {
     usersService.update(requestDTO);
     UserProfileDto userProfile = usersService.getProfile();
     return Response.successfulResponse(HttpStatus.OK.value(), "Profile update successful!! :D", userProfile);
+  }
+
+  @PutMapping("me/change-password")
+  public ResponseEntity<Response<Void>> changePassword(@Valid @RequestBody ChangePasswordRequestDto requestDto) {
+    usersService.changePassword(requestDto);
+    return Response.successfulResponse("Password change successful!");
   }
 
   // * Ref Code related

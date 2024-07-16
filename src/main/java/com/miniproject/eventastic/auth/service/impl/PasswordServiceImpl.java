@@ -1,11 +1,12 @@
 package com.miniproject.eventastic.auth.service.impl;
 
+import com.miniproject.eventastic.auth.entity.dto.changePassword.ChangePasswordRequestDto;
 import com.miniproject.eventastic.auth.entity.dto.forgorPassword.ForgotPasswordRequestDto;
 import com.miniproject.eventastic.auth.entity.dto.forgorPassword.ForgotPasswordResponseDto;
 import com.miniproject.eventastic.auth.entity.dto.resetPassword.ResetPasswordRequestDto;
 import com.miniproject.eventastic.auth.helpers.UrlBuilder;
 import com.miniproject.eventastic.auth.repository.ForgotPasswordRedisRepository;
-import com.miniproject.eventastic.auth.service.ForgotPasswordService;
+import com.miniproject.eventastic.auth.service.PasswordService;
 import com.miniproject.eventastic.users.entity.Users;
 import com.miniproject.eventastic.users.repository.UsersRepository;
 import com.miniproject.eventastic.users.service.UsersService;
@@ -26,7 +27,7 @@ import org.springframework.stereotype.Service;
 @Data
 @RequiredArgsConstructor
 @Slf4j
-public class ForgotPasswordServiceImpl implements ForgotPasswordService {
+public class PasswordServiceImpl implements PasswordService {
 
   private final UsersRepository usersRepository;
   private final UsersService usersService;
@@ -86,7 +87,7 @@ public class ForgotPasswordServiceImpl implements ForgotPasswordService {
   }
 
   @Override
-  public void resetPassword(String urlToken, ResetPasswordRequestDto requestDto) throws Exception {
+  public void resetPassword(String urlToken, ResetPasswordRequestDto requestDto) {
 
     String resetToken = forgotPasswordRedisRepository.getResetToken(urlToken);
     String username = forgotPasswordRedisRepository.getUsername(urlToken);
@@ -102,7 +103,7 @@ public class ForgotPasswordServiceImpl implements ForgotPasswordService {
           usersService.resetPassword(user, requestDto.getNewPassword());
           forgotPasswordRedisRepository.blacklistResetToken(urlToken);
         } else {
-          throw new Exception("Password doesn't match");
+          throw new IllegalArgumentException("Password doesn't match");
         }
       }
     }

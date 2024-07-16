@@ -6,12 +6,12 @@ import com.miniproject.eventastic.auth.entity.dto.resetPassword.ResetPasswordReq
 import com.nimbusds.jose.JOSEException;
 import java.security.NoSuchAlgorithmException;
 
-public interface ForgotPasswordService {
+public interface PasswordService {
 
   ForgotPasswordResponseDto forgotPassword(ForgotPasswordRequestDto forgotPasswordRequestDto)
       throws NoSuchAlgorithmException, JOSEException;
 
   String generateResetToken(String username);
 
-  void resetPassword(String urlToken, ResetPasswordRequestDto requestDto) throws Exception;
+  void resetPassword(String urlToken, ResetPasswordRequestDto requestDto);
 }

@@ -1,7 +1,7 @@
 package com.miniproject.eventastic.users.service;
 
+import com.miniproject.eventastic.auth.entity.dto.changePassword.ChangePasswordRequestDto;
 import com.miniproject.eventastic.event.entity.dto.EventResponseDto;
-import com.miniproject.eventastic.exceptions.image.ImageNotFoundException;
 import com.miniproject.eventastic.image.entity.ImageUserAvatar;
 import com.miniproject.eventastic.image.entity.dto.ImageUploadRequestDto;
 import com.miniproject.eventastic.organizerWallet.entity.dto.OrganizerWalletDisplayDto;
@@ -10,8 +10,6 @@ import com.miniproject.eventastic.pointsWallet.entity.PointsWallet;
 import com.miniproject.eventastic.referralCodeUsage.entity.dto.ReferralCodeUsageSummaryDto;
 import com.miniproject.eventastic.users.entity.Users;
 import com.miniproject.eventastic.users.entity.dto.profile.UserProfileDto;
-import com.miniproject.eventastic.users.entity.dto.register.RegisterRequestDto;
-import com.miniproject.eventastic.users.entity.dto.register.RegisterResponseDto;
 import com.miniproject.eventastic.users.entity.dto.userManagement.ProfileUpdateRequestDTO;
 import java.util.Set;
 import org.springframework.data.domain.Page;
@@ -26,6 +24,7 @@ public interface UsersService {
   Users getCurrentUser();
 
   void resetPassword(Users user, String newPassword);
+  void changePassword(ChangePasswordRequestDto requestDto);
 
   void update(ProfileUpdateRequestDTO requestDto);
 
