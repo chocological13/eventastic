@@ -19,9 +19,9 @@ public interface EventService {
   Page<EventResponseDto> getEvents(int page, int size, String title, String category, String location,
       String organizer, Boolean isFree, String order, String direction);
 
-  Page<EventResponseDto> getUpcomingEvents(int page, int size);
+  Page<EventResponseDto> getByKeyword(int page, int size, String keyword);
 
-  Page<EventResponseDto> getEventsByOrganizer(Long organizerId, int page, int size);
+  Page<EventResponseDto> getUpcomingEvents(int page, int size);
 
   Event getEventById(Long eventId);
 

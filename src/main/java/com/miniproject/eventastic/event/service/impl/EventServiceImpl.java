@@ -75,16 +75,16 @@ public class EventServiceImpl implements EventService {
     // init specification for filtering
     Specification<Event> specification = Specification.where(null);
     // props
-    if (title != null) {
+    if (title != null && !title.isEmpty()) {
       specification = specification.and(EventSpecifications.hasTitle(title));
     }
-    if (category != null) {
+    if (category != null && !category.isEmpty()) {
       specification = specification.and(EventSpecifications.hasCategory(category));
     }
-    if (location != null) {
+    if (location != null && !location.isEmpty()) {
       specification = specification.and(EventSpecifications.hasLocation(location));
     }
-    if (organizer != null) {
+    if (organizer != null && !organizer.isEmpty()) {
       specification = specification.and(EventSpecifications.hasOrganizer(organizer));
     }
     if (isFree != null) {
@@ -99,10 +99,10 @@ public class EventServiceImpl implements EventService {
   }
 
   @Override
-  public Page<EventResponseDto> getUpcomingEvents(int page, int size) throws EventNotFoundException {
+  public Page<EventResponseDto> getByKeyword(int page, int size, String keyword) {
     Pageable pageable = PageRequest.of(page, size, Sort.by("eventDate").ascending());
 
-    Specification<Event> specification = EventSpecifications.isUpcoming();
+    Specification<Event> specification = EventSpecifications.hasKeyword(keyword);
 
     Page<Event> eventsPage = eventRepository.findAll(specification, pageable);
     if (!eventsPage.hasContent()) {
@@ -112,12 +112,14 @@ public class EventServiceImpl implements EventService {
   }
 
   @Override
-  public Page<EventResponseDto> getEventsByOrganizer(Long organizerId, int page, int size) throws EventNotFoundException {
+  public Page<EventResponseDto> getUpcomingEvents(int page, int size) throws EventNotFoundException {
     Pageable pageable = PageRequest.of(page, size, Sort.by("eventDate").ascending());
-    Specification<Event> specification = EventSpecifications.byOrganizerId(organizerId);
+
+    Specification<Event> specification = EventSpecifications.isUpcoming();
+
     Page<Event> eventsPage = eventRepository.findAll(specification, pageable);
     if (!eventsPage.hasContent()) {
-      throw new EventNotFoundException("Events by organizer does not exist.");
+      throw new EventNotFoundException("No upcoming events found.");
     }
     return eventsPage.map(EventResponseDto::new);
   }
@@ -151,7 +153,8 @@ public class EventServiceImpl implements EventService {
 
   @Override
   public Category getCategoryById(Long eventId) {
-    return categoryRepository.findById(eventId).orElseThrow(() -> new EventNotFoundException("Event by ID: " + eventId + " does not exist."));
+    return categoryRepository.findById(eventId)
+        .orElseThrow(() -> new EventNotFoundException("Event by ID: " + eventId + " does not exist."));
   }
 
   @Override
@@ -177,13 +180,15 @@ public class EventServiceImpl implements EventService {
 
   // TODO : give pagination to this
   @Override
-  public Page<ReviewSubmitResponseDto> getEventReviews(Long eventId, int page, int size) throws ReviewNotFoundException {
+  public Page<ReviewSubmitResponseDto> getEventReviews(Long eventId, int page, int size)
+      throws ReviewNotFoundException {
     Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
     return reviewService.getReviewsByEventId(eventId, pageable);
   }
 
   @Override
-  public ImageEvent uploadEventImage(ImageUploadRequestDto requestDto) throws IllegalArgumentException, AccessDeniedException {
+  public ImageEvent uploadEventImage(ImageUploadRequestDto requestDto)
+      throws IllegalArgumentException, AccessDeniedException {
     Users organizer = usersService.getCurrentUser();
     if (!organizer.getIsOrganizer()) {
       throw new AccessDeniedException("You do not have permission to upload an image for an event!");

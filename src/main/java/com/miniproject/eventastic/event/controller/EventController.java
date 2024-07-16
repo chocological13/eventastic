@@ -108,10 +108,20 @@ public class EventController {
       @RequestParam(required = false) String order,
       @RequestParam(required = false) String direction
   ) {
-    Page<EventResponseDto> eventPage = eventService.getEvents(page, size, title, category, location, organizer,
-        isFree, order,
-        direction);
+    Page<EventResponseDto> eventPage = eventService.getEvents(page, size, title, category, location,
+        organizer, isFree,
+        order, direction);
     return Response.responseMapper(HttpStatus.OK.value(), "Displaying events..", eventPage);
+  }
+
+  @GetMapping("/search")
+  public ResponseEntity<Response<Map<String, Object>>> getByKeyword(
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "10") int size,
+      @RequestParam String keyword
+  ) {
+    Page<EventResponseDto> eventPage = eventService.getByKeyword(page, size, keyword);
+    return Response.responseMapper(HttpStatus.OK.value(), "Listing events by keyword...", eventPage);
   }
 
   @GetMapping("/upcoming")
@@ -121,16 +131,6 @@ public class EventController {
   ) {
     Page<EventResponseDto> eventPage = eventService.getUpcomingEvents(page, size);
     return Response.responseMapper(HttpStatus.OK.value(), "Listing upcoming events...", eventPage);
-  }
-
-  @GetMapping("organizer/{organizerId}")
-  public ResponseEntity<Response<Map<String, Object>>> getEventsByOrganizer(
-      @PathVariable Long organizerId,
-      @RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "10") int size
-  ) {
-    Page<EventResponseDto> eventPage = eventService.getEventsByOrganizer(organizerId, page, size);
-    return Response.responseMapper(HttpStatus.OK.value(), "Displaying events...", eventPage);
   }
 
   @PutMapping("/{eventId}/update")
