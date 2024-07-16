@@ -43,20 +43,14 @@ public class DashboardServiceImpl implements DashboardService {
 
   @Override
   @Transactional
-  public EventStatisticsDto getEventStatistics(Long eventId) throws RuntimeException {
+  public Page<EventStatisticsDto> getEventStatistics(int page, int size, String sortBy) throws RuntimeException {
     // * validate organizer
     Users organizer = usersService.getCurrentUser();
-    Event event = eventService.getEventById(eventId);
-    if (event.getOrganizer() != organizer) {
-      throw new AccessDeniedException("You do not have permission to access this resource");
-    }
 
-    EventStatisticsDto eventStatisticsDto = eventService.getEventStatistics(eventId);
-    if (eventStatisticsDto == null) {
-      throw new EventNotFoundException("You did not organize any event with this ID, please make sure you have "
-                                       + "entered the right ID!");
-    }
-    return eventStatisticsDto;
+    // * set up pageable
+    Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy).ascending());
+
+    return eventService.getEventStatistics(organizer, pageable);
   }
 
   @Override

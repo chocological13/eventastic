@@ -24,22 +24,22 @@ public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecific
 
   @Query(
       """
-          SELECT new com.miniproject.eventastic.dashboard.dto.EventStatisticsDto(
-            e.id,
-            e.title,
-            COUNT(a),
-            SUM(t.totalAmount),
-            SUM(t.qty),
-            AVG(tt.price),
-            COUNT(DISTINCT t.user.id)
-          )
-          FROM Event e
-          LEFT JOIN e.attendees a
-          LEFT JOIN e.trxes t
-          LEFT JOIN e.ticketTypes tt
-          WHERE e.id = :eventId
-          GROUP BY e.id, e.title
+             SELECT new com.miniproject.eventastic.dashboard.dto.EventStatisticsDto(
+                e.id,
+                e.title,
+                COUNT(DISTINCT a.id.userId),
+                COUNT(DISTINCT t.user.id),
+                SUM(t.totalAmount),
+                SUM(t.qty),
+                AVG(tt.price)
+              )
+              FROM Event e
+              LEFT JOIN e.attendees a
+              LEFT JOIN e.trxes t
+              LEFT JOIN e.ticketTypes tt
+              WHERE e.organizer = :organizer
+              GROUP BY e.id, e.title
           """
   )
-  EventStatisticsDto getEventStatisticsDto(@Param("eventId") Long eventId);
+  Page<EventStatisticsDto> getEventStatisticsDto(@Param("organizer") Users organizer, Pageable pageable);
 }

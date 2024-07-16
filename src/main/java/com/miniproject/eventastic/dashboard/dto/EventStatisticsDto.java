@@ -1,26 +1,28 @@
 package com.miniproject.eventastic.dashboard.dto;
 
 import java.math.BigDecimal;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 public class EventStatisticsDto {
-  private Long eventId;
-  private String eventTitle;
-  private Long totalAttendees;
+  private Long id;
+  private String title;
+  private Long uniqueAttendees;
+  private Long uniqueRegistrants;
   private BigDecimal totalRevenue;
-  private Long ticketsSold;
+  private Long totalTicketsSold;
   private Double averageTicketPrice;
-  private Long registrations;
 
-  public EventStatisticsDto(Long eventId, String eventTitle, Long totalAttendees, BigDecimal totalRevenue,
-      Long ticketsSold, Double averageTicketPrice, Long registrations) {
-    this.eventId = eventId;
-    this.eventTitle = eventTitle;
-    this.totalAttendees = totalAttendees;
+  public EventStatisticsDto(Long id, String title, Long uniqueAttendees, Long uniqueRegistrants,
+      BigDecimal totalRevenue, Long totalTicketsSold, Double averageTicketPrice) {
+    this.id = id;
+    this.title = title;
+    this.uniqueAttendees = uniqueAttendees;
+    this.uniqueRegistrants = uniqueRegistrants;
     this.totalRevenue = totalRevenue;
-    this.ticketsSold = ticketsSold;
+    this.totalTicketsSold = totalTicketsSold;
     this.averageTicketPrice = averageTicketPrice;
-    this.registrations = registrations;
   }
 }

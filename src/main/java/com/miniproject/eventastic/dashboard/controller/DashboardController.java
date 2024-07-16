@@ -1,6 +1,5 @@
 package com.miniproject.eventastic.dashboard.controller;
 
-import com.miniproject.eventastic.dashboard.dto.EventStatisticsDto;
 import com.miniproject.eventastic.dashboard.service.DashboardService;
 import com.miniproject.eventastic.responses.Response;
 import java.time.LocalDate;
@@ -32,9 +31,13 @@ public class DashboardController {
   }
 
   @GetMapping("/statistics/events")
-  public ResponseEntity<Response<EventStatisticsDto>> getEventStatistics(@RequestParam Long eventId) {
-    return Response.successfulResponse(HttpStatus.OK.value(), "Displaying statistics for your event!",
-        dashboardService.getEventStatistics(eventId));
+  public ResponseEntity<Response<Map<String, Object>>> getEventStatistics(
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "10") int  size,
+      @RequestParam(defaultValue = "eventDate") String sortBy
+      ) {
+    return Response.responseMapper(HttpStatus.OK.value(), "Displaying statistics for your event!",
+        dashboardService.getEventStatistics(page, size, sortBy));
   }
 
   @GetMapping("/attendees")

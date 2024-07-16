@@ -199,12 +199,17 @@ public class EventServiceImpl implements EventService {
   }
 
   @Override
-  public EventStatisticsDto getEventStatistics(Long eventId) {
-    return eventRepository.getEventStatisticsDto(eventId);
+  public Page<EventStatisticsDto> getEventStatistics(Users prganizer, Pageable pageable) throws RuntimeException {
+    Page<EventStatisticsDto> statisticsDtoPage = eventRepository.getEventStatisticsDto(prganizer, pageable);
+    if (!statisticsDtoPage.hasContent()) {
+      throw new EventNotFoundException("You have not organized any events!");
+    }
+    return statisticsDtoPage;
   }
 
   @Override
-  public Page<Event> findEventBetweenDates(Users organizer, LocalDate startDate, LocalDate endDate, Pageable pageable) {
+  public Page<Event> findEventBetweenDates(Users organizer, LocalDate startDate, LocalDate endDate, Pageable pageable)
+  throws RuntimeException {
     Page<Event> eventPage = eventRepository.findByOrganizerAndEventDateBetween(organizer, startDate,
         endDate, pageable);
     if (eventPage.isEmpty()) {
