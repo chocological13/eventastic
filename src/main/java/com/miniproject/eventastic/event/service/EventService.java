@@ -1,6 +1,7 @@
 package com.miniproject.eventastic.event.service;
 
 import com.miniproject.eventastic.dashboard.dto.EventStatisticsDto;
+import com.miniproject.eventastic.dashboard.dto.MonthlyRevenueDto;
 import com.miniproject.eventastic.event.entity.Event;
 import com.miniproject.eventastic.event.entity.dto.EventResponseDto;
 import com.miniproject.eventastic.event.metadata.Category;
@@ -13,6 +14,7 @@ import com.miniproject.eventastic.users.entity.Users;
 import com.miniproject.eventastic.voucher.entity.Voucher;
 import com.miniproject.eventastic.voucher.entity.dto.create.CreateEventVoucherRequestDto;
 import java.time.LocalDate;
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -53,6 +55,7 @@ public interface EventService {
   // Region - Dashboard
   Page<EventStatisticsDto> getEventStatistics(Users prganizer, Pageable pageable);
 
-  Page<Event> findEventBetweenDates(Users organizer, LocalDate startDate, LocalDate endDate, Pageable pageable);
+  Page<Event> getEventBetweenDates(Users organizer, LocalDate startDate, LocalDate endDate, Pageable pageable);
 
+  List<MonthlyRevenueDto> getMonthlyRevenue(Users organizer, Integer year);
 }

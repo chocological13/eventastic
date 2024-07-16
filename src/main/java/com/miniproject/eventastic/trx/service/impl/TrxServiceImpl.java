@@ -5,6 +5,7 @@ import com.miniproject.eventastic.attendee.entity.AttendeeId;
 import com.miniproject.eventastic.attendee.service.AttendeeService;
 import com.miniproject.eventastic.event.entity.Event;
 import com.miniproject.eventastic.event.service.EventService;
+import com.miniproject.eventastic.exceptions.ObjectNotFoundException;
 import com.miniproject.eventastic.exceptions.event.EventEndedException;
 import com.miniproject.eventastic.exceptions.trx.InsufficientPointsException;
 import com.miniproject.eventastic.exceptions.trx.NotAwardeeException;
@@ -47,6 +48,8 @@ import java.util.Set;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
@@ -128,6 +131,16 @@ public class TrxServiceImpl implements TrxService {
       return ticketSet;
     }
   }
+
+  @Override
+  public Page<Trx> getTrxsByOrganizer(Users organizer, Pageable pageable) {
+    Page<Trx> trxesPage= trxRepository.findTrxByEvent_Organizer(organizer, pageable);
+    if (trxesPage.isEmpty()) {
+      throw new ObjectNotFoundException("No one has bought tickets to your events yet :(");
+    }
+    return trxesPage;
+  }
+
 
   // Region - utilities for purchase ticket
   public Event validateAndRetrieveEvent(Long eventId) {

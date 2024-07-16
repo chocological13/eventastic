@@ -5,14 +5,14 @@ import java.time.LocalDate;
 import lombok.Data;
 
 @Data
-public class AttendeeDto {
+public class AttendeeDashboardDto {
   private Long userId;
   private String userName;
   private String eventTitle;
   private LocalDate attendingAt;
   private Integer ticketsPurchased;
 
-  public AttendeeDto(Attendee attendee) {
+  public AttendeeDashboardDto(Attendee attendee) {
     this.userId = attendee.getUser().getId();
     this.userName = attendee.getUser().getUsername();
     this.eventTitle = attendee.getEvent().getTitle();
@@ -20,7 +20,7 @@ public class AttendeeDto {
     this.ticketsPurchased = attendee.getTicketsPurchased();
   }
 
-  public AttendeeDto toDto(Attendee attendee) {
-    return new AttendeeDto(attendee);
+  public AttendeeDashboardDto toDto(Attendee attendee) {
+    return new AttendeeDashboardDto(attendee);
   }
 }

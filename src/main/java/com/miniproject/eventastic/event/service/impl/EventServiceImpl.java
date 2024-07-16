@@ -4,12 +4,14 @@ import com.miniproject.eventastic.attendee.entity.Attendee;
 import com.miniproject.eventastic.attendee.entity.AttendeeId;
 import com.miniproject.eventastic.attendee.service.AttendeeService;
 import com.miniproject.eventastic.dashboard.dto.EventStatisticsDto;
+import com.miniproject.eventastic.dashboard.dto.MonthlyRevenueDto;
 import com.miniproject.eventastic.event.entity.Event;
 import com.miniproject.eventastic.event.entity.dto.EventResponseDto;
 import com.miniproject.eventastic.event.metadata.Category;
 import com.miniproject.eventastic.event.repository.CategoryRepository;
 import com.miniproject.eventastic.event.repository.EventRepository;
 import com.miniproject.eventastic.event.service.EventService;
+import com.miniproject.eventastic.exceptions.ObjectNotFoundException;
 import com.miniproject.eventastic.exceptions.event.EventNotFoundException;
 import com.miniproject.eventastic.exceptions.event.ReviewNotFoundException;
 import com.miniproject.eventastic.exceptions.user.AttendeeNotFoundException;
@@ -28,6 +30,7 @@ import com.miniproject.eventastic.voucher.entity.dto.create.CreateEventVoucherRe
 import com.miniproject.eventastic.voucher.service.VoucherService;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -208,7 +211,7 @@ public class EventServiceImpl implements EventService {
   }
 
   @Override
-  public Page<Event> findEventBetweenDates(Users organizer, LocalDate startDate, LocalDate endDate, Pageable pageable)
+  public Page<Event> getEventBetweenDates(Users organizer, LocalDate startDate, LocalDate endDate, Pageable pageable)
   throws RuntimeException {
     Page<Event> eventPage = eventRepository.findByOrganizerAndEventDateBetween(organizer, startDate,
         endDate, pageable);
@@ -216,6 +219,15 @@ public class EventServiceImpl implements EventService {
       throw new EventNotFoundException("Events between date " + startDate + " and " + endDate + " not found");
     }
     return eventPage;
+  }
+
+  @Override
+  public List<MonthlyRevenueDto> getMonthlyRevenue(Users organizer, Integer year) {
+    List<MonthlyRevenueDto> monthlyRevenueList =  eventRepository.getMonthlyRevenueByOrganizer(organizer, year);
+    if (monthlyRevenueList.isEmpty()) {
+      throw new ObjectNotFoundException("You have no revenue reports for this year yet!");
+    }
+    return monthlyRevenueList;
   }
 
   // * get logged-in user and verify identity as organizer that created the event

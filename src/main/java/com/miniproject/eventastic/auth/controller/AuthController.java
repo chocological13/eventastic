@@ -72,7 +72,7 @@ public class AuthController {
   // > reset password
   @PutMapping("/reset-password")
   public ResponseEntity<Response<Void>> resetPassword(@RequestParam String token,
-      @RequestBody ResetPasswordRequestDto req) throws Exception {
+      @RequestBody ResetPasswordRequestDto req) {
     passwordService.resetPassword(token, req);
       return Response.successfulResponse("Password reset successful! You can log back in with the new password now! "
           + "^^");

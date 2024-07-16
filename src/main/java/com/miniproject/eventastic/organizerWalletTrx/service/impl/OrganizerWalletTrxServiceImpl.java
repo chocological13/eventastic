@@ -44,8 +44,19 @@ public class OrganizerWalletTrxServiceImpl implements OrganizerWalletTrxService 
     if (organizerWallet == null) {
       throw new OrganizerWalletNotFoundException("Wallet not found!! Or are you an impostor??");
     } else {
+      BigDecimal totalAmount;
+
+      // check if there's an organizer made up promotion, deduct that from the revenue
+      if(trx.getEvent().getPromoPercent() == null) {
+        totalAmount = trx.getInitialAmount();
+      } else {
+        BigDecimal promo =
+            trx.getInitialAmount().multiply(BigDecimal.valueOf(trx.getEvent().getPromoPercent())).divide(BigDecimal.valueOf(100), 2,
+                BigDecimal.ROUND_HALF_UP);
+        totalAmount = trx.getInitialAmount().subtract(promo);
+      }
+
       BigDecimal serviceFee = BigDecimal.valueOf(0.02);
-      BigDecimal totalAmount = trx.getTotalAmount();
       BigDecimal payoutAmount = totalAmount.subtract(totalAmount.multiply(serviceFee));
 
       payout.setServiceFee(serviceFee);

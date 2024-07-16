@@ -1,10 +1,12 @@
 package com.miniproject.eventastic.event.repository;
 
 import com.miniproject.eventastic.dashboard.dto.EventStatisticsDto;
+import com.miniproject.eventastic.dashboard.dto.MonthlyRevenueDto;
 import com.miniproject.eventastic.event.entity.Event;
 import com.miniproject.eventastic.users.entity.Users;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -42,4 +44,25 @@ public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecific
           """
   )
   Page<EventStatisticsDto> getEventStatisticsDto(@Param("organizer") Users organizer, Pageable pageable);
+
+  @Query(
+       """
+       SELECT new com.miniproject.eventastic.dashboard.dto.MonthlyRevenueDto(
+        YEAR(e.eventDate),
+        MONTH(e.eventDate),
+        SUM(t.totalAmount),
+        SUM(owt.amount),
+        COUNT(DISTINCT e.id),
+        SUM(t.qty)
+       )
+       FROM Event e
+       JOIN e.trxes t
+       JOIN t.organizerWalletTrx owt
+       WHERE e.organizer = :organizer
+       AND YEAR(e.eventDate) = :year
+       GROUP BY YEAR(e.eventDate), MONTH(e.eventDate)
+     """
+  )
+  List<MonthlyRevenueDto> getMonthlyRevenueByOrganizer(@Param("organizer") Users organizer,
+      @Param("year") Integer year);
 }
