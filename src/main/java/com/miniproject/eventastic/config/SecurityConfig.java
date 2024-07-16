@@ -124,75 +124,6 @@ public class SecurityConfig {
     return NimbusJwtDecoder.withPublicKey(rsaKeyConfigProperties.publicKey()).build();
   }
 
-//  @Bean
-//  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-//    // to clear site cookies, cache, storage
-//    HeaderWriterLogoutHandler clearSiteData = new HeaderWriterLogoutHandler(new ClearSiteDataHeaderWriter(Directive.ALL));
-//
-//
-//    return http
-//        // * disables unused configs
-//        .csrf(AbstractHttpConfigurer::disable)
-//        .cors(cors -> cors.configurationSource(corsConfigurationSource))
-//        // * endpoints authorization
-//        .authorizeHttpRequests(auth -> {
-//
-//          auth.requestMatchers("/error/**").permitAll();
-//          auth.requestMatchers("/api/v1/auth/**").permitAll();
-//          auth.requestMatchers("/api/v1/users/register/**").permitAll();
-//          auth.requestMatchers(HttpMethod.GET, "/api/v1/events/**").permitAll();
-//          // ! TODO: add roles related authorizations
-////          // * event management - only organizer
-//          auth.requestMatchers("/api/v1/events/create/**").hasAuthority("SCOPE_ROLE_ORGANIZER");
-//          auth.requestMatchers("/api/v1/events/{eventId}/update/**").hasAuthority("SCOPE_ROLE_ORGANIZER");
-//
-//          auth.anyRequest().authenticated();
-//        })
-//        // * exception handling
-//        .exceptionHandling(e -> {
-//          e.accessDeniedHandler(new CustomAccessDeniedHandler()); // 403
-//          e.authenticationEntryPoint(new CustomAuthenticationEntryPoint()); //401
-//        })
-//        // * session management
-//        .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-//        // * oauth2 resource server to validate jwt and extract cookie
-//        .oauth2ResourceServer((oauth2) -> {
-//          oauth2.jwt((jwt) -> jwt.decoder(jwtDecoder()));
-//          oauth2.bearerTokenResolver((request) -> {
-//            Cookie[] cookies = request.getCookies();
-//            var bearerHeader = request.getHeader("Authorization");
-//            if (cookies != null) {
-//              for (Cookie cookie : cookies) {
-//                if ("JSESSIONID".equals(cookie.getName())) {
-//                  return cookie.getValue();
-//                }
-//              }
-//            }
-//            if (token == null) {
-//              bearerHeader = request.getHeader("Authorization");
-//              if (bearerHeader != null && bearerHeader.startsWith("Bearer ")) {
-//                token = bearerHeader.substring(7);
-//              }
-//            }
-//            return token;
-////            } else if (cookies == null && !bearerHeader.isEmpty()) {
-////              // Get bearer header token
-////              var splittedHeader = bearerHeader.split(" ");
-////              return splittedHeader[1];
-////            }
-////            return null;
-//          });
-//        })
-//        // * configuring UserDetailsService, we will pass the one we already made
-//        .userDetailsService(userDetailsService)
-//        // * basic http authentication
-//        .httpBasic(Customizer.withDefaults())
-//        .formLogin(auth -> auth.failureHandler(new CustomAuthenticationFailureHandler()))//401
-//        .formLogin(Customizer.withDefaults())
-//        .logout((logout) -> logout.addLogoutHandler(clearSiteData))
-//        .build();
-//  }
-
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     HeaderWriterLogoutHandler clearSiteData = new HeaderWriterLogoutHandler(new ClearSiteDataHeaderWriter(Directive.ALL));
@@ -203,7 +134,9 @@ public class SecurityConfig {
         .authorizeHttpRequests(auth -> {
           auth.requestMatchers("/error/**", "/api/v1/auth/**", "/api/v1/users/register/**").permitAll();
           auth.requestMatchers(HttpMethod.GET, "/api/v1/events/**").permitAll();
-          auth.requestMatchers("/api/v1/events/create/**", "/api/v1/events/{eventId}/update/**").hasAuthority("SCOPE_ROLE_ORGANIZER");
+          auth.requestMatchers("/api/v1/events/create/**", "/api/v1/events/{eventId}/update/**",
+              "/api/v1/dashboard/**").hasAuthority(
+              "SCOPE_ROLE_ORGANIZER");
           auth.anyRequest().authenticated();
         })
         .exceptionHandling(e -> {

@@ -20,10 +20,10 @@ import com.miniproject.eventastic.exceptions.user.AttendeeNotFoundException;
 import com.miniproject.eventastic.exceptions.user.DuplicateCredentialsException;
 import com.miniproject.eventastic.exceptions.user.ReferralCodeUnusedException;
 import com.miniproject.eventastic.exceptions.user.UserNotFoundException;
-import com.miniproject.eventastic.responses.Response;
-import java.util.Arrays;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -61,9 +61,34 @@ public class GlobalExceptionHandler {
    }
 
    @ExceptionHandler(Exception.class)
-   public ResponseEntity<Response<String>> handleException(Exception ex) {
+   public ResponseEntity<ErrorResponse> handleException(Exception ex) {
       HttpStatus status = EXCEPTION_STATUS_MAP.getOrDefault(ex.getClass(), HttpStatus.INTERNAL_SERVER_ERROR);
-      String message = ex.getClass().getSimpleName() + ": " + ex.getMessage() + " \n " + Arrays.stream(ex.getStackTrace()).findFirst();
-      return Response.failedResponse(status.value(), message, null);
+      ErrorResponse errorResponse = new ErrorResponse(
+          LocalDateTime.now(),
+          status.value(),
+          ex.getClass().getSimpleName(),
+          ex.getMessage(),
+          ex.getStackTrace()[0].toString()
+      );
+      log.error("Exception: ", ex);
+      return new ResponseEntity<>(errorResponse, status);
+   }
+
+   @Data
+   public static class ErrorResponse {
+
+      private LocalDateTime timestamp;
+      private int status;
+      private String error;
+      private String message;
+      private String trace;
+
+      public ErrorResponse(LocalDateTime timestamp, int status, String error, String message, String trace) {
+         this.timestamp = timestamp;
+         this.status = status;
+         this.error = error;
+         this.message = message;
+         this.trace = trace;
+      }
    }
 }
