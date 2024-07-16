@@ -1,7 +1,5 @@
 package com.miniproject.eventastic.config;
 
-import static com.cloudinary.AccessControlRule.AccessType.token;
-
 import com.miniproject.eventastic.auth.service.impl.UserDetailsServiceImpl;
 import com.miniproject.eventastic.exceptions.CustomAccessDeniedHandler;
 import com.miniproject.eventastic.exceptions.CustomAuthenticationEntryPoint;

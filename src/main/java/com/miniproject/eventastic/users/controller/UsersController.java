@@ -23,7 +23,6 @@ import com.miniproject.eventastic.users.entity.dto.register.RegisterResponseDto;
 import com.miniproject.eventastic.users.entity.dto.userManagement.ProfileUpdateRequestDTO;
 import com.miniproject.eventastic.users.service.UsersRegisterService;
 import com.miniproject.eventastic.users.service.UsersService;
-import com.miniproject.eventastic.users.service.impl.UsersRegisterServiceImpl;
 import com.miniproject.eventastic.voucher.service.VoucherService;
 import jakarta.validation.Valid;
 import java.util.LinkedHashSet;

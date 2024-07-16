@@ -1,6 +1,5 @@
 package com.miniproject.eventastic.auth.controller;
 
-import com.miniproject.eventastic.auth.entity.dto.changePassword.ChangePasswordRequestDto;
 import com.miniproject.eventastic.auth.entity.dto.forgorPassword.ForgotPasswordRequestDto;
 import com.miniproject.eventastic.auth.entity.dto.forgorPassword.ForgotPasswordResponseDto;
 import com.miniproject.eventastic.auth.entity.dto.login.LoginRequestDto;
@@ -9,7 +8,6 @@ import com.miniproject.eventastic.auth.service.AuthService;
 import com.miniproject.eventastic.auth.service.PasswordService;
 import com.miniproject.eventastic.responses.Response;
 import com.nimbusds.jose.JOSEException;
-import jakarta.validation.Valid;
 import java.security.NoSuchAlgorithmException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;

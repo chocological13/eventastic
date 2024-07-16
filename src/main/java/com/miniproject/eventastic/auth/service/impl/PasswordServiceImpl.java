@@ -1,6 +1,5 @@
 package com.miniproject.eventastic.auth.service.impl;
 
-import com.miniproject.eventastic.auth.entity.dto.changePassword.ChangePasswordRequestDto;
 import com.miniproject.eventastic.auth.entity.dto.forgorPassword.ForgotPasswordRequestDto;
 import com.miniproject.eventastic.auth.entity.dto.forgorPassword.ForgotPasswordResponseDto;
 import com.miniproject.eventastic.auth.entity.dto.resetPassword.ResetPasswordRequestDto;
