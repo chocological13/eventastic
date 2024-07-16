@@ -6,6 +6,7 @@ import com.miniproject.eventastic.dashboard.dto.AttendeeDashboardDto;
 import com.miniproject.eventastic.dashboard.dto.DailyStatisticsDto;
 import com.miniproject.eventastic.dashboard.dto.EventDashboardDto;
 import com.miniproject.eventastic.dashboard.dto.EventStatisticsDto;
+import com.miniproject.eventastic.dashboard.dto.EventSummaryDto;
 import com.miniproject.eventastic.dashboard.dto.MonthlyRevenueDto;
 import com.miniproject.eventastic.dashboard.dto.OrganizerDashboardSummaryDto;
 import com.miniproject.eventastic.dashboard.dto.TrxDashboardDto;
@@ -91,5 +92,11 @@ public class DashboardServiceImpl implements DashboardService {
   public OrganizerDashboardSummaryDto getOrganizerDashboardSummary() {
     Users organizer = usersService.getCurrentUser();
     return eventService.getOrganizerDashboardSummary(organizer);
+  }
+
+  @Override
+  public List<EventSummaryDto> getEventSummary() {
+    Users organizer = usersService.getCurrentUser();
+    return eventService.getEventSummary(organizer);
   }
 }

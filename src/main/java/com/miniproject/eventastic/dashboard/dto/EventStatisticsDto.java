@@ -1,30 +1,23 @@
 package com.miniproject.eventastic.dashboard.dto;
 
 import java.math.BigDecimal;
-import lombok.Getter;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
+@Data
+@AllArgsConstructor
 @NoArgsConstructor
 public class EventStatisticsDto {
   private Long id;
   private String title;
   private Long uniqueAttendees;
   private Long uniqueRegistrants;
+  private Boolean isFree;
   private BigDecimal grossRevenue;
+  private BigDecimal netRevenue;
   private Long totalTicketsSold;
   private Double averageTicketPrice;
-
-  public EventStatisticsDto(Long id, String title, Long uniqueAttendees, Long uniqueRegistrants,
-      BigDecimal grossRevenue, Long totalTicketsSold, Double averageTicketPrice) {
-    this.id = id;
-    this.title = title;
-    this.uniqueAttendees = uniqueAttendees;
-    this.uniqueRegistrants = uniqueRegistrants;
-    this.grossRevenue = grossRevenue;
-    this.totalTicketsSold = totalTicketsSold;
-    this.averageTicketPrice = averageTicketPrice;
-  }
+  private final String disclaimer = "A 2% service fee has been deducted from your account. The amount reflected in "
+                                    + "the nett revenue is the final amount that you get!";
 }

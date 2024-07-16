@@ -1,6 +1,7 @@
 package com.miniproject.eventastic.event.repository;
 
 import com.miniproject.eventastic.dashboard.dto.EventStatisticsDto;
+import com.miniproject.eventastic.dashboard.dto.EventSummaryDto;
 import com.miniproject.eventastic.dashboard.dto.MonthlyRevenueDto;
 import com.miniproject.eventastic.dashboard.dto.OrganizerDashboardSummaryDto;
 import com.miniproject.eventastic.event.entity.Event;
@@ -33,13 +34,16 @@ public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecific
                 e.title,
                 COUNT(DISTINCT a.id.userId),
                 COUNT(DISTINCT t.user.id),
+                e.isFree,
                 SUM(t.totalAmount),
+                SUM(owt.amount),
                 SUM(t.qty),
                 AVG(tt.price)
               )
               FROM Event e
               LEFT JOIN e.attendees a
               LEFT JOIN e.trxes t
+              LEFT JOIN t.organizerWalletTrx owt
               LEFT JOIN e.ticketTypes tt
               WHERE e.organizer = :organizer
               GROUP BY e.id, e.title
@@ -67,19 +71,39 @@ public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecific
   )
   List<MonthlyRevenueDto> getMonthlyRevenueByOrganizer(@Param("organizer") Users organizer, Integer year);
 
-      @Query("""
-          SELECT new com.miniproject.eventastic.dashboard.dto.OrganizerDashboardSummaryDto(
-          COUNT(e),
-          SUM(CASE WHEN e.eventDate > CURRENT_DATE THEN 1 ELSE 0 END),
-          SUM(owt.amount),
-          COUNT(DISTINCT a.id),
-          AVG(owt.amount)
-          )
-          FROM Event e
-          LEFT JOIN e.trxes t
-          LEFT JOIN t.organizerWalletTrx owt
-          LEFT JOIN e.attendees a
-          WHERE e.organizer= :organizer
-              """)
-      OrganizerDashboardSummaryDto getDashboardSummary(@Param("organizer") Users organizer);
+  @Query("""
+      SELECT new com.miniproject.eventastic.dashboard.dto.OrganizerDashboardSummaryDto(
+      COUNT(e),
+      SUM(CASE WHEN e.eventDate > CURRENT_DATE THEN 1 ELSE 0 END),
+      SUM(owt.amount),
+      COUNT(DISTINCT a.id),
+      AVG(owt.amount)
+      )
+      FROM Event e
+      LEFT JOIN e.trxes t
+      LEFT JOIN t.organizerWalletTrx owt
+      LEFT JOIN e.attendees a
+      WHERE e.organizer= :organizer
+          """)
+  OrganizerDashboardSummaryDto getDashboardSummary(@Param("organizer") Users organizer);
+
+  @Query("""
+      SELECT new com.miniproject.eventastic.dashboard.dto.EventSummaryDto(
+      e.id,
+      e.title,
+      e.eventDate,
+      COUNT(DISTINCT e.id),
+      e.isFree,
+      SUM(owt.amount),
+      COUNT(t.qty),
+      COUNT(e.seatAvailability)
+      )
+      FROM Event e
+      LEFT JOIN e.attendees a
+      LEFT JOIN e.trxes t
+      LEFT JOIN t.organizerWalletTrx owt
+      WHERE e.organizer = :organizer
+      GROUP BY e.id, e.title, e.eventDate, e.seatAvailability
+      """)
+  List<EventSummaryDto> getEventSummary(@Param("organizer") Users organizer);
 }

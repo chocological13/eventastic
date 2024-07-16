@@ -1,6 +1,7 @@
 package com.miniproject.eventastic.dashboard.controller;
 
 import com.miniproject.eventastic.dashboard.dto.DailyStatisticsDto;
+import com.miniproject.eventastic.dashboard.dto.EventSummaryDto;
 import com.miniproject.eventastic.dashboard.dto.MonthlyRevenueDto;
 import com.miniproject.eventastic.dashboard.dto.OrganizerDashboardSummaryDto;
 import com.miniproject.eventastic.dashboard.service.DashboardService;
@@ -23,9 +24,15 @@ public class DashboardController {
 
   private final DashboardService dashboardService;
 
-  @GetMapping
+  @GetMapping("/summary")
   public ResponseEntity<Response<OrganizerDashboardSummaryDto>> getOrganizerDashboardSummary() {
     return Response.successfulResponse(HttpStatus.OK.value(), "Displaying your summary..", dashboardService.getOrganizerDashboardSummary());
+  }
+
+  @GetMapping("/summary/events")
+  public ResponseEntity<Response<List<EventSummaryDto>>> getEventSummary() {
+    return Response.successfulResponse(HttpStatus.OK.value(), "Displaying your event's summary..",
+        dashboardService.getEventSummary());
   }
 
   @GetMapping("/events")

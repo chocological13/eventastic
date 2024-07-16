@@ -4,6 +4,7 @@ import com.miniproject.eventastic.attendee.entity.Attendee;
 import com.miniproject.eventastic.attendee.entity.AttendeeId;
 import com.miniproject.eventastic.attendee.service.AttendeeService;
 import com.miniproject.eventastic.dashboard.dto.EventStatisticsDto;
+import com.miniproject.eventastic.dashboard.dto.EventSummaryDto;
 import com.miniproject.eventastic.dashboard.dto.MonthlyRevenueDto;
 import com.miniproject.eventastic.dashboard.dto.OrganizerDashboardSummaryDto;
 import com.miniproject.eventastic.event.entity.Event;
@@ -233,11 +234,20 @@ public class EventServiceImpl implements EventService {
 
   @Override
   public OrganizerDashboardSummaryDto getOrganizerDashboardSummary(Users organizer) {
-    OrganizerDashboardSummaryDto sum = eventRepository.getDashboardSummary(organizer);
-    if (sum == null) {
+    OrganizerDashboardSummaryDto organizerDashboardSummaryDto = eventRepository.getDashboardSummary(organizer);
+    if (organizerDashboardSummaryDto == null) {
       throw new ObjectNotFoundException("You have no summary to display!");
     }
-    return sum;
+    return organizerDashboardSummaryDto;
+  }
+
+  @Override
+  public List<EventSummaryDto> getEventSummary(Users organizer) {
+    List<EventSummaryDto> eventSummaryDtos = eventRepository.getEventSummary(organizer);
+    if (eventSummaryDtos.isEmpty()) {
+      throw new ObjectNotFoundException("You have no summary to display!");
+    }
+    return eventSummaryDtos;
   }
 
   // * get logged-in user and verify identity as organizer that created the event

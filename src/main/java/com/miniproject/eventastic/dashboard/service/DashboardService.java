@@ -4,6 +4,7 @@ import com.miniproject.eventastic.dashboard.dto.AttendeeDashboardDto;
 import com.miniproject.eventastic.dashboard.dto.DailyStatisticsDto;
 import com.miniproject.eventastic.dashboard.dto.EventDashboardDto;
 import com.miniproject.eventastic.dashboard.dto.EventStatisticsDto;
+import com.miniproject.eventastic.dashboard.dto.EventSummaryDto;
 import com.miniproject.eventastic.dashboard.dto.MonthlyRevenueDto;
 import com.miniproject.eventastic.dashboard.dto.OrganizerDashboardSummaryDto;
 import com.miniproject.eventastic.dashboard.dto.TrxDashboardDto;
@@ -20,4 +21,5 @@ public interface DashboardService {
   List<MonthlyRevenueDto> getMonthlyRevenue(int year);
   List<DailyStatisticsDto> getDailyStatistics(LocalDate startDate, LocalDate endDate);
   OrganizerDashboardSummaryDto getOrganizerDashboardSummary();
+  List<EventSummaryDto> getEventSummary();
 }

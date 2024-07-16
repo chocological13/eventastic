@@ -1,6 +1,7 @@
 package com.miniproject.eventastic.event.service;
 
 import com.miniproject.eventastic.dashboard.dto.EventStatisticsDto;
+import com.miniproject.eventastic.dashboard.dto.EventSummaryDto;
 import com.miniproject.eventastic.dashboard.dto.MonthlyRevenueDto;
 import com.miniproject.eventastic.dashboard.dto.OrganizerDashboardSummaryDto;
 import com.miniproject.eventastic.event.entity.Event;
@@ -61,4 +62,6 @@ public interface EventService {
   List<MonthlyRevenueDto> getMonthlyRevenue(Users organizer, Integer year);
 
   OrganizerDashboardSummaryDto getOrganizerDashboardSummary(Users organizer);
+
+  List<EventSummaryDto> getEventSummary(Users organizer);
 }
