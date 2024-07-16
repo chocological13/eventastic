@@ -91,20 +91,17 @@ public class TrxServiceImpl implements TrxService {
     System.out.println("Transaction created for user: " + loggedUser);
 
     // * points and voucher usage and payment method
-    PointsTrx pointsTrx = usePoints(requestDto, trx);
     BigDecimal discount = calculateDiscount(requestDto, trx);
     BigDecimal promo = applyPromo(requestDto, trx);
     setPaymentMethod(requestDto, trx);
 
     // finalize trx total amount
-    finalizeTransaction(trx, pointsTrx, discount, promo);
+    BigDecimal amountBeforePoints = applyDiscountAndPromo(trx, discount, promo);
+    BigDecimal amountAfterPoints = usePoints(requestDto, trx, amountBeforePoints);
+    trx.setTotalAmount(amountAfterPoints);
 
     // set attendee for this purchase
     setAttendee(loggedUser, eventPurchase, requestDto.getQty());
-
-    // set trx to PointsTrx
-    if (pointsTrx != null) pointsTrx.setTrx(trx);
-    pointsTrxService.savePointsTrx(pointsTrx);
 
     // send payout to organizer
     organizerWalletTrxService.sendPayout(trx);
@@ -187,21 +184,19 @@ public class TrxServiceImpl implements TrxService {
     ticketTypeService.saveTicketType(ticketType);
   }
 
-  public PointsTrx usePoints(TrxPurchaseRequestDto requestDto, Trx trx) throws PointsWalletNotFoundException {
-    PointsTrx pointsTrx;
+  public BigDecimal usePoints(TrxPurchaseRequestDto requestDto, Trx trx, BigDecimal amountBeforePoints) throws PointsWalletNotFoundException {
+    BigDecimal amountAfterPoints = BigDecimal.ZERO;
     if (requestDto.getUsingPoints()) {
       PointsWallet pointsWallet = pointsWalletService.getPointsWallet(trx.getUser());
-      pointsTrx = applyPoints(trx, pointsWallet);
+      amountAfterPoints = applyPoints(trx, pointsWallet, amountBeforePoints);
       trx.setPointsWallet(pointsWallet);
-    } else {
-      return null;
     }
-    return pointsTrx;
+    return amountAfterPoints;
   }
 
-  public PointsTrx applyPoints(Trx trx, PointsWallet pointsWallet) throws InsufficientPointsException {
+  public BigDecimal applyPoints(Trx trx, PointsWallet pointsWallet, BigDecimal amountBeforePoints) throws InsufficientPointsException {
+    BigDecimal amountAfterPoints = BigDecimal.ZERO;
     BigDecimal points = BigDecimal.valueOf(pointsWallet.getPoints());
-    BigDecimal price = trx.getInitialAmount();
 
     // init points trx
     PointsTrx pointsTrx = new PointsTrx();
@@ -209,25 +204,30 @@ public class TrxServiceImpl implements TrxService {
     pointsTrx.setDescription("Points used to purchase tickets to " + trx.getEvent().getTitle());
     pointsTrx.setTrx(trx);
 
-    if (points.compareTo(price) < 0) {
+    if (points.compareTo(amountBeforePoints) < 0) {
       int pointsUsed = pointsWallet.getPoints(); // use all points available
       pointsWallet.setPoints(0);
       pointsTrx.setPoints(-pointsUsed);
-    } else if (points.compareTo(price) > 0) {
+      amountAfterPoints = amountBeforePoints.subtract(BigDecimal.valueOf(pointsUsed));
+    } else if (points.compareTo(amountBeforePoints) > 0) {
 
       /* if points amount is more than the price, it can be used to cover all the cost
       resulting in free transaction */
 
-      int endPoints = points.subtract(price).setScale(0, RoundingMode.HALF_UP).intValue();
-      trx.setTotalAmount(BigDecimal.ZERO);
+      int endPoints = points.subtract(amountBeforePoints).setScale(0, RoundingMode.HALF_UP).intValue();
+      amountAfterPoints = BigDecimal.ZERO;
       pointsWallet.setPoints(endPoints);
-      pointsTrx.setPoints(price.intValue());
+      pointsTrx.setPoints(-amountBeforePoints.intValue());
     } else {
       throw new InsufficientPointsException("Insufficient points to be used !!");
     }
     pointsWalletService.savePointsWallet(pointsWallet);
     pointsTrxService.savePointsTrx(pointsTrx);
-    return pointsTrx;
+    trx.setTrxDate(Instant.now());
+    trx.setIsPaid(true);
+    trxRepository.save(trx);
+
+    return amountAfterPoints;
   }
 
   public BigDecimal calculateDiscount(TrxPurchaseRequestDto requestDto, Trx trx) throws RuntimeException {
@@ -276,16 +276,13 @@ public class TrxServiceImpl implements TrxService {
     trx.setPayment(payment);
   }
 
-  public void finalizeTransaction(Trx trx, PointsTrx pointsTrx, BigDecimal discount, BigDecimal promo) {
-    BigDecimal points = pointsTrx != null ? BigDecimal.valueOf(-pointsTrx.getPoints()) : BigDecimal.ZERO;
+  public BigDecimal applyDiscountAndPromo(Trx trx, BigDecimal discount, BigDecimal promo) {
+    BigDecimal amountBeforePoint = BigDecimal.ZERO;
     BigDecimal initAmount = trx.getInitialAmount();
-    BigDecimal toBeDeducted = points.add(discount).add(promo);
-    BigDecimal totalAmount = initAmount.subtract(toBeDeducted);
-    trx.setTotalAmount(totalAmount);
+    BigDecimal toBeDeducted = discount.add(promo);
+    amountBeforePoint = initAmount.subtract(toBeDeducted);
 
-    trx.setTrxDate(Instant.now());
-    trx.setIsPaid(true);
-    trxRepository.save(trx);
+    return amountBeforePoint;
   }
 
   // attendee set up
@@ -297,6 +294,7 @@ public class TrxServiceImpl implements TrxService {
     attendee.setId(attendeeId);
     attendee.setUser(user);
     attendee.setEvent(event);
+    attendee.setAttendingAt(event.getEventDate());
     attendee.setTicketsPurchased((attendee.getTicketsPurchased() == null ? 0 : attendee.getTicketsPurchased()) + qty);
     attendeeService.saveAttendee(attendee);
   }
