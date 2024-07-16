@@ -5,7 +5,6 @@ import com.miniproject.eventastic.ticket.entity.Ticket;
 import com.miniproject.eventastic.trx.entity.Trx;
 import com.miniproject.eventastic.trx.entity.dto.TrxPurchaseRequestDto;
 import com.miniproject.eventastic.users.entity.Users;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;

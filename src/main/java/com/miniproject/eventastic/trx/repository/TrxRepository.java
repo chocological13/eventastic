@@ -4,8 +4,6 @@ import com.miniproject.eventastic.dashboard.dto.DailyStatisticsDto;
 import com.miniproject.eventastic.trx.entity.Trx;
 import com.miniproject.eventastic.users.entity.Users;
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
