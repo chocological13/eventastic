@@ -1,10 +1,13 @@
 package com.miniproject.eventastic.review.service.impl;
 
+import com.miniproject.eventastic.event.entity.Event;
 import com.miniproject.eventastic.exceptions.event.ReviewNotFoundException;
 import com.miniproject.eventastic.review.entity.Review;
 import com.miniproject.eventastic.review.entity.dto.ReviewSubmitResponseDto;
 import com.miniproject.eventastic.review.repository.ReviewRepository;
 import com.miniproject.eventastic.review.service.ReviewService;
+import com.miniproject.eventastic.users.entity.Users;
+import java.util.Optional;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.springframework.data.domain.Page;
@@ -24,10 +27,20 @@ public class ReviewServiceImpl implements ReviewService {
   }
 
   @Override
-  public Page<ReviewSubmitResponseDto> getReviewsByEventId(Long eventId, Pageable pageable) throws ReviewNotFoundException {
+  public Page<ReviewSubmitResponseDto> getReviewsByEventId(Long eventId, Pageable pageable)
+      throws ReviewNotFoundException {
     Page<Review> reviews = reviewRepository.findByEventId(eventId, pageable);
     if (reviews == null) {
       throw new ReviewNotFoundException("This event has no reviews yet");
-    } else return reviews.map(ReviewSubmitResponseDto::new);
+    } else {
+      return reviews.map(ReviewSubmitResponseDto::new);
+    }
   }
+
+  @Override
+  public boolean hasSubmittedReview(Users reviewer, Event event) {
+    Optional<Review> existingReview = reviewRepository.findByReviewerAndEvent(reviewer, event);
+    return existingReview.isPresent();
+  }
+
 }

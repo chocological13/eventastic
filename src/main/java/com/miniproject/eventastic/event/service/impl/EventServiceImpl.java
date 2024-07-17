@@ -17,6 +17,7 @@ import com.miniproject.eventastic.exceptions.ObjectNotFoundException;
 import com.miniproject.eventastic.exceptions.event.EventNotFoundException;
 import com.miniproject.eventastic.exceptions.event.ReviewNotFoundException;
 import com.miniproject.eventastic.exceptions.user.AttendeeNotFoundException;
+import com.miniproject.eventastic.exceptions.user.DuplicateCredentialsException;
 import com.miniproject.eventastic.image.entity.ImageEvent;
 import com.miniproject.eventastic.image.entity.dto.ImageUploadRequestDto;
 import com.miniproject.eventastic.image.service.ImageService;
@@ -32,6 +33,8 @@ import com.miniproject.eventastic.voucher.entity.dto.create.CreateEventVoucherRe
 import com.miniproject.eventastic.voucher.service.VoucherService;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 import lombok.Data;
@@ -165,14 +168,21 @@ public class EventServiceImpl implements EventService {
   }
 
   @Override
-  public Review submitReview(Long eventId, ReviewSubmitRequestDto requestDto) throws EventNotFoundException,
-      AccessDeniedException, AttendeeNotFoundException {
+  public Review submitReview(Long eventId, ReviewSubmitRequestDto requestDto) throws RuntimeException {
     Users reviewer = usersService.getCurrentUser();
     Event event = getEventById(eventId);
-    Attendee attendee = attendeeService.findAttendee(new AttendeeId(reviewer.getId(), eventId)).orElse(null);
 
-    if (attendee == null) {
-      throw new AttendeeNotFoundException("You are not an attendee of this event!");
+    // Check if an attendee
+    Attendee attendee = attendeeService.findAttendee(new AttendeeId(reviewer.getId(), eventId))
+        .orElseThrow(() -> new AttendeeNotFoundException("You are not an attendee of this event!"));
+
+    // Check if event is done or not
+    if (!isEventEnded(event)) {
+      throw new IllegalArgumentException("You may only submit review if event has been commenced!");
+    }
+    // Check if the user has already submitted a review for this event
+    if (reviewService.hasSubmittedReview(reviewer, event)) {
+      throw new DuplicateCredentialsException("You have already submitted a review for this event.");
     }
 
     Review review = new Review();
@@ -185,7 +195,16 @@ public class EventServiceImpl implements EventService {
     return review;
   }
 
-  // TODO : give pagination to this
+  private boolean isEventEnded(Event event) {
+    LocalDate eventDate = event.getEventDate();
+    LocalTime endTime = event.getEndTime();
+
+    LocalDateTime eventEndDateTime = LocalDateTime.of(eventDate, endTime);
+    LocalDateTime now = LocalDateTime.now();
+
+    return now.isAfter(eventEndDateTime);
+  }
+
   @Override
   public Page<ReviewSubmitResponseDto> getEventReviews(Long eventId, int page, int size)
       throws ReviewNotFoundException {
