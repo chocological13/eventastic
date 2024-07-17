@@ -270,7 +270,7 @@ public class EventServiceImpl implements EventService {
   }
 
   // * get logged-in user and verify identity as organizer that created the event
-  private void verifyOrganizer(Event event) throws AccessDeniedException {
+  public void verifyOrganizer(Event event) throws AccessDeniedException {
     Users loggedUser = usersService.getCurrentUser();
     if (loggedUser != event.getOrganizer()) {
       throw new AccessDeniedException("You do not have permission to update this event");
