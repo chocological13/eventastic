@@ -4,6 +4,7 @@ import com.miniproject.eventastic.event.entity.Event;
 import com.miniproject.eventastic.event.entity.dto.EventResponseDto;
 import com.miniproject.eventastic.event.entity.dto.updateEvent.UpdateEventRequestDto;
 import com.miniproject.eventastic.event.repository.EventRepository;
+import com.miniproject.eventastic.event.service.EventService;
 import com.miniproject.eventastic.event.service.UpdateEventService;
 import com.miniproject.eventastic.exceptions.event.EventNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.TicketNotFoundException;
@@ -15,6 +16,7 @@ import com.miniproject.eventastic.ticketType.entity.dto.update.TicketTypeUpdateR
 import com.miniproject.eventastic.ticketType.service.TicketTypeService;
 import com.miniproject.eventastic.users.entity.Users;
 import com.miniproject.eventastic.users.service.UsersService;
+import java.util.Optional;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
@@ -32,8 +34,11 @@ public class UpdateEventServiceImpl implements UpdateEventService {
   @Override
   public EventResponseDto updateEvent(Long eventId, UpdateEventRequestDto requestDto) throws RuntimeException {
     // get existing event
-    Event existingEvent = eventRepository.findById(eventId)
-        .orElseThrow(() -> new EventNotFoundException("Event not found, please enter a valid ID"));
+    Optional<Event> optionalEvent = eventRepository.findById(eventId);
+    if (optionalEvent.isEmpty()) {
+      throw new EventNotFoundException("Event not found, please enter a valid ID");
+    }
+    Event existingEvent = optionalEvent.get();
 
     // verify organizer
     verifyOrganizer(existingEvent);

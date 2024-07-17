@@ -153,7 +153,6 @@ public class UsersServiceImplTest {
     when(securityContext.getAuthentication()).thenReturn(authentication);
     SecurityContextHolder.setContext(securityContext);
     when(authentication.getName()).thenReturn("testUser");
-
     ProfileUpdateRequestDTO requestDto = new ProfileUpdateRequestDTO();
     requestDto.setFullName("New Name");
 
