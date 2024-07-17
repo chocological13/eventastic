@@ -3,6 +3,7 @@ package com.miniproject.eventastic.users.service.impl;
 import com.miniproject.eventastic.exceptions.trx.VoucherNotFoundException;
 import com.miniproject.eventastic.exceptions.user.DuplicateCredentialsException;
 import com.miniproject.eventastic.exceptions.user.UserNotFoundException;
+import com.miniproject.eventastic.mail.service.MailService;
 import com.miniproject.eventastic.mail.service.entity.dto.MailTemplate;
 import com.miniproject.eventastic.organizerWallet.entity.OrganizerWallet;
 import com.miniproject.eventastic.organizerWallet.service.OrganizerWalletService;
@@ -48,6 +49,7 @@ public class UsersRegisterServiceImpl implements UsersRegisterService {
   private final PointsTrxService pointsTrxService;
   private final VoucherService voucherService;
   private final ReferralCodeUsageService referralCodeUsageService;
+  private final MailService mailService;
 
   @Override
   @Transactional
@@ -83,7 +85,7 @@ public class UsersRegisterServiceImpl implements UsersRegisterService {
       String refCodeUsed = newUser.getRefCodeUsed();
       referralVoucher = useRefCode(newUser, refCodeUsed);
     }
-// test
+
     // * send email
     sendWelcomeEmail(newUser);
     return new RegisterResponseDto(newUser, referralVoucher);
@@ -223,9 +225,10 @@ public class UsersRegisterServiceImpl implements UsersRegisterService {
 
   public void sendWelcomeEmail(Users user) {
     String fullName = user.getFullName();
+    String email = user.getEmail();
     MailTemplate welcomeMail = new MailTemplate();
     // ! TODO : uncomment in production, suspend email sending for local
-//      mailService.sendEmail(welcomeMail.buildWelcomeTemp(email, user.getFullName());
+      mailService.sendEmail(welcomeMail.buildWelcomeTemp(email, user.getFullName()));
   }
 
 }

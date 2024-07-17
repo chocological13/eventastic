@@ -121,7 +121,7 @@ public class TrxServiceImpl implements TrxService {
     MailTemplate temp = new MailTemplate();
     temp = temp.buildPurchaseTemp(trx);
     // ! TODO : uncomment in production, suspend email sending for local
-//    mailService.sendEmail(temp);
+    mailService.sendEmail(temp);
   }
 
   @Override
