@@ -4,7 +4,6 @@ import com.miniproject.eventastic.pointsTrx.entity.PointsTrx;
 import com.miniproject.eventastic.pointsTrx.service.PointsTrxService;
 import com.miniproject.eventastic.pointsWallet.entity.PointsWallet;
 import com.miniproject.eventastic.pointsWallet.repository.PointsWalletRepository;
-import com.miniproject.eventastic.pointsWallet.service.PointsExpirationService;
 import jakarta.transaction.Transactional;
 import java.time.Instant;
 import java.util.List;
@@ -14,12 +13,11 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class PointsWalletExpirationServiceImpl implements PointsExpirationService {
+public class PointsExpirationService {
 
   private final PointsWalletRepository pointsWalletRepository;
   private final PointsTrxService pointsTrxService;
 
-  @Override
   @Transactional
   @Scheduled(cron = "${points.flush.cron:0 0 0 * * ?}")
   public void expirePoints() {

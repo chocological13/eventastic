@@ -4,7 +4,6 @@ import com.miniproject.eventastic.event.entity.Event;
 import com.miniproject.eventastic.event.entity.dto.EventResponseDto;
 import com.miniproject.eventastic.event.entity.dto.updateEvent.UpdateEventRequestDto;
 import com.miniproject.eventastic.event.repository.EventRepository;
-import com.miniproject.eventastic.event.service.EventService;
 import com.miniproject.eventastic.event.service.UpdateEventService;
 import com.miniproject.eventastic.exceptions.event.EventNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.TicketNotFoundException;
