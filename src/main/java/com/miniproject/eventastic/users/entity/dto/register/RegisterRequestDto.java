@@ -1,9 +1,7 @@
 package com.miniproject.eventastic.users.entity.dto.register;
 
-import com.miniproject.eventastic.users.entity.Users;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import java.util.Optional;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;

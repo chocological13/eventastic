@@ -3,8 +3,10 @@ package com.miniproject.eventastic.dashboard.dto;
 import java.math.BigDecimal;
 import java.time.Instant;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
 public class DailyStatisticsDto {
 
   private Instant date;

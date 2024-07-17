@@ -111,6 +111,9 @@ public class TrxServiceImpl implements TrxService {
 
     // send payout to organizer
     organizerWalletTrxService.sendPayout(trx);
+    trx.setTrxDate(Instant.now());
+    trx.setIsPaid(true);
+    trxRepository.save(trx);
 
     // * send email confirmation
     sendConfirmationEmail(trx);
@@ -251,9 +254,6 @@ public class TrxServiceImpl implements TrxService {
     }
     pointsWalletService.savePointsWallet(pointsWallet);
     pointsTrxService.savePointsTrx(pointsTrx);
-    trx.setTrxDate(Instant.now());
-    trx.setIsPaid(true);
-    trxRepository.save(trx);
 
     return amountAfterPoints;
   }
