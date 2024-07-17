@@ -3,7 +3,7 @@ package com.miniproject.eventastic.event.entity.dto;
 import com.miniproject.eventastic.event.entity.Event;
 import com.miniproject.eventastic.image.entity.dto.eventImage.EventImageResponseDto;
 import com.miniproject.eventastic.ticketType.entity.dto.create.TicketTypeCreateResponseDto;
-import com.miniproject.eventastic.voucher.entity.dto.create.CreateEventVoucherResponseDto;
+import com.miniproject.eventastic.voucher.entity.dto.trx.TrxVoucherResponseDto;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -40,7 +40,7 @@ public class EventResponseDto {
   private Integer promoPercent;
   private Instant promoEndDate;
   private Set<TicketTypeCreateResponseDto> ticketTypes;
-  private Set<CreateEventVoucherResponseDto> voucher;
+  private Set<TrxVoucherResponseDto> voucher;
 
 
   public EventResponseDto(Event event) {
@@ -70,7 +70,7 @@ public class EventResponseDto {
         .map(TicketTypeCreateResponseDto::new)
         .collect(Collectors.toSet());
     this.voucher = event.getVouchers().stream()
-        .map(CreateEventVoucherResponseDto::new)
+        .map(TrxVoucherResponseDto::new)
         .collect(Collectors.toSet());
   }
 
