@@ -22,12 +22,12 @@ public class AuthRedisRepository {
 
   // save jwt key in redis
   public void saveJwtKey (String username, String jwtKey) {
-    ops.set(STRING_KEY_PREFIX + username, jwtKey, 1, TimeUnit.HOURS);
+    ops.set(STRING_KEY_PREFIX + username, jwtKey, 12, TimeUnit.HOURS);
   }
 
   // blacklist jwt key
   public void blacklistJwtKey (String username) {
-    ops.set(STRING_KEY_PREFIX + username + BLACKLIST_KEY_PREFIX, "true", 1, TimeUnit.HOURS);
+    ops.set(STRING_KEY_PREFIX + username + BLACKLIST_KEY_PREFIX, "true", 12, TimeUnit.HOURS);
   }
 
   // get jwt key
