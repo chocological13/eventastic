@@ -3,6 +3,7 @@ package com.miniproject.eventastic.pointsWallet.service.impl;
 import com.miniproject.eventastic.exceptions.trx.PointsWalletNotFoundException;
 import com.miniproject.eventastic.pointsWallet.entity.PointsWallet;
 import com.miniproject.eventastic.pointsWallet.repository.PointsWalletRepository;
+import com.miniproject.eventastic.pointsWallet.service.PointsWalletService;
 import com.miniproject.eventastic.users.entity.Users;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -12,7 +13,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class PointsWalletService implements com.miniproject.eventastic.pointsWallet.service.PointsWalletService {
+public class PointsWalletServiceImpl implements PointsWalletService {
 
   private final PointsWalletRepository pointsWalletRepository;
 

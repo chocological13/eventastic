@@ -1,3 +1,5 @@
+package com.miniproject.eventastic.trx.service.impl;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -33,10 +35,8 @@ import com.miniproject.eventastic.trx.entity.dto.TrxPurchaseRequestDto;
 import com.miniproject.eventastic.trx.metadata.Payment;
 import com.miniproject.eventastic.trx.repository.PaymentRepository;
 import com.miniproject.eventastic.trx.repository.TrxRepository;
-import com.miniproject.eventastic.trx.service.impl.TrxServiceImpl;
 import com.miniproject.eventastic.users.entity.Users;
 import com.miniproject.eventastic.users.service.UsersService;
-import com.miniproject.eventastic.voucher.entity.Voucher;
 import com.miniproject.eventastic.voucher.service.VoucherService;
 import java.math.BigDecimal;
 import java.time.Instant;
