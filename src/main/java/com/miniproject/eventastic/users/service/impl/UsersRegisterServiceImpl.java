@@ -83,7 +83,7 @@ public class UsersRegisterServiceImpl implements UsersRegisterService {
       String refCodeUsed = newUser.getRefCodeUsed();
       referralVoucher = useRefCode(newUser, refCodeUsed);
     }
-
+// test
     // * send email
     sendWelcomeEmail(newUser);
     return new RegisterResponseDto(newUser, referralVoucher);
