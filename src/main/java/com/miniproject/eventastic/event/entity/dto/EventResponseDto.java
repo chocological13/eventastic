@@ -77,5 +77,5 @@ public class EventResponseDto {
   public EventResponseDto toEventResponseDto(Event event) {
     return new EventResponseDto(event);
   }
-
+//
 }
