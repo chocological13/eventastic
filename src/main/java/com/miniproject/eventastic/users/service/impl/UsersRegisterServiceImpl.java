@@ -75,7 +75,7 @@ public class UsersRegisterServiceImpl implements UsersRegisterService {
     // * Generate and assign referral code
     String ownedReferralCode = generateReferralCode();
     newUser.setOwnedRefCode(ownedReferralCode);
-    usersService.saveUser(newUser);
+    usersRepository.save(newUser);
 
     // * process referral code and update in points trx if using
     Voucher referralVoucher = null;
