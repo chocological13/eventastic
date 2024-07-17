@@ -56,8 +56,6 @@ import org.springframework.data.domain.Pageable;
 
 class TrxServiceImplTest {
 
-  @InjectMocks
-  private TrxServiceImpl trxService;
 
   @Mock
   private TrxRepository trxRepository;
@@ -84,9 +82,17 @@ class TrxServiceImplTest {
   @Mock
   private MailService mailService;
 
+  @InjectMocks
+  private TrxServiceImpl trxService = new TrxServiceImpl(trxRepository, usersService, eventService, ticketTypeService
+      , ticketService, pointsWalletService, pointsTrxService, voucherService, paymentRepository, attendeeService,
+      organizerWalletTrxService, mailService);
+
   @BeforeEach
   void setUp() {
     MockitoAnnotations.openMocks(this);
+    trxService = new TrxServiceImpl(trxRepository, usersService, eventService, ticketTypeService
+        , ticketService, pointsWalletService, pointsTrxService, voucherService, paymentRepository, attendeeService,
+        organizerWalletTrxService, mailService);
   }
 
   @Test
