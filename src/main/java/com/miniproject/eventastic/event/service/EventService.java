@@ -33,7 +33,7 @@ public interface EventService {
 
   Event getEventById(Long eventId);
 
-  // soft delete
+  // utilities
   void deleteEvent(Long eventId);
 
   // Region - other entities service calls
@@ -48,7 +48,6 @@ public interface EventService {
   Review submitReview(Long eventId, ReviewSubmitRequestDto requestDto);
 
   // display event's review
-  // TODO : give this pagination
   Page<ReviewSubmitResponseDto> getEventReviews(Long eventId, int page, int size);
 
   // upload image for events

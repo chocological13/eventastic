@@ -8,6 +8,7 @@ import com.miniproject.eventastic.event.repository.CategoryRepository;
 import com.miniproject.eventastic.event.repository.EventRepository;
 import com.miniproject.eventastic.event.service.CreateEventService;
 import com.miniproject.eventastic.exceptions.event.CategoryNotFoundException;
+import com.miniproject.eventastic.exceptions.event.EventDateInvalidException;
 import com.miniproject.eventastic.exceptions.image.ImageNotFoundException;
 import com.miniproject.eventastic.exceptions.user.DuplicateCredentialsException;
 import com.miniproject.eventastic.image.entity.ImageEvent;
@@ -55,6 +56,9 @@ public class CreateEventServiceImpl implements CreateEventService {
       throw new AccessDeniedException("You are not an organizer!");
     }
 
+    // * 2.1 check if times are valid
+    isEventDateValid(requestDto.getEventDate());
+
     // * 3 save event here, so we can set it to the ticket types
     Event newEvent = requestDto.dtoToEvent(requestDto);
     newEvent.setOrganizer(organizer);
@@ -92,6 +96,15 @@ public class CreateEventServiceImpl implements CreateEventService {
     return new EventResponseDto(newEvent);
   }
 
+  private boolean isEventDateValid(LocalDate eventDate) {
+    // Check if the event date is at least one week from today
+    // this also means it's going to throw this exception if the time is before now
+    if (!eventDate.isAfter(LocalDate.now().plusWeeks(1))) {
+      throw new EventDateInvalidException("Event date must be a week after creation!");
+    }
+    return true;
+  }
+
   public Boolean isDuplicateEvent(CreateEventRequestDto checkDuplicate) {
     String title = checkDuplicate.getTitle();
     String location = checkDuplicate.getLocation();
@@ -104,7 +117,8 @@ public class CreateEventServiceImpl implements CreateEventService {
 
   public void setCategory(Event createdEvent, CreateEventRequestDto requestDto) throws CategoryNotFoundException {
     if (requestDto.getCategoryId() != null) {
-      Category category = categoryRepository.findById(requestDto.getCategoryId()).orElseThrow(() -> new CategoryNotFoundException("Category not found, please enter another ID"));
+      Category category = categoryRepository.findById(requestDto.getCategoryId())
+          .orElseThrow(() -> new CategoryNotFoundException("Category not found, please enter another ID"));
       createdEvent.setCategory(category);
     }
   }
