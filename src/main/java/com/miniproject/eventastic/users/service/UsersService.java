@@ -17,16 +17,13 @@ import org.springframework.data.domain.Page;
 public interface UsersService {
 
   // Region - User management
-
   void saveUser(Users user);
+  void resetPassword(Users user, String newPassword);
+  void changePassword(ChangePasswordRequestDto requestDto);
+  void update(ProfileUpdateRequestDTO requestDto);
 
   // getting logged-in user
   Users getCurrentUser();
-
-  void resetPassword(Users user, String newPassword);
-  void changePassword(ChangePasswordRequestDto requestDto);
-
-  void update(ProfileUpdateRequestDTO requestDto);
 
   // Getting Users
   UserProfileDto getProfile();

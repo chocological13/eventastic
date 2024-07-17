@@ -53,7 +53,7 @@ public class EventResponseDto {
     this.location = event.getLocation();
     this.venue = event.getVenue();
     this.map = event.getMap();
-    this.image = new EventImageResponseDto(event.getEventImage());
+    this.image = event.getEventImage() != null ? new EventImageResponseDto(event.getEventImage()) : null;
     this.eventDate = event.getEventDate();
     this.startTime = event.getStartTime();
     this.endTime = event.getEndTime();

@@ -223,8 +223,8 @@ public class EventServiceImpl implements EventService {
   }
 
   @Override
-  public Page<EventStatisticsDto> getEventStatistics(Users prganizer, Pageable pageable) throws RuntimeException {
-    Page<EventStatisticsDto> statisticsDtoPage = eventRepository.getEventStatisticsDto(prganizer, pageable);
+  public Page<EventStatisticsDto> getEventStatistics(Users organizer, Pageable pageable) throws RuntimeException {
+    Page<EventStatisticsDto> statisticsDtoPage = eventRepository.getEventStatisticsDto(organizer, pageable);
     if (!statisticsDtoPage.hasContent()) {
       throw new EventNotFoundException("You have not organized any events!");
     }

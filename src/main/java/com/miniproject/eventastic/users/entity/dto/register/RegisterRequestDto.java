@@ -1,6 +1,7 @@
 package com.miniproject.eventastic.users.entity.dto.register;
 
 import com.miniproject.eventastic.users.entity.Users;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import java.util.Optional;
 import lombok.AllArgsConstructor;
@@ -17,12 +18,16 @@ import lombok.Setter;
 public class RegisterRequestDto {
 
   @NotNull
+  @NotEmpty
   private String username;
   @NotNull
+  @NotEmpty
   private String email;
   @NotNull
+  @NotEmpty
   private String password;
   @NotNull
+  @NotEmpty
   private String fullName;
   private String refCodeUsed;
   private Boolean isOrganizer;

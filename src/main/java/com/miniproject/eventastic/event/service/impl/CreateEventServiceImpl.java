@@ -22,6 +22,7 @@ import com.miniproject.eventastic.voucher.entity.Voucher;
 import com.miniproject.eventastic.voucher.entity.dto.create.CreateEventVoucherRequestDto;
 import com.miniproject.eventastic.voucher.service.VoucherService;
 import jakarta.transaction.Transactional;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.LinkedHashSet;
@@ -68,7 +69,9 @@ public class CreateEventServiceImpl implements CreateEventService {
     setCategory(newEvent, requestDto);
 
     // * 5 set image
-    setImage(newEvent, requestDto);
+    if (requestDto.getImageId() != null) {
+      setImage(newEvent, requestDto);
+    }
 
     // * 6 init ticket type and set it
     Set<TicketTypeCreateRequestDto> ticketTypeCreateRequestDtos = requestDto.getTicketTypeRequestDtos();
@@ -99,7 +102,7 @@ public class CreateEventServiceImpl implements CreateEventService {
   private boolean isEventDateValid(LocalDate eventDate) {
     // Check if the event date is at least one week from today
     // this also means it's going to throw this exception if the time is before now
-    if (!eventDate.isAfter(LocalDate.now().plusWeeks(1))) {
+    if (!eventDate.isAfter(LocalDate.now().plusDays(1))) {
       throw new EventDateInvalidException("Event date must be a week after creation!");
     }
     return true;
@@ -124,10 +127,8 @@ public class CreateEventServiceImpl implements CreateEventService {
   }
 
   public void setImage(Event createdEvent, CreateEventRequestDto requestDto) throws ImageNotFoundException {
-    if (requestDto.getImageId() != null) {
-      ImageEvent imageEvent = imageService.getEventImageById(requestDto.getImageId());
-      createdEvent.setEventImage(imageEvent);
-    }
+    ImageEvent imageEvent = imageService.getEventImageById(requestDto.getImageId());
+    createdEvent.setEventImage(imageEvent);
   }
 
   public Set<TicketType> getTicketType(Event createdEvent,
@@ -153,6 +154,7 @@ public class CreateEventServiceImpl implements CreateEventService {
       freeTicketType.setEvent(createdEvent);
       freeTicketType.setName("Free Admission");
       freeTicketType.setDescription("Free entry ticket");
+      freeTicketType.setPrice(BigDecimal.ZERO);
       freeTicketType.setSeatLimit(firstInSet.getSeatLimit());
       freeTicketType.setSeatAvailability(firstInSet.getSeatLimit());
 

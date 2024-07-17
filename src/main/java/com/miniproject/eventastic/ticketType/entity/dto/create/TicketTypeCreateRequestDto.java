@@ -18,7 +18,6 @@ public class TicketTypeCreateRequestDto {
 
   private String description;
 
-  @NotNull
   private BigDecimal price;
 
   @NotNull

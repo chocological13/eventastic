@@ -78,7 +78,7 @@ public class UsersServiceImpl implements UsersService {
   }
 
   @Override
-  public Users getCurrentUser() throws AccessDeniedException, UserNotFoundException {
+  public Users getCurrentUser() throws RuntimeException {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     if (authentication == null) {
       throw new AccessDeniedException("You must be logged in to access this resource");
@@ -89,13 +89,13 @@ public class UsersServiceImpl implements UsersService {
 
   @Override
   @Transactional
-  public UserProfileDto getProfile() throws UserNotFoundException, AccessDeniedException {
+  public UserProfileDto getProfile() throws RuntimeException {
     Users user = getCurrentUser();
     return new UserProfileDto(user);
   }
 
   @Override
-  public Users getByUsername(String username) throws UserNotFoundException {
+  public Users getByUsername(String username) throws RuntimeException {
     Optional<Users> usersOptional = usersRepository.findByUsername(username);
     return usersOptional.orElseThrow(() -> new UserNotFoundException(
         "User by username: " + username + " not found. Please ensure you've entered the correct username!"));
@@ -108,7 +108,7 @@ public class UsersServiceImpl implements UsersService {
   }
 
   @Override
-  public void changePassword(ChangePasswordRequestDto requestDto) {
+  public void changePassword(ChangePasswordRequestDto requestDto) throws RuntimeException {
     Users loggedInUser = getCurrentUser();
 
     // Verify old password
@@ -133,8 +133,7 @@ public class UsersServiceImpl implements UsersService {
 
   @Override
   public void update(ProfileUpdateRequestDTO requestDto)
-      throws ImageNotFoundException, UserNotFoundException, AccessDeniedException, DuplicateCredentialsException,
-      IllegalArgumentException {
+      throws RuntimeException {
     Users existingUser = getCurrentUser();
     ProfileUpdateRequestDTO update = new ProfileUpdateRequestDTO();
     update.dtoToEntity(existingUser, requestDto);
@@ -176,7 +175,7 @@ public class UsersServiceImpl implements UsersService {
   @SneakyThrows
   @Override
   public PointsWallet getUsersPointsWallet()
-      throws UserNotFoundException, AccessDeniedException, PointsWalletNotFoundException {
+      throws RuntimeException {
     // get currently logged-in user
     Users currentUser = getCurrentUser();
     return pointsWalletService.getPointsWallet(currentUser);
@@ -199,8 +198,7 @@ public class UsersServiceImpl implements UsersService {
   }
 
   @Override
-  public OrganizerWalletDisplayDto getWalletDisplay() throws UserNotFoundException, OrganizerWalletNotFoundException,
-      AccessDeniedException {
+  public OrganizerWalletDisplayDto getWalletDisplay() throws RuntimeException {
     Users organizer = getCurrentUser();
     OrganizerWallet organizerWallet;
     if (!organizer.getIsOrganizer()) {
@@ -216,8 +214,7 @@ public class UsersServiceImpl implements UsersService {
   }
 
   @Override
-  public Page<EventResponseDto> getAttendeeEvents(int page, int size) throws UserNotFoundException,
-      AccessDeniedException, EventNotFoundException {
+  public Page<EventResponseDto> getAttendeeEvents(int page, int size) throws RuntimeException {
     Users currentUser = getCurrentUser();
     Long userId = currentUser.getId();
     Pageable pageable = PageRequest.of(page, size);

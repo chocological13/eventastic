@@ -54,7 +54,7 @@ public interface EventService {
   ImageEvent uploadEventImage(ImageUploadRequestDto requestDto);
 
   // Region - Dashboard
-  Page<EventStatisticsDto> getEventStatistics(Users prganizer, Pageable pageable);
+  Page<EventStatisticsDto> getEventStatistics(Users organizer, Pageable pageable);
 
   Page<Event> getEventBetweenDates(Users organizer, LocalDate startDate, LocalDate endDate, Pageable pageable);
 
