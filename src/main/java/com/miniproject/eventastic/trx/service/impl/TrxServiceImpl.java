@@ -211,7 +211,7 @@ public class TrxServiceImpl implements TrxService {
     event.setSeatAvailability(event.getSeatAvailability() - qty);
     eventService.saveEvent(event);
 
-    ticketType.setSeatAvailability(event.getSeatAvailability() - qty);
+    ticketType.setSeatAvailability(ticketType.getSeatAvailability() - qty);
     ticketTypeService.saveTicketType(ticketType);
   }
 
