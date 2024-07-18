@@ -9,15 +9,12 @@ import com.miniproject.eventastic.event.service.EventService;
 import com.miniproject.eventastic.exceptions.ObjectNotFoundException;
 import com.miniproject.eventastic.exceptions.event.EventEndedException;
 import com.miniproject.eventastic.exceptions.trx.InsufficientPointsException;
-import com.miniproject.eventastic.exceptions.trx.NotAwardeeException;
 import com.miniproject.eventastic.exceptions.trx.PaymentMethodNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.PointsWalletNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.SeatUnavailableException;
 import com.miniproject.eventastic.exceptions.trx.TicketNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.TicketTypeNotFoundException;
 import com.miniproject.eventastic.exceptions.trx.VoucherInvalidException;
-import com.miniproject.eventastic.exceptions.trx.VoucherNotFoundException;
-import com.miniproject.eventastic.exceptions.user.UserNotFoundException;
 import com.miniproject.eventastic.mail.service.MailService;
 import com.miniproject.eventastic.mail.service.entity.dto.MailTemplate;
 import com.miniproject.eventastic.organizerWalletTrx.service.OrganizerWalletTrxService;
@@ -53,7 +50,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -77,8 +73,7 @@ public class TrxServiceImpl implements TrxService {
 
   @Override
   @Transactional
-  public Trx purchaseTicket(TrxPurchaseRequestDto requestDto) throws UserNotFoundException, AccessDeniedException,
-      TicketTypeNotFoundException, PointsWalletNotFoundException, InsufficientPointsException, VoucherNotFoundException, VoucherInvalidException, SeatUnavailableException, NotAwardeeException, PaymentMethodNotFoundException {
+  public Trx purchaseTicket(TrxPurchaseRequestDto requestDto) throws RuntimeException {
     // * get logged-in user
     Users loggedUser = usersService.getCurrentUser();
     Trx trx = new Trx();
@@ -101,15 +96,18 @@ public class TrxServiceImpl implements TrxService {
     BigDecimal promo = applyPromo(requestDto, trx);
     setPaymentMethod(requestDto, trx);
 
-    // finalize trx total amount
+    // * finalize trx total amount
     BigDecimal amountBeforePoints = applyDiscountAndPromo(trx, discount, promo);
-    BigDecimal amountAfterPoints = usePoints(requestDto, trx, amountBeforePoints);
+    BigDecimal amountAfterPoints = amountBeforePoints;
+    if (requestDto.getUsingPoints()) {
+      amountAfterPoints = usePoints(requestDto, trx, amountBeforePoints);
+    }
     trx.setTotalAmount(amountAfterPoints);
 
-    // set attendee for this purchase
+    // * set attendee for this purchase
     setAttendee(loggedUser, eventPurchase, requestDto.getQty());
 
-    // send payout to organizer
+    // * send payout to organizer
     organizerWalletTrxService.sendPayout(trx);
     trx.setTrxDate(Instant.now());
     trx.setIsPaid(true);
@@ -140,7 +138,7 @@ public class TrxServiceImpl implements TrxService {
 
   @Override
   public Page<Trx> getTrxsByOrganizer(Users organizer, Pageable pageable) {
-    Page<Trx> trxesPage= trxRepository.findTrxByEvent_Organizer(organizer, pageable);
+    Page<Trx> trxesPage = trxRepository.findTrxByEvent_Organizer(organizer, pageable);
     if (trxesPage.isEmpty()) {
       throw new ObjectNotFoundException("No one has bought tickets to your events yet :(");
     }
@@ -211,11 +209,12 @@ public class TrxServiceImpl implements TrxService {
     event.setSeatAvailability(event.getSeatAvailability() - qty);
     eventService.saveEvent(event);
 
-    ticketType.setSeatAvailability(event.getSeatAvailability() - qty);
+    ticketType.setSeatAvailability(ticketType.getSeatAvailability() - qty);
     ticketTypeService.saveTicketType(ticketType);
   }
 
-  public BigDecimal usePoints(TrxPurchaseRequestDto requestDto, Trx trx, BigDecimal amountBeforePoints) throws PointsWalletNotFoundException {
+  public BigDecimal usePoints(TrxPurchaseRequestDto requestDto, Trx trx, BigDecimal amountBeforePoints)
+      throws PointsWalletNotFoundException {
     BigDecimal amountAfterPoints = BigDecimal.ZERO;
     if (requestDto.getUsingPoints()) {
       PointsWallet pointsWallet = pointsWalletService.getPointsWallet(trx.getUser());
@@ -225,7 +224,8 @@ public class TrxServiceImpl implements TrxService {
     return amountAfterPoints;
   }
 
-  public BigDecimal applyPoints(Trx trx, PointsWallet pointsWallet, BigDecimal amountBeforePoints) throws InsufficientPointsException {
+  public BigDecimal applyPoints(Trx trx, PointsWallet pointsWallet, BigDecimal amountBeforePoints)
+      throws InsufficientPointsException {
     BigDecimal amountAfterPoints = BigDecimal.ZERO;
     BigDecimal points = BigDecimal.valueOf(pointsWallet.getPoints());
 
